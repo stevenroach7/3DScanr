@@ -10,7 +10,9 @@ class Point:
         self.z = z
 
 
-def convert_log_string_to_points(log_string):
+def convert_log_string_to_points(log_string, array_format=True):  # put false for chair < 4
+    if array_format:
+        log_string = log_string[6:-1]
     log_points = log_string.split('float3')
     return [add_point(p) for p in log_points]
 
@@ -45,7 +47,7 @@ def plot_points(points):
     plt.show()
 
 
-def write_to_xyz_file(points, file_name='data/chair3Points.txt'):
+def write_to_xyz_file(points, file_name='data/chair4Points.txt'):
     with open(file_name, 'w') as xyz:
         points_string = [add_point_string(p) for p in points]
         xyz.write('\n'.join(points_string))
@@ -59,11 +61,11 @@ def print_benchmark(start_time, end_time, op_string):
     print(op_string + " took " + str(((end_time - start_time))) + " seconds")
 
 
-with open('data/chair3LogPoints.txt', 'r') as file:
+with open('data/chair4LogPoints.txt', 'r') as file:
 
     data = file.read().replace('\n', '')
 
-    points = convert_log_string_to_points(data)
+    points = convert_log_string_to_points(data, array_format=True)
     print(len(points))
     # points = filter_points(points)
     # print(len(points))
