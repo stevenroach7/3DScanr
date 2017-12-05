@@ -1,7 +1,6 @@
 # from sympy import *
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-import time
 
 
 class Point:
@@ -12,15 +11,8 @@ class Point:
 
 
 def convert_log_string_to_points(log_string):
-    start = time.time()
     log_points = log_string.split('float3')
-    end = time.time()
-    print_benchmark(start, end, "split")
-    start = time.time()
-    points = [add_point(p) for p in log_points]
-    end = time.time()
-    print_benchmark(start, end, "create points")
-    return points
+    return [add_point(p) for p in log_points]
 
 
 def add_point(log_point):
@@ -53,7 +45,7 @@ def plot_points(points):
     plt.show()
 
 
-def write_to_xyz_file(points, file_name='data/bottlePoints.txt'):
+def write_to_xyz_file(points, file_name='data/chair3Points.txt'):
     with open(file_name, 'w') as xyz:
         points_string = [add_point_string(p) for p in points]
         xyz.write('\n'.join(points_string))
@@ -67,19 +59,13 @@ def print_benchmark(start_time, end_time, op_string):
     print(op_string + " took " + str(((end_time - start_time))) + " seconds")
 
 
-with open('data/bottleLogPoints2.txt', 'r') as file:
+with open('data/chair3LogPoints.txt', 'r') as file:
 
-    start = time.time()
     data = file.read().replace('\n', '')
-    end = time.time()
-    print_benchmark(start, end, " read")
 
     points = convert_log_string_to_points(data)
     print(len(points))
-    points = filter_points(points)
-    print(len(points))
-    start = time.time()
+    # points = filter_points(points)
+    # print(len(points))
     write_to_xyz_file(points)
-    end = time.time()
-    print_benchmark(start, end, "write")
-    plot_points(points)
+    # plot_points(points)

@@ -27,7 +27,8 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     }
     
     @IBAction func showPointsButtonTapped(sender: UIButton) {
-        UIPasteboard.general.string = points.description
+        print(points.description)
+//        UIPasteboard.general.string = points.description
     }
     
     func addCopyButton() {
