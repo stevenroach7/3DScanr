@@ -22,14 +22,46 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         // Set the view's delegate
         sceneView.delegate = self
         
-        // Show statistics such as fps and timing information
-        sceneView.showsStatistics = true
+        addCopyButton()
+        addResetButton()
+    }
+    
+    @IBAction func showPointsButtonTapped(sender: UIButton) {
+        UIPasteboard.general.string = points.description
+    }
+    
+    func addCopyButton() {
+        let copyButton = UIButton()
+        view.addSubview(copyButton)
+        copyButton.translatesAutoresizingMaskIntoConstraints = false
+        copyButton.setTitle("Copy points", for: .normal)
+        copyButton.setTitleColor(UIColor.red, for: .normal)
+        copyButton.backgroundColor = UIColor.white.withAlphaComponent(0.4)
+        copyButton.addTarget(self, action: #selector(showPointsButtonTapped(sender:)) , for: .touchUpInside)
         
-//        // Create a new scene
-//        let scene = SCNScene(named: "art.scnassets/ship.scn")!
-//
-//        // Set the scene to the view
-//        sceneView.scene = scene
+        // Contraints
+        copyButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
+        copyButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0.0).isActive = true
+        copyButton.heightAnchor.constraint(equalToConstant: 50)
+    }
+    
+    @IBAction func resetPointsButtonTapped(sender: UIButton) {
+        points = []
+    }
+    
+    func addResetButton() {
+        let resetButton = UIButton()
+        view.addSubview(resetButton)
+        resetButton.translatesAutoresizingMaskIntoConstraints = false
+        resetButton.setTitle("Reset points", for: .normal)
+        resetButton.setTitleColor(UIColor.red, for: .normal)
+        resetButton.backgroundColor = UIColor.white.withAlphaComponent(0.4)
+        resetButton.addTarget(self, action: #selector(resetPointsButtonTapped(sender:)) , for: .touchUpInside)
+        
+        // Contraints
+        resetButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
+        resetButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -8.0).isActive = true
+        resetButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -60,15 +92,6 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 
     // MARK: - ARSCNViewDelegate
     
-/*
-    // Override to create and configure nodes for anchors added to the view's session.
-    func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
-        let node = SCNNode()
-     
-        return node
-    }
-*/
-    
     func session(_ session: ARSession, didFailWithError error: Error) {
         // Present an error message to the user
         
@@ -85,8 +108,9 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        points += sceneView.session.currentFrame!.rawFeaturePoints!.points
-        print(points)
-        print(sceneView.scene.rootNode.boundingBox)
+        guard let rawFeaturePoints = sceneView.session.currentFrame?.rawFeaturePoints else {
+            return
+        }
+        points += rawFeaturePoints.points
     }
 }
