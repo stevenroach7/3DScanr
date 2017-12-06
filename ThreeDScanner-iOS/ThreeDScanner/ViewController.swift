@@ -112,6 +112,16 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         guard let rawFeaturePoints = sceneView.session.currentFrame?.rawFeaturePoints else {
             return
         }
+        for rawPoint in rawFeaturePoints.points {
+            addPointToView(position: rawPoint)
+        }
         points += rawFeaturePoints.points
+    }
+    
+    func addPointToView(position: vector_float3) {
+        let sphere = SCNSphere(radius: 0.00033)
+        let sphereNode = SCNNode(geometry: sphere)
+        sphereNode.position = SCNVector3(position)
+        sceneView.scene.rootNode.addChildNode(sphereNode)
     }
 }
