@@ -134,6 +134,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         
         // Create a session configuration
         let configuration = ARWorldTrackingConfiguration()
+        configuration.planeDetection = ARWorldTrackingConfiguration.PlaneDetection.horizontal
 
         // Run the view's session
         sceneView.session.run(configuration)
