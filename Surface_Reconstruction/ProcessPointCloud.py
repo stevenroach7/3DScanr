@@ -47,7 +47,7 @@ def plot_points(points):
     plt.show()
 
 
-def write_to_xyz_file(points, file_name='data/chair5Points.txt'):
+def write_to_xyz_file(points, file_name='data/LibChairPoints.txt'):
     with open(file_name, 'w') as xyz:
         points_string = [add_point_string(p) for p in points]
         xyz.write('\n'.join(points_string))
@@ -61,7 +61,7 @@ def print_benchmark(start_time, end_time, op_string):
     print(op_string + " took " + str(((end_time - start_time))) + " seconds")
 
 
-with open('data/chair5LogPoints.txt', 'r') as file:
+with open('data/LibChairLogPoints.txt', 'r') as file:
 
     data = file.read().replace('\n', '')
 
