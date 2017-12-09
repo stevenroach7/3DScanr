@@ -124,7 +124,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         var i = 0
         sceneView.scene.rootNode.enumerateChildNodes { (node, stop) -> Void in
             if (node.name == "sphereNode") {
-                if (i % 10 != 0) {
+                if (i % 2 != 0) {
                     node.removeFromParentNode()
                 }
                 i+=1
@@ -151,7 +151,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         let clearScreenButton = UIButton()
         view.addSubview(clearScreenButton)
         clearScreenButton.translatesAutoresizingMaskIntoConstraints = false
-        clearScreenButton.setTitle("Clear Screen", for: .normal)
+        clearScreenButton.setTitle("Hide Half", for: .normal)
         clearScreenButton.setTitleColor(UIColor.red, for: .normal)
         clearScreenButton.backgroundColor = UIColor.white.withAlphaComponent(0.4)
         clearScreenButton.addTarget(self, action: #selector(clearScreenButtonTapped(sender:)) , for: .touchUpInside)
