@@ -40,6 +40,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         
         addUploadButton()
         addResetButton()
+        addClearScreenButton()
     }
     
     internal func sign(_ signIn: GIDSignIn!, didSignInFor user: GIDGoogleUser!, withError error: Error!) {
@@ -112,6 +113,23 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
     
     @IBAction func resetPointsButtonTapped(sender: UIButton) {
         points = []
+        sceneView.scene.rootNode.enumerateChildNodes { (node, stop) -> Void in
+            if (node.name == "sphereNode") {
+                node.removeFromParentNode()
+            }
+        }
+    }
+    
+    @IBAction func clearScreenButtonTapped(sender: UIButton) {
+        var i = 0
+        sceneView.scene.rootNode.enumerateChildNodes { (node, stop) -> Void in
+            if (node.name == "sphereNode") {
+                if (i % 10 != 0) {
+                    node.removeFromParentNode()
+                }
+                i+=1
+            }
+        }
     }
     
     private func addResetButton() {
@@ -127,6 +145,21 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         resetButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
         resetButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -8.0).isActive = true
         resetButton.heightAnchor.constraint(equalToConstant: 50)
+    }
+    
+    private func addClearScreenButton() {
+        let clearScreenButton = UIButton()
+        view.addSubview(clearScreenButton)
+        clearScreenButton.translatesAutoresizingMaskIntoConstraints = false
+        clearScreenButton.setTitle("Clear Screen", for: .normal)
+        clearScreenButton.setTitleColor(UIColor.red, for: .normal)
+        clearScreenButton.backgroundColor = UIColor.white.withAlphaComponent(0.4)
+        clearScreenButton.addTarget(self, action: #selector(clearScreenButtonTapped(sender:)) , for: .touchUpInside)
+        
+        // Contraints
+        clearScreenButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
+        clearScreenButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8.0).isActive = true
+        clearScreenButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -184,8 +217,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
     }
     
     private func addPointToView(position: vector_float3) {
-        let sphere = SCNSphere(radius: 0.00033)
+        let sphere = SCNSphere(radius: 0.00066)
         let sphereNode = SCNNode(geometry: sphere)
+        sphereNode.name = "sphereNode"
         sphereNode.position = SCNVector3(position)
         sceneView.scene.rootNode.addChildNode(sphereNode)
     }
