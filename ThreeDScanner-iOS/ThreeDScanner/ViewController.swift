@@ -16,6 +16,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
 
     @IBOutlet var sceneView: ARSCNView!
     var points: [vector_float3] = []
+    var pointsParentNode = SCNNode()
+    
+    let hidePointRatio = 2 // Hide 1 / hidePointRatio of the points
     
     // If modifying these scopes, delete your previously saved credentials by
     // resetting the iOS simulator or uninstall the app.
@@ -39,8 +42,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         view.addSubview(signInButton)
         
         addUploadButton()
-        addResetButton()
-        addClearScreenButton()
+//        addResetButton()
+//        addClearScreenButton()
+        
+        sceneView.scene.rootNode.addChildNode(pointsParentNode)
     }
     
     internal func sign(_ signIn: GIDSignIn!, didSignInFor user: GIDGoogleUser!, withError error: Error!) {
@@ -69,9 +74,73 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         present(alert, animated: true, completion: nil)
     }
     
+    private func createXyString(points: [float3]) -> String {
+        var xyzString = "\n"
+        for point in points {
+            xyzString.append(point.x.description)
+            xyzString.append(";")
+            xyzString.append(point.y.description)
+            xyzString.append(";")
+            xyzString.append(point.z.description)
+            xyzString.append("\n")
+        }
+        return xyzString
+    }
+    
+    private func addUploadButton() {
+        let uploadButton = UIButton()
+        view.addSubview(uploadButton)
+        uploadButton.translatesAutoresizingMaskIntoConstraints = false
+        uploadButton.setTitle("Upload", for: .normal)
+        uploadButton.setTitleColor(UIColor.red, for: .normal)
+        uploadButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
+        uploadButton.layer.cornerRadius = 4
+        uploadButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
+        uploadButton.addTarget(self, action: #selector(uploadFile(sender:)) , for: .touchUpInside)
+        
+        // Contraints
+        uploadButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
+        uploadButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0.0).isActive = true
+        uploadButton.heightAnchor.constraint(equalToConstant: 50)
+    }
+    
+    private func addResetButton() {
+        let resetButton = UIButton()
+        view.addSubview(resetButton)
+        resetButton.translatesAutoresizingMaskIntoConstraints = false
+        resetButton.setTitle("Reset points", for: .normal)
+        resetButton.setTitleColor(UIColor.red, for: .normal)
+        resetButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
+        resetButton.layer.cornerRadius = 4
+        resetButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
+        resetButton.addTarget(self, action: #selector(resetPointsButtonTapped(sender:)) , for: .touchUpInside)
+        
+        // Contraints
+        resetButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
+        resetButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -8.0).isActive = true
+        resetButton.heightAnchor.constraint(equalToConstant: 50)
+    }
+    
+    private func addClearScreenButton() {
+        let clearScreenButton = UIButton()
+        view.addSubview(clearScreenButton)
+        clearScreenButton.translatesAutoresizingMaskIntoConstraints = false
+        clearScreenButton.setTitle("Hide Half", for: .normal)
+        clearScreenButton.setTitleColor(UIColor.red, for: .normal)
+        clearScreenButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
+        clearScreenButton.layer.cornerRadius = 4
+        clearScreenButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
+        clearScreenButton.addTarget(self, action: #selector(clearScreenButtonTapped(sender:)) , for: .touchUpInside)
+        
+        // Contraints
+        clearScreenButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
+        clearScreenButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8.0).isActive = true
+        clearScreenButton.heightAnchor.constraint(equalToConstant: 50)
+    }
+    
     @IBAction func uploadFile(sender: UIButton) {
         
-        let input = points.description
+        let input = createXyString(points: points)
         let fileData = input.data(using: .utf8)!
         
         let dateFormatter = DateFormatter()
@@ -96,70 +165,21 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         })
     }
     
-    private func addUploadButton() {
-        let uploadButton = UIButton()
-        view.addSubview(uploadButton)
-        uploadButton.translatesAutoresizingMaskIntoConstraints = false
-        uploadButton.setTitle("Upload", for: .normal)
-        uploadButton.setTitleColor(UIColor.red, for: .normal)
-        uploadButton.backgroundColor = UIColor.white.withAlphaComponent(0.4)
-        uploadButton.addTarget(self, action: #selector(uploadFile(sender:)) , for: .touchUpInside)
-        
-        // Contraints
-        uploadButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
-        uploadButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0.0).isActive = true
-        uploadButton.heightAnchor.constraint(equalToConstant: 50)
-    }
-    
     @IBAction func resetPointsButtonTapped(sender: UIButton) {
         points = []
-        sceneView.scene.rootNode.enumerateChildNodes { (node, stop) -> Void in
-            if (node.name == "sphereNode") {
-                node.removeFromParentNode()
-            }
+        pointsParentNode.enumerateChildNodes { (node, stop) -> Void in
+            node.removeFromParentNode()
         }
     }
     
     @IBAction func clearScreenButtonTapped(sender: UIButton) {
         var i = 0
-        sceneView.scene.rootNode.enumerateChildNodes { (node, stop) -> Void in
-            if (node.name == "sphereNode") {
-                if (i % 10 != 0) {
-                    node.removeFromParentNode()
-                }
-                i+=1
+        pointsParentNode.enumerateChildNodes { (node, stop) -> Void in
+            if (i % hidePointRatio != 0) {
+                node.removeFromParentNode()
             }
+            i+=1
         }
-    }
-    
-    private func addResetButton() {
-        let resetButton = UIButton()
-        view.addSubview(resetButton)
-        resetButton.translatesAutoresizingMaskIntoConstraints = false
-        resetButton.setTitle("Reset points", for: .normal)
-        resetButton.setTitleColor(UIColor.red, for: .normal)
-        resetButton.backgroundColor = UIColor.white.withAlphaComponent(0.4)
-        resetButton.addTarget(self, action: #selector(resetPointsButtonTapped(sender:)) , for: .touchUpInside)
-        
-        // Contraints
-        resetButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
-        resetButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -8.0).isActive = true
-        resetButton.heightAnchor.constraint(equalToConstant: 50)
-    }
-    
-    private func addClearScreenButton() {
-        let clearScreenButton = UIButton()
-        view.addSubview(clearScreenButton)
-        clearScreenButton.translatesAutoresizingMaskIntoConstraints = false
-        clearScreenButton.setTitle("Clear Screen", for: .normal)
-        clearScreenButton.setTitleColor(UIColor.red, for: .normal)
-        clearScreenButton.backgroundColor = UIColor.white.withAlphaComponent(0.4)
-        clearScreenButton.addTarget(self, action: #selector(clearScreenButtonTapped(sender:)) , for: .touchUpInside)
-        
-        // Contraints
-        clearScreenButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
-        clearScreenButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8.0).isActive = true
-        clearScreenButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -187,6 +207,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Release any cached data, images, etc that aren't in use.
+        print("Memory Warning")
     }
 
     // MARK: - ARSCNViewDelegate
@@ -219,8 +240,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
     private func addPointToView(position: vector_float3) {
         let sphere = SCNSphere(radius: 0.00066)
         let sphereNode = SCNNode(geometry: sphere)
-        sphereNode.name = "sphereNode"
         sphereNode.position = SCNVector3(position)
-        sceneView.scene.rootNode.addChildNode(sphereNode)
+        pointsParentNode.addChildNode(sphereNode)
     }
 }
