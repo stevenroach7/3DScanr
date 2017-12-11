@@ -9,12 +9,19 @@
 import UIKit
 import SceneKit
 import ARKit
+import GoogleAPIClientForREST
+import GoogleSignIn
 
-class ViewController: UIViewController, ARSCNViewDelegate {
+class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GIDSignInUIDelegate {
 
     @IBOutlet var sceneView: ARSCNView!
-    
     var points: [vector_float3] = []
+    
+    // If modifying these scopes, delete your previously saved credentials by
+    // resetting the iOS simulator or uninstall the app.
+    private let scopes = ["https://www.googleapis.com/auth/drive"]
+    private let service = GTLRDriveService()
+    let signInButton = GIDSignInButton()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -22,35 +29,110 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         // Set the view's delegate
         sceneView.delegate = self
         
-        addCopyButton()
+        // Configure Google Sign-in.
+        GIDSignIn.sharedInstance().delegate = self
+        GIDSignIn.sharedInstance().uiDelegate = self
+        GIDSignIn.sharedInstance().scopes = scopes
+        GIDSignIn.sharedInstance().signInSilently()
+        
+        // Add the sign-in button.
+        view.addSubview(signInButton)
+        
+        addUploadButton()
         addResetButton()
+        addClearScreenButton()
     }
     
-    @IBAction func showPointsButtonTapped(sender: UIButton) {
-        print(points.description)
-//        UIPasteboard.general.string = points.description
+    internal func sign(_ signIn: GIDSignIn!, didSignInFor user: GIDGoogleUser!, withError error: Error!) {
+        if let error = error {
+            showAlert(title: "Authentication Error", message: error.localizedDescription)
+            self.service.authorizer = nil
+        } else {
+            self.signInButton.isHidden = true
+            self.service.authorizer = user.authentication.fetcherAuthorizer()
+        }
     }
     
-    func addCopyButton() {
-        let copyButton = UIButton()
-        view.addSubview(copyButton)
-        copyButton.translatesAutoresizingMaskIntoConstraints = false
-        copyButton.setTitle("Copy points", for: .normal)
-        copyButton.setTitleColor(UIColor.red, for: .normal)
-        copyButton.backgroundColor = UIColor.white.withAlphaComponent(0.4)
-        copyButton.addTarget(self, action: #selector(showPointsButtonTapped(sender:)) , for: .touchUpInside)
+    // Helper for showing an alert
+    private func showAlert(title : String, message: String) {
+        let alert = UIAlertController(
+            title: title,
+            message: message,
+            preferredStyle: UIAlertControllerStyle.alert
+        )
+        let ok = UIAlertAction(
+            title: "OK",
+            style: UIAlertActionStyle.default,
+            handler: nil
+        )
+        alert.addAction(ok)
+        present(alert, animated: true, completion: nil)
+    }
+    
+    @IBAction func uploadFile(sender: UIButton) {
+        
+        let input = points.description
+        let fileData = input.data(using: .utf8)!
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = DateFormatter.Style.short
+        dateFormatter.timeStyle = DateFormatter.Style.short
+        let timeDateString = dateFormatter.string(from: Date())
+        
+        let metadata = GTLRDrive_File()
+        metadata.name = "Points" + timeDateString
+        
+        let uploadParameters: GTLRUploadParameters = GTLRUploadParameters(data: fileData, mimeType: "text/plain")
+        uploadParameters.shouldUploadWithSingleRequest = true
+        
+        let query = GTLRDriveQuery_FilesCreate.query(withObject: metadata, uploadParameters: uploadParameters)
+        self.service.executeQuery(query, completionHandler: {(ticket:GTLRServiceTicket, object:Any?, error:Error?) in
+            if error == nil {
+                print("Succeed")
+            }
+            else {
+                print("An error occurred: \(String(describing: error))")
+            }
+        })
+    }
+    
+    private func addUploadButton() {
+        let uploadButton = UIButton()
+        view.addSubview(uploadButton)
+        uploadButton.translatesAutoresizingMaskIntoConstraints = false
+        uploadButton.setTitle("Upload", for: .normal)
+        uploadButton.setTitleColor(UIColor.red, for: .normal)
+        uploadButton.backgroundColor = UIColor.white.withAlphaComponent(0.4)
+        uploadButton.addTarget(self, action: #selector(uploadFile(sender:)) , for: .touchUpInside)
         
         // Contraints
-        copyButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
-        copyButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0.0).isActive = true
-        copyButton.heightAnchor.constraint(equalToConstant: 50)
+        uploadButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
+        uploadButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0.0).isActive = true
+        uploadButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
     @IBAction func resetPointsButtonTapped(sender: UIButton) {
         points = []
+        sceneView.scene.rootNode.enumerateChildNodes { (node, stop) -> Void in
+            if (node.name == "sphereNode") {
+                node.removeFromParentNode()
+            }
+        }
     }
     
-    func addResetButton() {
+    @IBAction func clearScreenButtonTapped(sender: UIButton) {
+        var i = 0
+        sceneView.scene.rootNode.enumerateChildNodes { (node, stop) -> Void in
+            if (node.name == "sphereNode") {
+                if (i % 10 != 0) {
+                    node.removeFromParentNode()
+                }
+                i+=1
+            }
+        }
+    }
+    
+    private func addResetButton() {
         let resetButton = UIButton()
         view.addSubview(resetButton)
         resetButton.translatesAutoresizingMaskIntoConstraints = false
@@ -65,11 +147,27 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         resetButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
+    private func addClearScreenButton() {
+        let clearScreenButton = UIButton()
+        view.addSubview(clearScreenButton)
+        clearScreenButton.translatesAutoresizingMaskIntoConstraints = false
+        clearScreenButton.setTitle("Clear Screen", for: .normal)
+        clearScreenButton.setTitleColor(UIColor.red, for: .normal)
+        clearScreenButton.backgroundColor = UIColor.white.withAlphaComponent(0.4)
+        clearScreenButton.addTarget(self, action: #selector(clearScreenButtonTapped(sender:)) , for: .touchUpInside)
+        
+        // Contraints
+        clearScreenButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
+        clearScreenButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8.0).isActive = true
+        clearScreenButton.heightAnchor.constraint(equalToConstant: 50)
+    }
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
         // Create a session configuration
         let configuration = ARWorldTrackingConfiguration()
+        configuration.planeDetection = ARWorldTrackingConfiguration.PlaneDetection.horizontal
 
         // Run the view's session
         sceneView.session.run(configuration)
@@ -112,6 +210,17 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         guard let rawFeaturePoints = sceneView.session.currentFrame?.rawFeaturePoints else {
             return
         }
+        for rawPoint in rawFeaturePoints.points {
+            addPointToView(position: rawPoint)
+        }
         points += rawFeaturePoints.points
+    }
+    
+    private func addPointToView(position: vector_float3) {
+        let sphere = SCNSphere(radius: 0.00066)
+        let sphereNode = SCNNode(geometry: sphere)
+        sphereNode.name = "sphereNode"
+        sphereNode.position = SCNVector3(position)
+        sceneView.scene.rootNode.addChildNode(sphereNode)
     }
 }
