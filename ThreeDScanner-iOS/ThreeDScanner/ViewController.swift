@@ -75,7 +75,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
     }
     
     private func createXyString(points: [float3]) -> String {
-        var xyzString = ""
+        var xyzString = "\n"
         for point in points {
             xyzString.append(point.x.description)
             xyzString.append(";")
