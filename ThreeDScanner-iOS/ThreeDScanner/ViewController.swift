@@ -17,6 +17,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
     @IBOutlet var sceneView: ARSCNView!
     var points: [vector_float3] = []
     var pointsParentNode = SCNNode()
+    var isTorchOn = false
     
     let hidePointRatio = 2 // Hide 1 / hidePointRatio of the points
     
@@ -42,6 +43,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         view.addSubview(signInButton)
         
         addUploadButton()
+        addToggleTorchButton()
 //        addResetButton()
 //        addClearScreenButton()
         
@@ -104,6 +106,23 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         uploadButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
+    private func addToggleTorchButton() {
+        let toggleTorchButton = UIButton()
+        view.addSubview(toggleTorchButton)
+        toggleTorchButton.translatesAutoresizingMaskIntoConstraints = false
+        toggleTorchButton.setTitle("Toggle Torch", for: .normal)
+        toggleTorchButton.setTitleColor(UIColor.red, for: .normal)
+        toggleTorchButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
+        toggleTorchButton.layer.cornerRadius = 4
+        toggleTorchButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
+        toggleTorchButton.addTarget(self, action: #selector(toggleTorch(sender:)) , for: .touchUpInside)
+        
+        // Contraints
+        toggleTorchButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
+        toggleTorchButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -8.0).isActive = true
+        toggleTorchButton.heightAnchor.constraint(equalToConstant: 50)
+    }
+    
     private func addResetButton() {
         let resetButton = UIButton()
         view.addSubview(resetButton)
@@ -163,6 +182,30 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
                 print("An error occurred: \(String(describing: error))")
             }
         })
+    }
+    
+    @IBAction func toggleTorch(sender: UIButton) {
+        guard let device = AVCaptureDevice.default(for: AVMediaType.video)
+            else {return}
+        
+        if device.hasTorch {
+            do {
+                try device.lockForConfiguration()
+                
+                if !isTorchOn {
+                    device.torchMode = .on
+                } else {
+                    device.torchMode = .off
+                }
+                isTorchOn = !isTorchOn
+                
+                device.unlockForConfiguration()
+            } catch {
+                print("Torch could not be used")
+            }
+        } else {
+            print("Torch is not available")
+        }
     }
     
     @IBAction func resetPointsButtonTapped(sender: UIButton) {
