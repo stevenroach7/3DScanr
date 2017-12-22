@@ -19,8 +19,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
     var pointsParentNode = SCNNode()
     var isTorchOn = false
     
-    let hidePointRatio = 2 // Hide 1 / hidePointRatio of the points
-    
     // If modifying these scopes, delete your previously saved credentials by
     // resetting the iOS simulator or uninstall the app.
     private let scopes = ["https://www.googleapis.com/auth/drive"]
@@ -44,8 +42,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         
         addUploadButton()
         addToggleTorchButton()
-//        addResetButton()
-//        addClearScreenButton()
         
         sceneView.scene.rootNode.addChildNode(pointsParentNode)
     }
@@ -123,40 +119,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         toggleTorchButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
-    private func addResetButton() {
-        let resetButton = UIButton()
-        view.addSubview(resetButton)
-        resetButton.translatesAutoresizingMaskIntoConstraints = false
-        resetButton.setTitle("Reset points", for: .normal)
-        resetButton.setTitleColor(UIColor.red, for: .normal)
-        resetButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
-        resetButton.layer.cornerRadius = 4
-        resetButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
-        resetButton.addTarget(self, action: #selector(resetPointsButtonTapped(sender:)) , for: .touchUpInside)
-        
-        // Contraints
-        resetButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
-        resetButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -8.0).isActive = true
-        resetButton.heightAnchor.constraint(equalToConstant: 50)
-    }
-    
-    private func addClearScreenButton() {
-        let clearScreenButton = UIButton()
-        view.addSubview(clearScreenButton)
-        clearScreenButton.translatesAutoresizingMaskIntoConstraints = false
-        clearScreenButton.setTitle("Hide Half", for: .normal)
-        clearScreenButton.setTitleColor(UIColor.red, for: .normal)
-        clearScreenButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
-        clearScreenButton.layer.cornerRadius = 4
-        clearScreenButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
-        clearScreenButton.addTarget(self, action: #selector(clearScreenButtonTapped(sender:)) , for: .touchUpInside)
-        
-        // Contraints
-        clearScreenButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
-        clearScreenButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8.0).isActive = true
-        clearScreenButton.heightAnchor.constraint(equalToConstant: 50)
-    }
-    
     @IBAction func uploadFile(sender: UIButton) {
         
         let input = createXyString(points: points)
@@ -205,23 +167,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
             }
         } else {
             print("Torch is not available")
-        }
-    }
-    
-    @IBAction func resetPointsButtonTapped(sender: UIButton) {
-        points = []
-        pointsParentNode.enumerateChildNodes { (node, stop) -> Void in
-            node.removeFromParentNode()
-        }
-    }
-    
-    @IBAction func clearScreenButtonTapped(sender: UIButton) {
-        var i = 0
-        pointsParentNode.enumerateChildNodes { (node, stop) -> Void in
-            if (i % hidePointRatio != 0) {
-                node.removeFromParentNode()
-            }
-            i+=1
         }
     }
     
