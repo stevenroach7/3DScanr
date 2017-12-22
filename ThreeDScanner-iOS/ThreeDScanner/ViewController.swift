@@ -149,6 +149,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
                 
                 if !isTorchOn {
                     device.torchMode = .on
+                    try device.setTorchModeOn(level: AVCaptureDevice.maxAvailableTorchLevel)
                 } else {
                     device.torchMode = .off
                 }
