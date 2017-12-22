@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		4C4FD6D27D0A790EA33C36DA /* Pods_ThreeDScanner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E1A3A8D013ACA949EB5C45A8 /* Pods_ThreeDScanner.framework */; };
+		B02AC9FF1FED6F020025F835 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B02AC9FE1FED6F020025F835 /* GoogleService-Info.plist */; };
 		B063CB161FC744A100C20C8D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B063CB151FC744A100C20C8D /* AppDelegate.swift */; };
 		B063CB181FC744A100C20C8D /* art.scnassets in Resources */ = {isa = PBXBuildFile; fileRef = B063CB171FC744A100C20C8D /* art.scnassets */; };
 		B063CB1A1FC744A100C20C8D /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B063CB191FC744A100C20C8D /* ViewController.swift */; };
@@ -16,7 +17,6 @@
 		B063CB221FC744A100C20C8D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B063CB201FC744A100C20C8D /* LaunchScreen.storyboard */; };
 		B063CB2D1FC744A100C20C8D /* ThreeDScannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B063CB2C1FC744A100C20C8D /* ThreeDScannerTests.swift */; };
 		B063CB381FC744A100C20C8D /* ThreeDScannerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B063CB371FC744A100C20C8D /* ThreeDScannerUITests.swift */; };
-		B09B64751FD788B300836500 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B09B64741FD788B300836500 /* GoogleService-Info.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,6 +38,7 @@
 
 /* Begin PBXFileReference section */
 		A6001CAE9A27F8CB01B7CC37 /* Pods-ThreeDScanner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ThreeDScanner.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ThreeDScanner/Pods-ThreeDScanner.debug.xcconfig"; sourceTree = "<group>"; };
+		B02AC9FE1FED6F020025F835 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../../ThreeDScanner_Resources/GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B063CB121FC744A100C20C8D /* ThreeDScanner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ThreeDScanner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B063CB151FC744A100C20C8D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B063CB171FC744A100C20C8D /* art.scnassets */ = {isa = PBXFileReference; lastKnownFileType = wrapper.scnassets; path = art.scnassets; sourceTree = "<group>"; };
@@ -52,7 +53,6 @@
 		B063CB331FC744A100C20C8D /* ThreeDScannerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ThreeDScannerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B063CB371FC744A100C20C8D /* ThreeDScannerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreeDScannerUITests.swift; sourceTree = "<group>"; };
 		B063CB391FC744A100C20C8D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		B09B64741FD788B300836500 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../../GoogleService-Info.plist"; sourceTree = "<group>"; };
 		D29A5A475B9F7E7A2D2107F5 /* Pods-ThreeDScanner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ThreeDScanner.release.xcconfig"; path = "Pods/Target Support Files/Pods-ThreeDScanner/Pods-ThreeDScanner.release.xcconfig"; sourceTree = "<group>"; };
 		E1A3A8D013ACA949EB5C45A8 /* Pods_ThreeDScanner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ThreeDScanner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -95,7 +95,7 @@
 		B063CB091FC744A000C20C8D = {
 			isa = PBXGroup;
 			children = (
-				B09B64741FD788B300836500 /* GoogleService-Info.plist */,
+				B02AC9FE1FED6F020025F835 /* GoogleService-Info.plist */,
 				B063CB141FC744A100C20C8D /* ThreeDScanner */,
 				B063CB2B1FC744A100C20C8D /* ThreeDScannerTests */,
 				B063CB361FC744A100C20C8D /* ThreeDScannerUITests */,
@@ -267,7 +267,7 @@
 			files = (
 				B063CB181FC744A100C20C8D /* art.scnassets in Resources */,
 				B063CB221FC744A100C20C8D /* LaunchScreen.storyboard in Resources */,
-				B09B64751FD788B300836500 /* GoogleService-Info.plist in Resources */,
+				B02AC9FF1FED6F020025F835 /* GoogleService-Info.plist in Resources */,
 				B063CB1F1FC744A100C20C8D /* Assets.xcassets in Resources */,
 				B063CB1D1FC744A100C20C8D /* Main.storyboard in Resources */,
 			);
