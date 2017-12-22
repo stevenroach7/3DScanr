@@ -42,6 +42,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         
         addUploadButton()
         addToggleTorchButton()
+        addInfoButton()
         
         sceneView.scene.rootNode.addChildNode(pointsParentNode)
     }
@@ -56,34 +57,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         }
     }
     
-    // Helper for showing an alert
-    private func showAlert(title : String, message: String) {
-        let alert = UIAlertController(
-            title: title,
-            message: message,
-            preferredStyle: UIAlertControllerStyle.alert
-        )
-        let ok = UIAlertAction(
-            title: "OK",
-            style: UIAlertActionStyle.default,
-            handler: nil
-        )
-        alert.addAction(ok)
-        present(alert, animated: true, completion: nil)
-    }
-    
-    private func createXyString(points: [float3]) -> String {
-        var xyzString = "\n"
-        for point in points {
-            xyzString.append(point.x.description)
-            xyzString.append(";")
-            xyzString.append(point.y.description)
-            xyzString.append(";")
-            xyzString.append(point.z.description)
-            xyzString.append("\n")
-        }
-        return xyzString
-    }
+    // MARK: Buttons
     
     private func addUploadButton() {
         let uploadButton = UIButton()
@@ -118,6 +92,25 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         toggleTorchButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -8.0).isActive = true
         toggleTorchButton.heightAnchor.constraint(equalToConstant: 50)
     }
+    
+    private func addInfoButton() {
+        let infoButton = UIButton()
+        view.addSubview(infoButton)
+        infoButton.translatesAutoresizingMaskIntoConstraints = false
+        infoButton.setTitle("Info", for: .normal)
+        infoButton.setTitleColor(UIColor.red, for: .normal)
+        infoButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
+        infoButton.layer.cornerRadius = 4
+        infoButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
+        infoButton.addTarget(self, action: #selector(showInfoPopup(sender:)) , for: .touchUpInside)
+        
+        // Contraints
+        infoButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
+        infoButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8.0).isActive = true
+        infoButton.heightAnchor.constraint(equalToConstant: 50)
+    }
+    
+    // MARK: Button Actions
     
     @IBAction func uploadFile(sender: UIButton) {
         
@@ -168,6 +161,50 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         } else {
             print("Torch is not available")
         }
+    }
+    
+    @IBAction func showInfoPopup(sender: UIButton) {
+        let title = "Info"
+        let message = "Detected points are shown in yellow. Tap the screen to add currently detected ponts to the captured point cloud sample. Captured points are shown in white. Press Upload to upload a text file of the captured points to the associated Google Drive account."
+        showAlert(title: title, message: message)
+    }
+    
+    // MARK: Helper Functions
+    
+    private func createXyString(points: [float3]) -> String {
+        var xyzString = "\n"
+        for point in points {
+            xyzString.append(point.x.description)
+            xyzString.append(";")
+            xyzString.append(point.y.description)
+            xyzString.append(";")
+            xyzString.append(point.z.description)
+            xyzString.append("\n")
+        }
+        return xyzString
+    }
+    
+    // Helper for showing an alert
+    private func showAlert(title : String, message: String) {
+        let alert = UIAlertController(
+            title: title,
+            message: message,
+            preferredStyle: UIAlertControllerStyle.alert
+        )
+        let ok = UIAlertAction(
+            title: "OK",
+            style: UIAlertActionStyle.default,
+            handler: nil
+        )
+        alert.addAction(ok)
+        present(alert, animated: true, completion: nil)
+    }
+    
+    private func addPointToView(position: vector_float3) {
+        let sphere = SCNSphere(radius: 0.00066)
+        let sphereNode = SCNNode(geometry: sphere)
+        sphereNode.position = SCNVector3(position)
+        pointsParentNode.addChildNode(sphereNode)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -223,12 +260,5 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
             addPointToView(position: rawPoint)
         }
         points += rawFeaturePoints.points
-    }
-    
-    private func addPointToView(position: vector_float3) {
-        let sphere = SCNSphere(radius: 0.00066)
-        let sphereNode = SCNNode(geometry: sphere)
-        sphereNode.position = SCNVector3(position)
-        pointsParentNode.addChildNode(sphereNode)
     }
 }
