@@ -84,7 +84,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         let toggleTorchButton = UIButton()
         view.addSubview(toggleTorchButton)
         toggleTorchButton.translatesAutoresizingMaskIntoConstraints = false
-        toggleTorchButton.setTitle("Toggle Torch", for: .normal)
+        toggleTorchButton.setTitle("Torch", for: .normal)
         toggleTorchButton.setTitleColor(UIColor.red, for: .normal)
         toggleTorchButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
         toggleTorchButton.layer.cornerRadius = 4
@@ -109,8 +109,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         infoButton.addTarget(self, action: #selector(showInfoPopup(sender:)) , for: .touchUpInside)
         
         // Contraints
-        infoButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
-        infoButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8.0).isActive = true
+        infoButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 16.0).isActive = true
+        infoButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -8.0).isActive = true
         infoButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
@@ -127,7 +127,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         
         // Contraints
         optionsButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
-        optionsButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 30.0).isActive = true
+        optionsButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8.0).isActive = true
         optionsButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
