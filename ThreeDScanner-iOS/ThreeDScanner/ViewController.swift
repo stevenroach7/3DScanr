@@ -101,7 +101,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         let infoButton = UIButton()
         view.addSubview(infoButton)
         infoButton.translatesAutoresizingMaskIntoConstraints = false
-        infoButton.setTitle("i", for: .normal)
+        infoButton.setTitle("Info", for: .normal)
         infoButton.setTitleColor(UIColor.red, for: .normal)
         infoButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
         infoButton.layer.cornerRadius = 4
@@ -109,7 +109,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         infoButton.addTarget(self, action: #selector(showInfoPopup(sender:)) , for: .touchUpInside)
         
         // Contraints
-        infoButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 16.0).isActive = true
+        infoButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
         infoButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -8.0).isActive = true
         infoButton.heightAnchor.constraint(equalToConstant: 50)
     }
