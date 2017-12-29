@@ -19,6 +19,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
     var pointsParentNode = SCNNode()
     var isTorchOn = false
     
+    var addPointRatio = 1 // Show 1 / addPointRatio of the points
+    
+    
     // If modifying these scopes, delete your previously saved credentials by
     // resetting the iOS simulator or uninstall the app.
     private let scopes = ["https://www.googleapis.com/auth/drive"]
@@ -43,6 +46,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         addUploadButton()
         addToggleTorchButton()
         addInfoButton()
+        addOptionsButton()
         
         sceneView.scene.rootNode.addChildNode(pointsParentNode)
     }
@@ -97,7 +101,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         let infoButton = UIButton()
         view.addSubview(infoButton)
         infoButton.translatesAutoresizingMaskIntoConstraints = false
-        infoButton.setTitle("Info", for: .normal)
+        infoButton.setTitle("i", for: .normal)
         infoButton.setTitleColor(UIColor.red, for: .normal)
         infoButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
         infoButton.layer.cornerRadius = 4
@@ -108,6 +112,23 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         infoButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
         infoButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8.0).isActive = true
         infoButton.heightAnchor.constraint(equalToConstant: 50)
+    }
+    
+    private func addOptionsButton() {
+        let optionsButton = UIButton()
+        view.addSubview(optionsButton)
+        optionsButton.translatesAutoresizingMaskIntoConstraints = false
+        optionsButton.setTitle("Options", for: .normal)
+        optionsButton.setTitleColor(UIColor.red, for: .normal)
+        optionsButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
+        optionsButton.layer.cornerRadius = 4
+        optionsButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
+        optionsButton.addTarget(self, action: #selector(showOptionsPopup(sender:)) , for: .touchUpInside)
+        
+        // Contraints
+        optionsButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
+        optionsButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 30.0).isActive = true
+        optionsButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
     // MARK: Button Actions
@@ -168,6 +189,22 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         let title = "Info"
         let message = "Detected points are shown in yellow. Tap the screen to add currently detected ponts to the captured point cloud sample. Captured points are shown in white. Press Upload to upload a text file of the captured points to the associated Google Drive account."
         showAlert(title: title, message: message)
+    }
+    
+    @IBAction func showOptionsPopup(sender: UIButton) {
+        let alert = UIAlertController(title: "Adjust Add Point Ratio", message: "1 out of every _ points will be shown.", preferredStyle: UIAlertControllerStyle.alert)
+        alert.addTextField(configurationHandler: {(textField: UITextField!) in
+            textField.text = self.addPointRatio.description
+        })
+        alert.addAction(UIAlertAction(title: "Enter", style: UIAlertActionStyle.default, handler: { [weak alert] (_) in
+            let textField = alert?.textFields![0] // Force unwrapping because we know it exists.
+            if let text = textField!.text {
+                if let newRatio = Int(text) {
+                    self.addPointRatio = newRatio
+                }
+            }
+        }))
+        self.present(alert, animated: true, completion: nil)
     }
     
     // MARK: Helper Functions
@@ -257,8 +294,13 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         guard let rawFeaturePoints = sceneView.session.currentFrame?.rawFeaturePoints else {
             return
         }
+        
+        var i = 0
         for rawPoint in rawFeaturePoints.points {
-            addPointToView(position: rawPoint)
+            if i % addPointRatio == 0 {
+                addPointToView(position: rawPoint)
+            }
+            i += 1
         }
         points += rawFeaturePoints.points
     }
