@@ -23,9 +23,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
     var addPointRatio = 1 // Show 1 / addPointRatio of the points
     var folderID = ""
     var hasFolderBeenUploaded = false
-    var isPhotoUploadOn = false {
+    var isMultipartUploadOn = false {
         didSet {
-            if isPhotoUploadOn {
+            if isMultipartUploadOn {
                 uploadFolder()
             }
         }
@@ -62,7 +62,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         addToggleTorchButton()
         addInfoButton()
         addOptionsButton()
-        addPhotoUploadSwitch()
+        addMultipartUploadSwitch()
         addPendingImageUploadLabel()
         
         sceneView.scene.rootNode.addChildNode(pointsParentNode)
@@ -84,7 +84,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         let uploadButton = UIButton()
         view.addSubview(uploadButton)
         uploadButton.translatesAutoresizingMaskIntoConstraints = false
-        uploadButton.setTitle("Upload", for: .normal)
+        uploadButton.setTitle("Upload All", for: .normal)
         uploadButton.setTitleColor(UIColor.red, for: .normal)
         uploadButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
         uploadButton.layer.cornerRadius = 4
@@ -148,18 +148,18 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         optionsButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
-    private func addPhotoUploadSwitch() {
-        let photoUploadSwitch = UISwitch()
-        view.addSubview(photoUploadSwitch)
-        photoUploadSwitch.translatesAutoresizingMaskIntoConstraints = false
-        photoUploadSwitch.isOn = isPhotoUploadOn
-        photoUploadSwitch.setOn(isPhotoUploadOn, animated: false)
-        photoUploadSwitch.addTarget(self, action: #selector(switchValueDidChange(sender:)), for: .valueChanged)
+    private func addMultipartUploadSwitch() {
+        let multipartUploadSwitch = UISwitch()
+        view.addSubview(multipartUploadSwitch)
+        multipartUploadSwitch.translatesAutoresizingMaskIntoConstraints = false
+        multipartUploadSwitch.isOn = isMultipartUploadOn
+        multipartUploadSwitch.setOn(isMultipartUploadOn, animated: false)
+        multipartUploadSwitch.addTarget(self, action: #selector(switchValueDidChange(sender:)), for: .valueChanged)
         
         // Contraints
-        photoUploadSwitch.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
-        photoUploadSwitch.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8.0).isActive = true
-        photoUploadSwitch.heightAnchor.constraint(equalToConstant: 50)
+        multipartUploadSwitch.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
+        multipartUploadSwitch.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8.0).isActive = true
+        multipartUploadSwitch.heightAnchor.constraint(equalToConstant: 50)
     }
     
     private func addPendingImageUploadLabel() {
@@ -177,30 +177,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
     // MARK: - UI Actions
     
     @IBAction func uploadPointsTextFile(sender: UIButton) {
+        uploadFolder()
         
         let input = createXyString(points: points)
-        let fileData = input.data(using: .utf8)!
-        
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateStyle = DateFormatter.Style.short
-        dateFormatter.timeStyle = DateFormatter.Style.short
-        let timeDateString = dateFormatter.string(from: Date())
-        
-        let metadata = GTLRDrive_File()
-        metadata.name = "Points" + timeDateString
-        
-        let uploadParameters: GTLRUploadParameters = GTLRUploadParameters(data: fileData, mimeType: "text/plain")
-        uploadParameters.shouldUploadWithSingleRequest = true
-        
-        let query = GTLRDriveQuery_FilesCreate.query(withObject: metadata, uploadParameters: uploadParameters)
-        self.service.executeQuery(query, completionHandler: {(ticket:GTLRServiceTicket, object:Any?, error:Error?) in
-            if error == nil {
-                print("Succeed")
-            }
-            else {
-                print("An error occurred: \(String(describing: error))")
-            }
-        })
+        uploadTextFile(input: input, name: "All_Points")
     }
     
     @IBAction func toggleTorch(sender: UIButton) {
@@ -254,23 +234,39 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
     
     @IBAction func switchValueDidChange(sender:UISwitch!) {
         if (sender.isOn){
-            isPhotoUploadOn = true
+            isMultipartUploadOn = true
         }
         else {
-            isPhotoUploadOn = false
+            isMultipartUploadOn = false
         }
     }
     
     // MARK: - Helper Functions
     
-    func uploadImageFile(image: UIImage) {
+    private func uploadTextFile(input: String, name: String) {
+        let fileData = input.data(using: .utf8)!
+    
+        let metadata = GTLRDrive_File()
+        metadata.parents = [folderID]
+        metadata.name = name
         
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateStyle = DateFormatter.Style.short
-        dateFormatter.timeStyle = DateFormatter.Style.short
-        let timeDateString = dateFormatter.string(from: Date())
+        let uploadParameters: GTLRUploadParameters = GTLRUploadParameters(data: fileData, mimeType: "text/plain")
+        uploadParameters.shouldUploadWithSingleRequest = true
         
-        let name = "Photo" + timeDateString
+        let query = GTLRDriveQuery_FilesCreate.query(withObject: metadata, uploadParameters: uploadParameters)
+        self.service.executeQuery(query, completionHandler: {(ticket:GTLRServiceTicket, object:Any?, error:Error?) in
+            if error == nil {
+                print("Text File Upload Success")
+            }
+            else {
+                print("An error occurred: \(String(describing: error))")
+                 self.showAlert(title: "Image Upload Error", message: "Make sure the folder has been uploaded successfully.")
+            }
+        })
+    }
+    
+    private func uploadImageFile(image: UIImage, name: String) {
+        
         let content = image
         let mimeType = "image/jpeg"
         
@@ -299,7 +295,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         })
     }
     
-    func uploadFolder() {
+    private func uploadFolder() {
         if hasFolderBeenUploaded {
             return
         }
@@ -411,22 +407,28 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard let rawFeaturePoints = sceneView.session.currentFrame?.rawFeaturePoints else {
+            return
+        }
         
-        if isPhotoUploadOn {
+        if isMultipartUploadOn {
             uploadFolder()
 
             // Create the UIImage
             let image = sceneView.snapshot()
             pendingImageUploads += 1
-            uploadImageFile(image: image)
-        }
-        
-//        let camera = sceneView.session.currentFrame?.camera
-//        print("Transform:", camera?.transform as Any)
-//        print("Euler", camera?.eulerAngles as Any)
-//
-        guard let rawFeaturePoints = sceneView.session.currentFrame?.rawFeaturePoints else {
-            return
+            
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "H:m:ss.SSSS"
+            let timeString = dateFormatter.string(from: Date())
+            
+            uploadImageFile(image: image, name: "Photo \(timeString)")
+            uploadTextFile(input: createXyString(points: rawFeaturePoints.points), name: "Points \(timeString)")
+            
+            let camera = sceneView.session.currentFrame?.camera
+            let transform: String = "Transform: " + (camera?.transform.debugDescription)!
+            let eulerAngles: String = "Euler Angles: " + (camera?.eulerAngles.debugDescription)!
+            uploadTextFile(input: transform + "\n" + eulerAngles, name: "6DOF \(timeString)")
         }
         
         var i = 0
