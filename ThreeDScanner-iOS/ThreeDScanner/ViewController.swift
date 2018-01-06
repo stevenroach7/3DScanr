@@ -14,14 +14,29 @@ import GoogleSignIn
 
 class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GIDSignInUIDelegate {
 
+    // MARK: - Properties
+    
     @IBOutlet var sceneView: ARSCNView!
     var points: [vector_float3] = []
     var pointsParentNode = SCNNode()
     var isTorchOn = false
-    
     var addPointRatio = 1 // Show 1 / addPointRatio of the points
-    
-    
+    var folderID = ""
+    var hasFolderBeenUploaded = false
+    var isPhotoUploadOn = false {
+        didSet {
+            if isPhotoUploadOn {
+                uploadFolder()
+            }
+        }
+    }
+    let pendingImageUploadLabel: UILabel = UILabel(frame: CGRect(x: 0, y: 0, width: 200, height: 21))
+    var pendingImageUploads = 0 {
+        didSet {
+            pendingImageUploadLabel.text = "\(pendingImageUploads) pending uploads"
+        }
+    }
+
     // If modifying these scopes, delete your previously saved credentials by
     // resetting the iOS simulator or uninstall the app.
     private let scopes = ["https://www.googleapis.com/auth/drive"]
@@ -47,6 +62,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         addToggleTorchButton()
         addInfoButton()
         addOptionsButton()
+        addPhotoUploadSwitch()
+        addPendingImageUploadLabel()
         
         sceneView.scene.rootNode.addChildNode(pointsParentNode)
     }
@@ -61,7 +78,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         }
     }
     
-    // MARK: Buttons
+    // MARK: - UI
     
     private func addUploadButton() {
         let uploadButton = UIButton()
@@ -72,7 +89,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         uploadButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
         uploadButton.layer.cornerRadius = 4
         uploadButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
-        uploadButton.addTarget(self, action: #selector(uploadFile(sender:)) , for: .touchUpInside)
+        uploadButton.addTarget(self, action: #selector(uploadPointsTextFile(sender:)) , for: .touchUpInside)
         
         // Contraints
         uploadButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
@@ -131,9 +148,35 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         optionsButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
-    // MARK: Button Actions
+    private func addPhotoUploadSwitch() {
+        let photoUploadSwitch = UISwitch()
+        view.addSubview(photoUploadSwitch)
+        photoUploadSwitch.translatesAutoresizingMaskIntoConstraints = false
+        photoUploadSwitch.isOn = isPhotoUploadOn
+        photoUploadSwitch.setOn(isPhotoUploadOn, animated: false)
+        photoUploadSwitch.addTarget(self, action: #selector(switchValueDidChange(sender:)), for: .valueChanged)
+        
+        // Contraints
+        photoUploadSwitch.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
+        photoUploadSwitch.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8.0).isActive = true
+        photoUploadSwitch.heightAnchor.constraint(equalToConstant: 50)
+    }
     
-    @IBAction func uploadFile(sender: UIButton) {
+    private func addPendingImageUploadLabel() {
+        view.addSubview(pendingImageUploadLabel)
+        pendingImageUploadLabel.translatesAutoresizingMaskIntoConstraints = false
+        pendingImageUploadLabel.textAlignment = .center
+        pendingImageUploadLabel.text = "\(pendingImageUploads) pending uploads"
+        
+        // Contraints
+        pendingImageUploadLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 24.0).isActive = true
+        pendingImageUploadLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0.0).isActive = true
+        pendingImageUploadLabel.heightAnchor.constraint(equalToConstant: 50)
+    }
+    
+    // MARK: - UI Actions
+    
+    @IBAction func uploadPointsTextFile(sender: UIButton) {
         
         let input = createXyString(points: points)
         let fileData = input.data(using: .utf8)!
@@ -197,6 +240,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
             textField.text = self.addPointRatio.description
             textField.keyboardType = UIKeyboardType.numberPad
         })
+        
         alert.addAction(UIAlertAction(title: "Enter", style: UIAlertActionStyle.default, handler: { [weak alert] (_) in
             let textField = alert?.textFields![0] // Force unwrapping because we know it exists.
             if let text = textField!.text {
@@ -208,7 +252,82 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         self.present(alert, animated: true, completion: nil)
     }
     
-    // MARK: Helper Functions
+    @IBAction func switchValueDidChange(sender:UISwitch!) {
+        if (sender.isOn){
+            isPhotoUploadOn = true
+        }
+        else {
+            isPhotoUploadOn = false
+        }
+    }
+    
+    // MARK: - Helper Functions
+    
+    func uploadImageFile(image: UIImage) {
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = DateFormatter.Style.short
+        dateFormatter.timeStyle = DateFormatter.Style.short
+        let timeDateString = dateFormatter.string(from: Date())
+        
+        let name = "Photo" + timeDateString
+        let content = image
+        let mimeType = "image/jpeg"
+        
+        let metadata = GTLRDrive_File()
+        metadata.parents = [folderID]
+        metadata.name = name
+        
+        guard let data = UIImagePNGRepresentation(content) else {
+            return
+        }
+        
+        let uploadParameters = GTLRUploadParameters(data: data, mimeType: mimeType)
+        uploadParameters.shouldUploadWithSingleRequest = true
+
+        let query = GTLRDriveQuery_FilesCreate.query(withObject: metadata, uploadParameters: uploadParameters)
+        self.service.executeQuery(query, completionHandler: {(ticket:GTLRServiceTicket, object:Any?, error:Error?) in
+            if error == nil {
+                print("Image File Success")
+                
+            }
+            else {
+                print("An error occurred: \(String(describing: error))")
+                self.showAlert(title: "Image Upload Error", message: "Make sure the folder has been uploaded successfully.")
+            }
+            self.pendingImageUploads -= 1
+        })
+    }
+    
+    func uploadFolder() {
+        if hasFolderBeenUploaded {
+            return
+        }
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = DateFormatter.Style.short
+        dateFormatter.timeStyle = DateFormatter.Style.short
+        let timeDateString = dateFormatter.string(from: Date())
+        let name = timeDateString
+        
+        let metadata = GTLRDrive_File()
+        metadata.name = name
+        metadata.mimeType = "application/vnd.google-apps.folder"
+        
+        let query = GTLRDriveQuery_FilesCreate.query(withObject: metadata, uploadParameters: nil)
+        self.service.executeQuery(query, completionHandler: {(ticket:GTLRServiceTicket, object: Any?, error:Error?) in
+            if error == nil {
+                let file = object as? GTLRDrive_File
+                self.folderID = (file?.identifier)!
+                self.hasFolderBeenUploaded = true
+                print("Folder Upload Success")
+                self.showAlert(title: "Folder Upload Success", message: "You may now tap to add images to the folder.")
+            }
+            else {
+                print("An error occurred: \(String(describing: error))")
+            }
+        })
+    }
     
     private func createXyString(points: [float3]) -> String {
         var xyzString = "\n"
@@ -292,6 +411,20 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        
+        if isPhotoUploadOn {
+            uploadFolder()
+
+            // Create the UIImage
+            let image = sceneView.snapshot()
+            pendingImageUploads += 1
+            uploadImageFile(image: image)
+        }
+        
+//        let camera = sceneView.session.currentFrame?.camera
+//        print("Transform:", camera?.transform as Any)
+//        print("Euler", camera?.eulerAngles as Any)
+//
         guard let rawFeaturePoints = sceneView.session.currentFrame?.rawFeaturePoints else {
             return
         }
