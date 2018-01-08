@@ -285,7 +285,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         self.service.executeQuery(query, completionHandler: {(ticket:GTLRServiceTicket, object:Any?, error:Error?) in
             if error == nil {
                 print("Image File Success")
-                
             }
             else {
                 print("An error occurred: \(String(describing: error))")
@@ -428,7 +427,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
             let camera = sceneView.session.currentFrame?.camera
             let transform: String = "Transform: " + (camera?.transform.debugDescription)!
             let eulerAngles: String = "Euler Angles: " + (camera?.eulerAngles.debugDescription)!
-            uploadTextFile(input: transform + "\n" + eulerAngles, name: "6DOF \(timeString)")
+            let intrinsics: String = "Intrinsics: " + (camera?.intrinsics.debugDescription)!
+            uploadTextFile(input: transform + "\n" + eulerAngles + "\n" + intrinsics, name: "6DOF \(timeString)")
         }
         
         var i = 0
