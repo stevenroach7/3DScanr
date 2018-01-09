@@ -392,6 +392,17 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         return pointColors
     }
     
+    private func projectPoint2DPositions(currentPoints: [float3]) -> [float3] {
+        var point2DPositions: [float3] = []
+        for point in currentPoints {
+            var point2DPos = sceneView.projectPoint(SCNVector3(point))
+            point2DPos.x /= Float(sceneView.frame.width)
+            point2DPos.y /= Float(sceneView.frame.height)
+            point2DPositions.append(float3(point2DPos))
+        }
+        return point2DPositions
+    }
+    
     // Helper for showing an alert
     private func showAlert(title : String, message: String) {
         let alert = UIAlertController(
@@ -486,23 +497,24 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
                 // Slight lag, image uploading sideways? Could try supposedly faster method. Can CIImages be exported to jpeg?
                 
                 pendingImageUploads += 1
-                uploadImageFile(image: image, name: "Photo \(timeString)")
+                uploadImageFile(image: image, name: "Photo_\(timeString)")
             }
             
-            
-            
-        
             // Upload Points and Colors text file
             let pointColors = capturePointColors(currentPoints: currentPoints)
             colors += pointColors // add current colors to global list
-            uploadTextFile(input: createXyzRgbString(points: currentPoints, pointColors: pointColors), name: "Points and Colors \(timeString)")
-
+            uploadTextFile(input: createXyzRgbString(points: currentPoints, pointColors: pointColors), name: "Points_and_Colors_\(timeString)")
+            
+            // Upload 2D point positions
+            let point2DPositions = projectPoint2DPositions(currentPoints: currentPoints)
+            uploadTextFile(input: createXyzString(points: point2DPositions), name: "2D_Point_Positions_\(timeString)")
+            
             // Upload camera info text file
             let camera = sceneView.session.currentFrame?.camera
             let transform: String = "Transform: " + (camera?.transform.debugDescription)!
             let eulerAngles: String = "Euler Angles: " + (camera?.eulerAngles.debugDescription)!
             let intrinsics: String = "Intrinsics: " + (camera?.intrinsics.debugDescription)!
-            uploadTextFile(input: transform + "\n" + eulerAngles + "\n" + intrinsics, name: "6DOF \(timeString)")
+            uploadTextFile(input: transform + "\n" + eulerAngles + "\n" + intrinsics, name: "6DOF_\(timeString)")
         }
         
         // Display points
