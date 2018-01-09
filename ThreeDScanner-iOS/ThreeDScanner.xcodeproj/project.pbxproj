@@ -17,6 +17,7 @@
 		B063CB221FC744A100C20C8D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B063CB201FC744A100C20C8D /* LaunchScreen.storyboard */; };
 		B063CB2D1FC744A100C20C8D /* ThreeDScannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B063CB2C1FC744A100C20C8D /* ThreeDScannerTests.swift */; };
 		B063CB381FC744A100C20C8D /* ThreeDScannerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B063CB371FC744A100C20C8D /* ThreeDScannerUITests.swift */; };
+		B090726D200420430072BDC3 /* CapturedImageSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B090726C200420430072BDC3 /* CapturedImageSampler.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,6 +54,7 @@
 		B063CB331FC744A100C20C8D /* ThreeDScannerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ThreeDScannerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B063CB371FC744A100C20C8D /* ThreeDScannerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreeDScannerUITests.swift; sourceTree = "<group>"; };
 		B063CB391FC744A100C20C8D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B090726C200420430072BDC3 /* CapturedImageSampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturedImageSampler.swift; sourceTree = "<group>"; };
 		D29A5A475B9F7E7A2D2107F5 /* Pods-ThreeDScanner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ThreeDScanner.release.xcconfig"; path = "Pods/Target Support Files/Pods-ThreeDScanner/Pods-ThreeDScanner.release.xcconfig"; sourceTree = "<group>"; };
 		E1A3A8D013ACA949EB5C45A8 /* Pods_ThreeDScanner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ThreeDScanner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -125,6 +127,7 @@
 				B063CB1E1FC744A100C20C8D /* Assets.xcassets */,
 				B063CB201FC744A100C20C8D /* LaunchScreen.storyboard */,
 				B063CB231FC744A100C20C8D /* Info.plist */,
+				B090726C200420430072BDC3 /* CapturedImageSampler.swift */,
 			);
 			path = ThreeDScanner;
 			sourceTree = "<group>";
@@ -358,6 +361,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B063CB1A1FC744A100C20C8D /* ViewController.swift in Sources */,
+				B090726D200420430072BDC3 /* CapturedImageSampler.swift in Sources */,
 				B063CB161FC744A100C20C8D /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -18,6 +18,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
     
     @IBOutlet var sceneView: ARSCNView!
     var points: [vector_float3] = []
+    var colors: [UIColor?] = []
     var pointsParentNode = SCNNode()
     var isTorchOn = false
     var addPointRatio = 1 // Show 1 / addPointRatio of the points
@@ -179,8 +180,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
     @IBAction func uploadPointsTextFile(sender: UIButton) {
         uploadFolder()
         
-        let input = createXyString(points: points)
-        uploadTextFile(input: input, name: "All_Points")
+        let input = createXyzRgbString(points: points, pointColors: colors)
+        uploadTextFile(input: input, name: "All_Points_and_Colors")
     }
     
     @IBAction func toggleTorch(sender: UIButton) {
@@ -248,7 +249,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
     
         let metadata = GTLRDrive_File()
         metadata.parents = [folderID]
-        metadata.name = name
+        metadata.name = name + ".txt"
         
         let uploadParameters: GTLRUploadParameters = GTLRUploadParameters(data: fileData, mimeType: "text/plain")
         uploadParameters.shouldUploadWithSingleRequest = true
@@ -272,7 +273,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         
         let metadata = GTLRDrive_File()
         metadata.parents = [folderID]
-        metadata.name = name
+        metadata.name = name + ".jpg"
         
         guard let data = UIImagePNGRepresentation(content) else {
             return
@@ -324,7 +325,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         })
     }
     
-    private func createXyString(points: [float3]) -> String {
+    private func createXyzString(points: [float3]) -> String {
         var xyzString = "\n"
         for point in points {
             xyzString.append(point.x.description)
@@ -335,6 +336,60 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
             xyzString.append("\n")
         }
         return xyzString
+    }
+    
+    private func createXyzRgbString(points: [float3], pointColors: [UIColor?]) -> String {
+        
+        var xyzRgbString = "\n"
+        for i in 0..<points.count {
+            let point = points[i]
+            let color = pointColors[i]
+            
+            xyzRgbString.append(point.x.description)
+            xyzRgbString.append(";")
+            xyzRgbString.append(point.y.description)
+            xyzRgbString.append(";")
+            xyzRgbString.append(point.z.description)
+            xyzRgbString.append(";")
+            
+            if let pointColor = color {
+                let ciColor = CIColor(color: pointColor)
+                xyzRgbString.append((ciColor.red * 255).description)
+                xyzRgbString.append(";")
+                xyzRgbString.append((ciColor.green * 255).description)
+                xyzRgbString.append(";")
+                xyzRgbString.append((ciColor.blue * 255).description)
+            } else {
+                xyzRgbString += ";;"
+            }
+            xyzRgbString += "\n"
+        }
+        return xyzRgbString
+    }
+    
+    private func capturePointColors(points: [float3]) -> [UIColor?] {
+        
+        var pointColors: [UIColor?] = []
+        
+        if let frame = sceneView.session.currentFrame {
+            do {
+                let capturedImageSampler = try CapturedImageSampler(frame: frame)
+                
+                for point in points {
+                    let point2DPos = sceneView.projectPoint(SCNVector3(point))
+                    if let pointColor = capturedImageSampler.getColor(atX: CGFloat(point2DPos.x) / sceneView.frame.maxX, y: CGFloat(point2DPos.y) / sceneView.frame.maxY) {
+                        pointColors.append(pointColor)
+                    } else {
+                        pointColors.append(nil)
+                    }
+                }
+                return pointColors
+            } catch {
+                print("Error")
+                return pointColors
+            }
+        }
+        return pointColors
     }
     
     // Helper for showing an alert
@@ -409,21 +464,27 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         guard let rawFeaturePoints = sceneView.session.currentFrame?.rawFeaturePoints else {
             return
         }
-        
+        let currentPoints = rawFeaturePoints.points
+   
         if isMultipartUploadOn {
-            uploadFolder()
+            uploadFolder() // Only uploads if folder hasn't been uploaded
 
-            // Create the UIImage
-            let image = sceneView.snapshot()
-            pendingImageUploads += 1
-            
+            // Create corresponding file name for different types of uploads
             let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "H:m:ss.SSSS"
+            dateFormatter.dateFormat = "H:m:ss:SSSS"
             let timeString = dateFormatter.string(from: Date())
             
+            // Upload Image
+            let image = sceneView.snapshot()
+            pendingImageUploads += 1
             uploadImageFile(image: image, name: "Photo \(timeString)")
-            uploadTextFile(input: createXyString(points: rawFeaturePoints.points), name: "Points \(timeString)")
-            
+        
+            // Upload Points and Colors text file
+            let pointColors = capturePointColors(points: currentPoints)
+            colors += pointColors // add current colors to global list
+            uploadTextFile(input: createXyzRgbString(points: currentPoints, pointColors: pointColors), name: "Points and Colors \(timeString)")
+
+            // Upload camera info text file
             let camera = sceneView.session.currentFrame?.camera
             let transform: String = "Transform: " + (camera?.transform.debugDescription)!
             let eulerAngles: String = "Euler Angles: " + (camera?.eulerAngles.debugDescription)!
@@ -431,8 +492,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
             uploadTextFile(input: transform + "\n" + eulerAngles + "\n" + intrinsics, name: "6DOF \(timeString)")
         }
         
+        // Display points
         var i = 0
-        for rawPoint in rawFeaturePoints.points {
+        for rawPoint in currentPoints {
             if i % addPointRatio == 0 {
                 addPointToView(position: rawPoint)
             }
