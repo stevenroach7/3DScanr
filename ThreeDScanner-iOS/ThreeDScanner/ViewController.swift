@@ -273,7 +273,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         
         let metadata = GTLRDrive_File()
         metadata.parents = [folderID]
-        metadata.name = name + ".jpg"
+        metadata.name = name + ".jpeg"
         
         guard let data = UIImagePNGRepresentation(content) else {
             return
@@ -367,7 +367,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         return xyzRgbString
     }
     
-    private func capturePointColors(points: [float3]) -> [UIColor?] {
+    private func capturePointColors(currentPoints: [float3]) -> [UIColor?] {
         
         var pointColors: [UIColor?] = []
         
@@ -375,7 +375,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
             do {
                 let capturedImageSampler = try CapturedImageSampler(frame: frame)
                 
-                for point in points {
+                for point in currentPoints {
                     let point2DPos = sceneView.projectPoint(SCNVector3(point))
                     if let pointColor = capturedImageSampler.getColor(atX: CGFloat(point2DPos.x) / sceneView.frame.maxX, y: CGFloat(point2DPos.y) / sceneView.frame.maxY) {
                         pointColors.append(pointColor)
@@ -475,12 +475,25 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
             let timeString = dateFormatter.string(from: Date())
             
             // Upload Image
-            let image = sceneView.snapshot()
-            pendingImageUploads += 1
-            uploadImageFile(image: image, name: "Photo \(timeString)")
+//            let image = sceneView.snapshot()
+            
+            if let frame = sceneView.session.currentFrame {
+                let imageWithCVPixelBuffer = frame.capturedImage
+                let ciImage = CIImage(cvPixelBuffer: imageWithCVPixelBuffer)
+                let tempContext = CIContext()
+                let videoImage = tempContext.createCGImage(ciImage, from: CGRect(x: 0, y: 0, width: CGFloat(CVPixelBufferGetWidth(imageWithCVPixelBuffer)), height: CGFloat(CVPixelBufferGetHeight(imageWithCVPixelBuffer))))
+                let image = UIImage(cgImage: videoImage!)
+                // Slight lag, image uploading sideways? Could try supposedly faster method. Can CIImages be exported to jpeg?
+                
+                pendingImageUploads += 1
+                uploadImageFile(image: image, name: "Photo \(timeString)")
+            }
+            
+            
+            
         
             // Upload Points and Colors text file
-            let pointColors = capturePointColors(points: currentPoints)
+            let pointColors = capturePointColors(currentPoints: currentPoints)
             colors += pointColors // add current colors to global list
             uploadTextFile(input: createXyzRgbString(points: currentPoints, pointColors: pointColors), name: "Points and Colors \(timeString)")
 
