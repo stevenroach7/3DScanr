@@ -37,6 +37,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
             pendingImageUploadLabel.text = "\(pendingImageUploads) pending uploads"
         }
     }
+    let imageQuality = 0.85 // Value between 0 and 1
 
     // If modifying these scopes, delete your previously saved credentials by
     // resetting the iOS simulator or uninstall the app.
@@ -275,7 +276,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         metadata.parents = [folderID]
         metadata.name = name + ".jpeg"
         
-        guard let data = UIImagePNGRepresentation(content) else {
+        guard let data = UIImageJPEGRepresentation(content, CGFloat(imageQuality)) else {
             return
         }
         
@@ -486,23 +487,20 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
             let timeString = dateFormatter.string(from: Date())
             
             // Upload Image
-//            let image = sceneView.snapshot()
-            
             if let frame = sceneView.session.currentFrame {
                 let imageWithCVPixelBuffer = frame.capturedImage
                 let ciImage = CIImage(cvPixelBuffer: imageWithCVPixelBuffer)
                 let tempContext = CIContext()
                 let videoImage = tempContext.createCGImage(ciImage, from: CGRect(x: 0, y: 0, width: CGFloat(CVPixelBufferGetWidth(imageWithCVPixelBuffer)), height: CGFloat(CVPixelBufferGetHeight(imageWithCVPixelBuffer))))
-                let image = UIImage(cgImage: videoImage!)
-                // Slight lag, image uploading sideways? Could try supposedly faster method. Can CIImages be exported to jpeg?
-                
+                let image = UIImage(cgImage: videoImage!, scale: 1.0, orientation: UIImageOrientation.right)
+
                 pendingImageUploads += 1
                 uploadImageFile(image: image, name: "Photo_\(timeString)")
             }
             
             // Upload Points and Colors text file
             let pointColors = capturePointColors(currentPoints: currentPoints)
-            colors += pointColors // add current colors to global list
+            colors += pointColors // Add current colors to global list
             uploadTextFile(input: createXyzRgbString(points: currentPoints, pointColors: pointColors), name: "Points_and_Colors_\(timeString)")
             
             // Upload 2D point positions
