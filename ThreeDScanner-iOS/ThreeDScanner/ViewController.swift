@@ -399,6 +399,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
             var point2DPos = sceneView.projectPoint(SCNVector3(point))
             point2DPos.x /= Float(sceneView.frame.width)
             point2DPos.y /= Float(sceneView.frame.height)
+            point2DPos.x = (point2DPos.x * 2) - 1
+            point2DPos.y = (point2DPos.y * 2) - 1
             point2DPositions.append(float3(point2DPos))
         }
         return point2DPositions
