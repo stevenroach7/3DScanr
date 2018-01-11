@@ -395,6 +395,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
     
     private func projectPoint2DPositions(currentPoints: [float3]) -> [float3] {
         var point2DPositions: [float3] = []
+        
         for point in currentPoints {
             var point2DPos = sceneView.projectPoint(SCNVector3(point))
             point2DPos.x /= Float(sceneView.frame.width)
@@ -428,6 +429,23 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         sphereNode.position = SCNVector3(position)
         pointsParentNode.addChildNode(sphereNode)
     }
+    
+    private func determineImageOrientation() -> UIImageOrientation {
+        switch UIApplication.shared.statusBarOrientation {
+        case .landscapeLeft:
+            return UIImageOrientation.down
+        case .landscapeRight:
+            return UIImageOrientation.up
+        case .portrait:
+            return UIImageOrientation.right
+        case .unknown:
+            return UIImageOrientation.right
+        case .portraitUpsideDown:
+            return UIImageOrientation.left
+        }
+    }
+    
+    // MARK: - UIViewController
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -494,7 +512,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
                 let ciImage = CIImage(cvPixelBuffer: imageWithCVPixelBuffer)
                 let tempContext = CIContext()
                 let videoImage = tempContext.createCGImage(ciImage, from: CGRect(x: 0, y: 0, width: CGFloat(CVPixelBufferGetWidth(imageWithCVPixelBuffer)), height: CGFloat(CVPixelBufferGetHeight(imageWithCVPixelBuffer))))
-                let image = UIImage(cgImage: videoImage!, scale: 1.0, orientation: UIImageOrientation.right)
+                let image = UIImage(cgImage: videoImage!, scale: 1.0, orientation: determineImageOrientation())
 
                 pendingImageUploads += 1
                 uploadImageFile(image: image, name: "Photo_\(timeString)")
