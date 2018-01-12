@@ -262,7 +262,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
             }
             else {
                 print("An error occurred: \(String(describing: error))")
-                 self.showAlert(title: "Image Upload Error", message: "Make sure the folder has been uploaded successfully.")
+                 self.showAlert(title: "Upload Error", message: "Make sure that the folder has been uploaded successfully and try again.")
             }
         })
     }
@@ -274,7 +274,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         
         let metadata = GTLRDrive_File()
         metadata.parents = [folderID]
-        metadata.name = name + ".jpeg"
+        metadata.name = name + ".jpg"
         
         guard let data = UIImageJPEGRepresentation(content, CGFloat(imageQuality)) else {
             return
@@ -290,7 +290,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
             }
             else {
                 print("An error occurred: \(String(describing: error))")
-                self.showAlert(title: "Image Upload Error", message: "Make sure the folder has been uploaded successfully.")
+                self.showAlert(title: "Image Upload Error", message: "Make sure that the folder has been uploaded successfully and try again.")
             }
             self.pendingImageUploads -= 1
         })
@@ -497,6 +497,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
             return
         }
         let currentPoints = rawFeaturePoints.points
+    
+        let pointColors = capturePointColors(currentPoints: currentPoints)
+        colors += pointColors // Add current colors to global list
    
         if isMultipartUploadOn {
             uploadFolder() // Only uploads if folder hasn't been uploaded
@@ -519,8 +522,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
             }
             
             // Upload Points and Colors text file
-            let pointColors = capturePointColors(currentPoints: currentPoints)
-            colors += pointColors // Add current colors to global list
             uploadTextFile(input: createXyzRgbString(points: currentPoints, pointColors: pointColors), name: "Points_and_Colors_\(timeString)")
             
             // Upload 2D point positions
