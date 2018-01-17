@@ -425,7 +425,13 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
     
     private func addPointToView(position: vector_float3) {
         let sphere = SCNSphere(radius: 0.00066)
+        let material = SCNMaterial()
+        material.diffuse.contents = #imageLiteral(resourceName: "WhiteBlack")
+        sphere.firstMaterial = material
         let sphereNode = SCNNode(geometry: sphere)
+        
+        sphereNode.orientation = (sceneView.pointOfView?.orientation)!
+        sphereNode.pivot = SCNMatrix4MakeRotation(-Float.pi / 2, 0, 1, 0)
         sphereNode.position = SCNVector3(position)
         pointsParentNode.addChildNode(sphereNode)
     }
