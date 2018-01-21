@@ -1,3 +1,5 @@
+// Taken with permission from https://gist.github.com/JoshuaSullivan/765ba8cfb03ca7bbf14ef68731872750
+// http://www.chibicode.org/?p=166
 //
 //  CapturedImageSampler.swift
 //  ARKitTest
