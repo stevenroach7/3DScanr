@@ -38,6 +38,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         }
     }
     let imageQuality = 0.85 // Value between 0 and 1
+    var pointMaterialImage: UIImage?
 
     // If modifying these scopes, delete your previously saved credentials by
     // resetting the iOS simulator or uninstall the app.
@@ -66,6 +67,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         addOptionsButton()
         addMultipartUploadSwitch()
         addPendingImageUploadLabel()
+        
+        createPointMaterialImage()
         
         sceneView.scene.rootNode.addChildNode(pointsParentNode)
     }
@@ -423,11 +426,24 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         present(alert, animated: true, completion: nil)
     }
     
+    private func createPointMaterialImage() {
+        let textureImage = #imageLiteral(resourceName: "WhiteBlack")
+        UIGraphicsBeginImageContext(textureImage.size)
+        let width = textureImage.size.width
+        let height = textureImage.size.height
+        textureImage.draw(in: CGRect(x: 0, y: 0, width: width, height: height))
+        pointMaterialImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+    }
+    
     private func addPointToView(position: vector_float3) {
         let sphere = SCNSphere(radius: 0.00066)
         let material = SCNMaterial()
-        material.diffuse.contents = #imageLiteral(resourceName: "WhiteBlack")
-        sphere.firstMaterial = material
+        
+        if let pointMaterialImage = pointMaterialImage {
+            material.diffuse.contents = pointMaterialImage
+            sphere.firstMaterial = material
+        }
         let sphereNode = SCNNode(geometry: sphere)
         
         sphereNode.orientation = (sceneView.pointOfView?.orientation)!
