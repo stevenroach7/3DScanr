@@ -46,6 +46,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
     private let service = GTLRDriveService()
     let signInButton = GIDSignInButton()
     
+    
+    // MARK: - UIViewController
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -73,14 +76,32 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         sceneView.scene.rootNode.addChildNode(pointsParentNode)
     }
     
-    internal func sign(_ signIn: GIDSignIn!, didSignInFor user: GIDGoogleUser!, withError error: Error!) {
-        if let error = error {
-            showAlert(title: "Authentication Error", message: error.localizedDescription)
-            self.service.authorizer = nil
-        } else {
-            self.signInButton.isHidden = true
-            self.service.authorizer = user.authentication.fetcherAuthorizer()
-        }
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        // Create a session configuration
+        let configuration = ARWorldTrackingConfiguration()
+        configuration.planeDetection = ARWorldTrackingConfiguration.PlaneDetection.horizontal
+        
+        // Run the view's session
+        sceneView.session.run(configuration)
+        
+        // Show feature points
+        sceneView.debugOptions.insert(ARSCNDebugOptions.showFeaturePoints)
+        sceneView.debugOptions.insert(ARSCNDebugOptions.showWorldOrigin)
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
+        // Pause the view's session
+        sceneView.session.pause()
+    }
+    
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Release any cached data, images, etc that aren't in use.
+        print("Memory Warning")
     }
     
     // MARK: - UI
@@ -246,7 +267,33 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         }
     }
     
-    // MARK: - Helper Functions
+    internal func sign(_ signIn: GIDSignIn!, didSignInFor user: GIDGoogleUser!, withError error: Error!) {
+        if let error = error {
+            showAlert(title: "Authentication Error", message: error.localizedDescription)
+            self.service.authorizer = nil
+        } else {
+            self.signInButton.isHidden = true
+            self.service.authorizer = user.authentication.fetcherAuthorizer()
+        }
+    }
+    
+    // Helper for showing an alert
+    private func showAlert(title : String, message: String) {
+        let alert = UIAlertController(
+            title: title,
+            message: message,
+            preferredStyle: UIAlertControllerStyle.alert
+        )
+        let ok = UIAlertAction(
+            title: "OK",
+            style: UIAlertActionStyle.default,
+            handler: nil
+        )
+        alert.addAction(ok)
+        present(alert, animated: true, completion: nil)
+    }
+    
+    // MARK: - Google Drive Helper Functions
     
     private func uploadTextFile(input: String, name: String) {
         let fileData = input.data(using: .utf8)!
@@ -329,6 +376,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         })
     }
     
+    
+    // MARK: - Text File Formatting Helper Functions
+
     private func createXyzString(points: [float3]) -> String {
         var xyzString = "\n"
         for point in points {
@@ -371,6 +421,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         return xyzRgbString
     }
     
+    
+    // MARK: - Image Metadata Helper Functions
+    
     private func capturePointColors(currentPoints: [float3]) -> [UIColor?] {
         
         var pointColors: [UIColor?] = []
@@ -396,6 +449,21 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         return pointColors
     }
     
+    private func determineImageOrientation() -> UIImageOrientation {
+        switch UIApplication.shared.statusBarOrientation {
+        case .landscapeLeft:
+            return UIImageOrientation.down
+        case .landscapeRight:
+            return UIImageOrientation.up
+        case .portrait:
+            return UIImageOrientation.right
+        case .unknown:
+            return UIImageOrientation.right
+        case .portraitUpsideDown:
+            return UIImageOrientation.left
+        }
+    }
+    
     private func projectPoint2DPositions(currentPoints: [float3]) -> [float3] {
         var point2DPositions: [float3] = []
         
@@ -410,21 +478,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         return point2DPositions
     }
     
-    // Helper for showing an alert
-    private func showAlert(title : String, message: String) {
-        let alert = UIAlertController(
-            title: title,
-            message: message,
-            preferredStyle: UIAlertControllerStyle.alert
-        )
-        let ok = UIAlertAction(
-            title: "OK",
-            style: UIAlertActionStyle.default,
-            handler: nil
-        )
-        alert.addAction(ok)
-        present(alert, animated: true, completion: nil)
-    }
+    
+    // MARK: - Display Helper Functions
     
     private func createPointMaterial() {
         let textureImage = #imageLiteral(resourceName: "WhiteBlack")
@@ -451,51 +506,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         pointsParentNode.addChildNode(sphereNode)
     }
     
-    private func determineImageOrientation() -> UIImageOrientation {
-        switch UIApplication.shared.statusBarOrientation {
-        case .landscapeLeft:
-            return UIImageOrientation.down
-        case .landscapeRight:
-            return UIImageOrientation.up
-        case .portrait:
-            return UIImageOrientation.right
-        case .unknown:
-            return UIImageOrientation.right
-        case .portraitUpsideDown:
-            return UIImageOrientation.left
-        }
-    }
-    
-    // MARK: - UIViewController
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        
-        // Create a session configuration
-        let configuration = ARWorldTrackingConfiguration()
-        configuration.planeDetection = ARWorldTrackingConfiguration.PlaneDetection.horizontal
-
-        // Run the view's session
-        sceneView.session.run(configuration)
-        
-        // Show feature points
-        sceneView.debugOptions.insert(ARSCNDebugOptions.showFeaturePoints)
-        sceneView.debugOptions.insert(ARSCNDebugOptions.showWorldOrigin)
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        
-        // Pause the view's session
-        sceneView.session.pause()
-    }
-    
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Release any cached data, images, etc that aren't in use.
-        print("Memory Warning")
-    }
-
+ 
     // MARK: - ARSCNViewDelegate
     
 //    func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
