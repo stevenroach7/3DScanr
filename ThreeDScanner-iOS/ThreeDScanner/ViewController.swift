@@ -12,7 +12,7 @@ import ARKit
 import GoogleAPIClientForREST
 import GoogleSignIn
 
-class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GIDSignInUIDelegate {
+class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDelegate, GIDSignInDelegate, GIDSignInUIDelegate {
 
     // MARK: - Properties
     
@@ -38,7 +38,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         }
     }
     let imageQuality = 0.85 // Value between 0 and 1
-    var pointMaterialImage: UIImage?
+    var pointMaterial: SCNMaterial?
 
     // If modifying these scopes, delete your previously saved credentials by
     // resetting the iOS simulator or uninstall the app.
@@ -68,7 +68,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         addMultipartUploadSwitch()
         addPendingImageUploadLabel()
         
-        createPointMaterialImage()
+        createPointMaterial()
         
         sceneView.scene.rootNode.addChildNode(pointsParentNode)
     }
@@ -426,26 +426,25 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
         present(alert, animated: true, completion: nil)
     }
     
-    private func createPointMaterialImage() {
+    private func createPointMaterial() {
         let textureImage = #imageLiteral(resourceName: "WhiteBlack")
         UIGraphicsBeginImageContext(textureImage.size)
         let width = textureImage.size.width
         let height = textureImage.size.height
         textureImage.draw(in: CGRect(x: 0, y: 0, width: width, height: height))
-        pointMaterialImage = UIGraphicsGetImageFromCurrentImageContext()
+        let pointMaterialImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
+        pointMaterial = SCNMaterial()
+        pointMaterial?.diffuse.contents = pointMaterialImage
     }
     
     private func addPointToView(position: vector_float3) {
         let sphere = SCNSphere(radius: 0.00066)
-        let material = SCNMaterial()
         
-        if let pointMaterialImage = pointMaterialImage {
-            material.diffuse.contents = pointMaterialImage
-            sphere.firstMaterial = material
+        if let pointMaterial = pointMaterial {
+            sphere.firstMaterial = pointMaterial
         }
         let sphereNode = SCNNode(geometry: sphere)
-        
         sphereNode.orientation = (sceneView.pointOfView?.orientation)!
         sphereNode.pivot = SCNMatrix4MakeRotation(-Float.pi / 2, 0, 1, 0)
         sphereNode.position = SCNVector3(position)
@@ -499,6 +498,24 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
 
     // MARK: - ARSCNViewDelegate
     
+//    func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
+        // This visualization covers only detected planes.
+//        if let planeAnchor = anchor as? ARPlaneAnchor {
+//            print("Plane anchor!")
+//            // Create a SceneKit plane to visualize the node using its position and extent.
+//            let plane = SCNPlane(width: CGFloat(planeAnchor.extent.x), height: CGFloat(planeAnchor.extent.z))
+//            let planeNode = SCNNode(geometry: plane)
+//            planeNode.position = SCNVector3Make(planeAnchor.center.x, 0, planeAnchor.center.z)
+//
+//            // SCNPlanes are vertically oriented in their local coordinate space.
+//            // Rotate it to match the horizontal orientation of the ARPlaneAnchor.
+//            planeNode.transform = SCNMatrix4MakeRotation(-Float.pi / 2, 1, 0, 0)
+//
+//            // ARKit owns the node corresponding to the anchor, so make the plane a child node.
+//            node.addChildNode(planeNode)
+//        }
+//    }
+    
     func session(_ session: ARSession, didFailWithError error: Error) {
         // Present an error message to the user
         
@@ -515,6 +532,31 @@ class ViewController: UIViewController, ARSCNViewDelegate, GIDSignInDelegate, GI
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        
+        // TODO: Test if this is useful
+        // Create anchor using the camera’s current position
+//        if let currentFrame = sceneView.session.currentFrame {
+//            // Create a transform with a translation of 0.2 meters in front
+//            // of the camera
+//            var translation = matrix_identity_float4x4
+//            translation.columns.3.z = -0.2
+//            let transform = simd_mul(
+//                currentFrame.camera.transform,
+//                translation
+//            )
+//            // Add a new anchor to the session
+//            let anchor = ARAnchor(transform: transform)
+//            sceneView.session.add(anchor: anchor)
+//
+//            let sphere = SCNSphere(radius: 0.01)
+//            let material = SCNMaterial()
+//            material.diffuse.contents = UIColor.blue
+//            sphere.firstMaterial = material
+//            let sphereNode = SCNNode(geometry: sphere)
+//            sphereNode.transform = SCNMatrix4(anchor.transform)
+//            pointsParentNode.addChildNode(sphereNode)
+//        }
+        
         guard let rawFeaturePoints = sceneView.session.currentFrame?.rawFeaturePoints else {
             return
         }
