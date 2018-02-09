@@ -17,6 +17,8 @@
 		B063CB221FC744A100C20C8D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B063CB201FC744A100C20C8D /* LaunchScreen.storyboard */; };
 		B063CB2D1FC744A100C20C8D /* ThreeDScannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B063CB2C1FC744A100C20C8D /* ThreeDScannerTests.swift */; };
 		B063CB381FC744A100C20C8D /* ThreeDScannerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B063CB371FC744A100C20C8D /* ThreeDScannerUITests.swift */; };
+		B065E76F202E0A05003DD254 /* libpcl_surface.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B065E76D202E0A04003DD254 /* libpcl_surface.a */; };
+		B065E770202E0A05003DD254 /* libpcl_features.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B065E76E202E0A05003DD254 /* libpcl_features.a */; };
 		B090726D200420430072BDC3 /* CapturedImageSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B090726C200420430072BDC3 /* CapturedImageSampler.swift */; };
 /* End PBXBuildFile section */
 
@@ -54,6 +56,8 @@
 		B063CB331FC744A100C20C8D /* ThreeDScannerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ThreeDScannerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B063CB371FC744A100C20C8D /* ThreeDScannerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreeDScannerUITests.swift; sourceTree = "<group>"; };
 		B063CB391FC744A100C20C8D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B065E76D202E0A04003DD254 /* libpcl_surface.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpcl_surface.a; path = PCL/lib/libpcl_surface.a; sourceTree = "<group>"; };
+		B065E76E202E0A05003DD254 /* libpcl_features.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpcl_features.a; path = PCL/lib/libpcl_features.a; sourceTree = "<group>"; };
 		B090726C200420430072BDC3 /* CapturedImageSampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturedImageSampler.swift; sourceTree = "<group>"; };
 		D29A5A475B9F7E7A2D2107F5 /* Pods-ThreeDScanner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ThreeDScanner.release.xcconfig"; path = "Pods/Target Support Files/Pods-ThreeDScanner/Pods-ThreeDScanner.release.xcconfig"; sourceTree = "<group>"; };
 		E1A3A8D013ACA949EB5C45A8 /* Pods_ThreeDScanner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ThreeDScanner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -65,6 +69,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				4C4FD6D27D0A790EA33C36DA /* Pods_ThreeDScanner.framework in Frameworks */,
+				B065E770202E0A05003DD254 /* libpcl_features.a in Frameworks */,
+				B065E76F202E0A05003DD254 /* libpcl_surface.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -97,6 +103,7 @@
 		B063CB091FC744A000C20C8D = {
 			isa = PBXGroup;
 			children = (
+				B065E76C202E098B003DD254 /* Libraries */,
 				B02AC9FE1FED6F020025F835 /* GoogleService-Info.plist */,
 				B063CB141FC744A100C20C8D /* ThreeDScanner */,
 				B063CB2B1FC744A100C20C8D /* ThreeDScannerTests */,
@@ -148,6 +155,15 @@
 				B063CB391FC744A100C20C8D /* Info.plist */,
 			);
 			path = ThreeDScannerUITests;
+			sourceTree = "<group>";
+		};
+		B065E76C202E098B003DD254 /* Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				B065E76E202E0A05003DD254 /* libpcl_features.a */,
+				B065E76D202E0A04003DD254 /* libpcl_surface.a */,
+			);
+			path = Libraries;
 			sourceTree = "<group>";
 		};
 		E7177D540E77869D6BD5AB70 /* Frameworks */ = {
@@ -531,8 +547,25 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 73KM478VN4;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"${PODS_ROOT}/Google/Headers",
+					"$(inherited)",
+					"\"${PODS_ROOT}/Headers/Public\"",
+					"\"${PODS_ROOT}/Headers/Public/FirebaseAnalytics\"",
+					"\"${PODS_ROOT}/Headers/Public/FirebaseCore\"",
+					"\"${PODS_ROOT}/Headers/Public/FirebaseInstanceID\"",
+					"\"${PODS_ROOT}/Headers/Public/Google\"",
+					"\"${PODS_ROOT}/Headers/Public/GoogleSignIn\"",
+					"\"$(PROJECT_DIR)/Libraries/PCL/include/pcl-1.8\"",
+				);
 				INFOPLIST_FILE = ThreeDScanner/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Libraries/PCL/lib",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = Stellanova.ThreeDScanner;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
@@ -547,8 +580,25 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 73KM478VN4;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"${PODS_ROOT}/Google/Headers",
+					"$(inherited)",
+					"\"${PODS_ROOT}/Headers/Public\"",
+					"\"${PODS_ROOT}/Headers/Public/FirebaseAnalytics\"",
+					"\"${PODS_ROOT}/Headers/Public/FirebaseCore\"",
+					"\"${PODS_ROOT}/Headers/Public/FirebaseInstanceID\"",
+					"\"${PODS_ROOT}/Headers/Public/Google\"",
+					"\"${PODS_ROOT}/Headers/Public/GoogleSignIn\"",
+					"\"$(PROJECT_DIR)/Libraries/PCL/include/pcl-1.8\"",
+				);
 				INFOPLIST_FILE = ThreeDScanner/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Libraries/PCL/lib",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = Stellanova.ThreeDScanner;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
