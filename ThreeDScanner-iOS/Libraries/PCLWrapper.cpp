@@ -7,6 +7,8 @@
 //
 
 #include "PCLWrapper.hpp"
+#include "pcl/point_types.h"
+
 
 
 // Will call PCL code here.

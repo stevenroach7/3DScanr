@@ -75,11 +75,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         
         sceneView.scene.rootNode.addChildNode(pointsParentNode)
         
-//        let testString = String.fromCString(test())
-//        let testString = String.init?(validatingUTF8: hexdump("a"))
         let testInt = test()
-        print("testInt ")
-        print(testInt)
+        print("testInt \(testInt)")
     }
     
     override func viewWillAppear(_ animated: Bool) {
