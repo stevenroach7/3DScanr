@@ -24,7 +24,7 @@ using namespace std;
 
 int performSurfaceReconstruction() {
     
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
+    PointCloud<PointXYZ>::Ptr cloud(new PointCloud<PointXYZ>);
 
     // Fill in fake cloud data
     cloud->width    = 10000;
@@ -43,15 +43,15 @@ int performSurfaceReconstruction() {
     cout << "Loaded" << endl;
     
     cout << "Begin passthrough filter" << endl;
-    pcl::PointCloud<pcl::PointXYZ>::Ptr filtered(new pcl::PointCloud<pcl::PointXYZ>());
-    pcl::PassThrough<pcl::PointXYZ> filter;
+    PointCloud<PointXYZ>::Ptr filtered(new PointCloud<PointXYZ>());
+    PassThrough<PointXYZ> filter;
     filter.setInputCloud(cloud);
     filter.filter(*filtered);
     cout << "Passthrough filter complete" << endl;
     
     cout << "Begin normal estimation" << endl;
-    pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>());
-    pcl::NormalEstimationOMP<pcl::PointXYZ, pcl::Normal> ne;
+    search::KdTree<PointXYZ>::Ptr tree(new search::KdTree<PointXYZ>());
+    NormalEstimationOMP<PointXYZ, Normal> ne;
     ne.setSearchMethod(tree);
     ne.setNumberOfThreads(8);
     ne.setInputCloud(filtered);
@@ -61,12 +61,12 @@ int performSurfaceReconstruction() {
     compute3DCentroid(*filtered, centroid);
     ne.setViewPoint(centroid[0], centroid[1], centroid[2]);
     // Compute normals
-    pcl::PointCloud<pcl::Normal>::Ptr cloud_normals(new pcl::PointCloud<pcl::Normal>());
+    PointCloud<Normal>::Ptr cloud_normals(new PointCloud<Normal>());
     ne.compute(*cloud_normals);
-    cout << "Normal estimation complete" << std::endl;
+    cout << "Normal estimation complete" << endl;
     
     // Reverse normals
-    cout << "Reverse normals' direction" << std::endl;
+    cout << "Reverse normals' direction" << endl;
     for (size_t i = 0; i < cloud_normals->size(); ++i) {
         cloud_normals->points[i].normal_x *= -1;
         cloud_normals->points[i].normal_y *= -1;
@@ -74,39 +74,34 @@ int performSurfaceReconstruction() {
     }
     
     cout << "Combine points and normals" << endl;
-    pcl::PointCloud<pcl::PointNormal>::Ptr cloud_smoothed_normals(new pcl::PointCloud<pcl::PointNormal>());
+    PointCloud<PointNormal>::Ptr cloud_smoothed_normals(new PointCloud<PointNormal>());
     concatenateFields(*filtered, *cloud_normals, *cloud_smoothed_normals);
     
     cout << "Begin poisson reconstruction" << endl;
-    pcl::Poisson<pcl::PointNormal> poisson;
+    Poisson<PointNormal> poisson;
     poisson.setDepth(9);
     poisson.setInputCloud(cloud_smoothed_normals);
     poisson.setPointWeight(0);
     poisson.setSamplesPerNode(1);
     
-    pcl::PolygonMesh mesh;
+    PolygonMesh mesh;
     poisson.reconstruct(mesh);
     
     cout << "Mesh number of polygons: " << mesh.polygons.size() << endl;
-    
     cout << "Poisson reconstruction complete" << endl;
-    
     return 0;
 }
 
 // Will call PCL code here.
-char* test()
+int test(int i)
 {
-    char *mymessage;
-    mymessage = (char*)malloc(15*sizeof(char));
-    strcpy(mymessage, "Hello World");
-    return mymessage;
+    return i;
 }
 
 
 const int  createTestCloud()
 {
-    pcl::PointCloud<pcl::PointXYZ> cloud;
+    PointCloud<PointXYZ> cloud;
 
     // Fill in the cloud data
     cloud.width    = 5;

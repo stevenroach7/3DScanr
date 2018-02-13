@@ -14,7 +14,7 @@ extern "C" {
 #endif
     
     int performSurfaceReconstruction();
-    char* test();
+    int test(int i);
     const int  createTestCloud();
     
 #ifdef __cplusplus
