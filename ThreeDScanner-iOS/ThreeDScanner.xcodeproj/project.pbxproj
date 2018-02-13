@@ -20,6 +20,7 @@
 		B065E76F202E0A05003DD254 /* libpcl_surface.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B065E76D202E0A04003DD254 /* libpcl_surface.a */; };
 		B065E770202E0A05003DD254 /* libpcl_features.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B065E76E202E0A05003DD254 /* libpcl_features.a */; };
 		B065E777202E1242003DD254 /* PCLWrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B065E775202E1242003DD254 /* PCLWrapper.cpp */; };
+		B06EC47820334E2500508DCB /* libflann_cpp_s.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B06EC47720334E2500508DCB /* libflann_cpp_s.a */; };
 		B090726D200420430072BDC3 /* CapturedImageSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B090726C200420430072BDC3 /* CapturedImageSampler.swift */; };
 		B0BB31E02030D56700FADAA4 /* libboost_date_time.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B0BB31D82030D56600FADAA4 /* libboost_date_time.a */; };
 		B0BB31E12030D56700FADAA4 /* libboost_program_options.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B0BB31D92030D56600FADAA4 /* libboost_program_options.a */; };
@@ -84,6 +85,7 @@
 		B065E774202E1241003DD254 /* ThreeDScanner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ThreeDScanner-Bridging-Header.h"; sourceTree = "<group>"; };
 		B065E775202E1242003DD254 /* PCLWrapper.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = PCLWrapper.cpp; sourceTree = "<group>"; };
 		B065E776202E1242003DD254 /* PCLWrapper.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = PCLWrapper.hpp; sourceTree = "<group>"; };
+		B06EC47720334E2500508DCB /* libflann_cpp_s.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libflann_cpp_s.a; path = "flann-ios-device/lib/libflann_cpp_s.a"; sourceTree = "<group>"; };
 		B090726C200420430072BDC3 /* CapturedImageSampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturedImageSampler.swift; sourceTree = "<group>"; };
 		B0BB31D82030D56600FADAA4 /* libboost_date_time.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_date_time.a; path = "boost-ios-device/lib/libboost_date_time.a"; sourceTree = "<group>"; };
 		B0BB31D92030D56600FADAA4 /* libboost_program_options.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_program_options.a; path = "boost-ios-device/lib/libboost_program_options.a"; sourceTree = "<group>"; };
@@ -133,6 +135,7 @@
 				B0BB31FA2030D66B00FADAA4 /* libpcl_search.a in Frameworks */,
 				B065E76F202E0A05003DD254 /* libpcl_surface.a in Frameworks */,
 				B0BB32022030D66B00FADAA4 /* libpcl_ml.a in Frameworks */,
+				B06EC47820334E2500508DCB /* libflann_cpp_s.a in Frameworks */,
 				B0BB31F92030D66B00FADAA4 /* libpcl_registration.a in Frameworks */,
 				B0BB32032030D66B00FADAA4 /* libpcl_common.a in Frameworks */,
 				B0BB31F82030D66B00FADAA4 /* libpcl_kdtree.a in Frameworks */,
@@ -231,6 +234,7 @@
 		B065E76C202E098B003DD254 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				B06EC47720334E2500508DCB /* libflann_cpp_s.a */,
 				B0BB31F52030D66B00FADAA4 /* libpcl_common.a */,
 				B0BB31E92030D66A00FADAA4 /* libpcl_filters.a */,
 				B0BB31F12030D66B00FADAA4 /* libpcl_io_ply.a */,
@@ -667,6 +671,7 @@
 					"\"$(PROJECT_DIR)/Libraries/PCL/include/pcl-1.8\"",
 					"\"$(PROJECT_DIR)/Libraries/boost-ios-device/include\"",
 					"\"$(PROJECT_DIR)/Libraries/eigen\"",
+					"\"$(PROJECT_DIR)/Libraries/flann-ios-device/include\"",
 				);
 				INFOPLIST_FILE = ThreeDScanner/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
@@ -676,6 +681,7 @@
 					"$(PROJECT_DIR)/Libraries/PCL/lib",
 					"$(PROJECT_DIR)/Libraries/boost-ios-device/lib",
 					"\"$(PROJECT_DIR)/Libraries/eigen\"",
+					"$(PROJECT_DIR)/Libraries/flann-ios-device/lib",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = Stellanova.ThreeDScanner;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -708,6 +714,7 @@
 					"\"$(PROJECT_DIR)/Libraries/PCL/include/pcl-1.8\"",
 					"\"$(PROJECT_DIR)/Libraries/boost-ios-device/include\"",
 					"\"$(PROJECT_DIR)/Libraries/eigen\"",
+					"\"$(PROJECT_DIR)/Libraries/flann-ios-device/include\"",
 				);
 				INFOPLIST_FILE = ThreeDScanner/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
@@ -717,6 +724,7 @@
 					"$(PROJECT_DIR)/Libraries/PCL/lib",
 					"$(PROJECT_DIR)/Libraries/boost-ios-device/lib",
 					"\"$(PROJECT_DIR)/Libraries/eigen\"",
+					"$(PROJECT_DIR)/Libraries/flann-ios-device/lib",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = Stellanova.ThreeDScanner;
 				PRODUCT_NAME = "$(TARGET_NAME)";

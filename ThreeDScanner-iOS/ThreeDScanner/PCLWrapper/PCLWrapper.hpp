@@ -13,6 +13,7 @@
 extern "C" {
 #endif
     
+    int performSurfaceReconstruction();
     char* test();
     const int  createTestCloud();
     

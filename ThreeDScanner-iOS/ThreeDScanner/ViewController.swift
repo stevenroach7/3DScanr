@@ -117,12 +117,12 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         let uploadButton = UIButton()
         view.addSubview(uploadButton)
         uploadButton.translatesAutoresizingMaskIntoConstraints = false
-        uploadButton.setTitle("Upload All", for: .normal)
+        uploadButton.setTitle("Reconstruct", for: .normal)
         uploadButton.setTitleColor(UIColor.red, for: .normal)
         uploadButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
         uploadButton.layer.cornerRadius = 4
         uploadButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
-        uploadButton.addTarget(self, action: #selector(uploadPointsTextFile(sender:)) , for: .touchUpInside)
+        uploadButton.addTarget(self, action: #selector(reconstructSurface(sender:)) , for: .touchUpInside)
         
         // Contraints
         uploadButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
@@ -208,6 +208,13 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
     }
     
     // MARK: - UI Actions
+    
+    @IBAction func reconstructSurface(sender: UIButton) {
+        let hasSucceeded = performSurfaceReconstruction()
+        if hasSucceeded == 0 {
+            showAlert(title: "Surface Reconstruction", message: "Has succeeded")
+        }
+    }
     
     @IBAction func uploadPointsTextFile(sender: UIButton) {
         uploadFolder()
