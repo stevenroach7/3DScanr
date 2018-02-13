@@ -197,6 +197,7 @@
 		B063CB141FC744A100C20C8D /* ThreeDScanner */ = {
 			isa = PBXGroup;
 			children = (
+				B0BB32062030DC7C00FADAA4 /* PCLWrapper */,
 				B063CB151FC744A100C20C8D /* AppDelegate.swift */,
 				B063CB171FC744A100C20C8D /* art.scnassets */,
 				B063CB191FC744A100C20C8D /* ViewController.swift */,
@@ -254,11 +255,18 @@
 				B0BB31DD2030D56700FADAA4 /* libboost_thread.a */,
 				B065E76E202E0A05003DD254 /* libpcl_features.a */,
 				B065E76D202E0A04003DD254 /* libpcl_surface.a */,
-				B065E775202E1242003DD254 /* PCLWrapper.cpp */,
-				B065E776202E1242003DD254 /* PCLWrapper.hpp */,
 				B065E774202E1241003DD254 /* ThreeDScanner-Bridging-Header.h */,
 			);
 			path = Libraries;
+			sourceTree = "<group>";
+		};
+		B0BB32062030DC7C00FADAA4 /* PCLWrapper */ = {
+			isa = PBXGroup;
+			children = (
+				B065E775202E1242003DD254 /* PCLWrapper.cpp */,
+				B065E776202E1242003DD254 /* PCLWrapper.hpp */,
+			);
+			path = PCLWrapper;
 			sourceTree = "<group>";
 		};
 		E7177D540E77869D6BD5AB70 /* Frameworks */ = {
@@ -645,6 +653,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 73KM478VN4;
+				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"${PODS_ROOT}/Google/Headers",
@@ -685,6 +694,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 73KM478VN4;
+				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"${PODS_ROOT}/Google/Headers",

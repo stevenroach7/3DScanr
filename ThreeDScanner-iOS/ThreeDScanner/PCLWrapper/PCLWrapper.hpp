@@ -13,7 +13,8 @@
 extern "C" {
 #endif
     
-    const int test();
+    char* test();
+    const int  createTestCloud();
     
 #ifdef __cplusplus
 }

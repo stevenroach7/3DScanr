@@ -75,7 +75,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         
         sceneView.scene.rootNode.addChildNode(pointsParentNode)
         
-        let testInt = test()
+        let testChars = test()
+        let str: String? = String(validatingUTF8: testChars!)
+        print(str!)
+        
+        let testInt = createTestCloud()
         print("testInt \(testInt)")
     }
     
