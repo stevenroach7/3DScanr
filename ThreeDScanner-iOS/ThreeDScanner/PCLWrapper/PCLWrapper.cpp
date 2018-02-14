@@ -22,7 +22,7 @@
 using namespace pcl;
 using namespace std;
 
-int performSurfaceReconstruction(PCLPointCloud pclPointCloud) {
+PCLMesh performSurfaceReconstruction(PCLPointCloud pclPointCloud) {
     
     // Convert PCLPointCloud to PointCloud<XYZ>
     PointCloud<PointXYZ>::Ptr cloud(new PointCloud<PointXYZ>);
@@ -91,7 +91,42 @@ int performSurfaceReconstruction(PCLPointCloud pclPointCloud) {
     
     cout << "Mesh number of polygons: " << mesh.polygons.size() << endl;
     cout << "Poisson reconstruction complete" << endl;
-    return 0;
+    
+    // Convert to output format
+    
+    // Need mesh cloud in PointCloud<PointXYZ> format instead of PointCloud2
+    PointCloud<PointXYZ> meshCloud;
+    fromPCLPointCloud2(mesh.cloud, meshCloud);
+    
+    int numPoints = mesh.cloud.width;
+    long int numFaces = mesh.polygons.size();
+    
+    PCLPoint3D points[meshCloud.size()];
+    for (size_t i = 0; i < meshCloud.size(); i++)
+    {
+        points[i].x = meshCloud.points[i].x;
+        points[i].y = meshCloud.points[i].y;
+        points[i].z = meshCloud.points[i].z;
+    }
+    
+    PCLPolygon polygons[mesh.polygons.size()];
+    for (size_t i = 0; i < mesh.polygons.size(); i++)
+    {
+        // Are all faces always triangles?
+        PCLPolygon pclPolygon;
+        pclPolygon.v1 = mesh.polygons[i].vertices[0];
+        pclPolygon.v2 = mesh.polygons[i].vertices[1];
+        pclPolygon.v3 = mesh.polygons[i].vertices[2];
+        polygons[i] = pclPolygon;
+    }
+    
+    PCLMesh pclMesh;
+    pclMesh.numPoints = numPoints;
+    pclMesh.numFaces = numFaces;
+    pclMesh.points = points;
+    pclMesh.polygons = polygons;
+    
+    return pclMesh;
 }
 
 // Will call PCL code here.
@@ -99,7 +134,6 @@ int test(int i)
 {
     return i;
 }
-
 
 const int  createTestCloud()
 {

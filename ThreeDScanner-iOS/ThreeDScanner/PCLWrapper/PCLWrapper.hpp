@@ -13,6 +13,8 @@
 extern "C" {
 #endif
     
+    // Input
+    
     typedef struct PCLPoint3D {
         double x, y, z;
     } PCLPoint3D;
@@ -22,8 +24,24 @@ extern "C" {
         PCLPoint3D *points;
 //        PCLColor *colors;
     } PCLPointCloud;
-
-    int performSurfaceReconstruction(PCLPointCloud pointCloud);
+    
+    // Output
+    
+    typedef struct PCLPolygon {
+        int v1, v2, v3;
+    } PCLPolygon;
+    
+    typedef struct PCLMesh {
+        int numPoints;
+        long int numFaces;
+        PCLPoint3D *points;
+        PCLPolygon *polygons;
+    } PCLMesh;
+    
+    
+    // Header declarations
+    
+    PCLMesh performSurfaceReconstruction(PCLPointCloud pointCloud);
     int test(int i);
     const int createTestCloud();
     

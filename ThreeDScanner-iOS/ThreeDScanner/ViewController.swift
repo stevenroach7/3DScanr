@@ -219,11 +219,14 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         }
         let pclPointCloud = PCLPointCloud(numPoints: Int32(points.count), points: pclPointsPointer)
         
-        let hasSucceeded = performSurfaceReconstruction(pclPointCloud)
-        if hasSucceeded == 0 {
-            pclPointsPointer.deallocate(capacity: size)
-            showAlert(title: "Surface Reconstruction", message: "Has succeeded")
-        }
+        let pclMesh = performSurfaceReconstruction(pclPointCloud)
+        pclPointsPointer.deallocate(capacity: size)
+        
+        // need to deallocate points and polygons pointers - Actually this causes an error, hmm
+//        pclMesh.points.deallocate(capacity: Int(pclMesh.numPoints))
+//        pclMesh.polygons.deallocate(capacity: pclMesh.numFaces)
+        
+        showAlert(title: "Surface Reconstruction", message: "Has succeeded with \(pclMesh.polygons[0])")
     }
     
     @IBAction func uploadPointsTextFile(sender: UIButton) {
