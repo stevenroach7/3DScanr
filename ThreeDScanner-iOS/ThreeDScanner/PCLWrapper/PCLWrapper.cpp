@@ -22,25 +22,27 @@
 using namespace pcl;
 using namespace std;
 
-int performSurfaceReconstruction() {
+int performSurfaceReconstruction(PCLPointCloud pclPointCloud) {
     
+    // Convert PCLPointCloud to PointCloud<XYZ>
     PointCloud<PointXYZ>::Ptr cloud(new PointCloud<PointXYZ>);
 
-    // Fill in fake cloud data
-    cloud->width    = 10000;
-    cloud->height   = 1;
+    cloud->width    = pclPointCloud.numPoints; // Always size of cloud
+    cloud->height   = 1; // Always 1
     cloud->is_dense = false;
-    cloud->points.resize (cloud->width * cloud->height);
+    cloud->points.resize (cloud->width * cloud->height); // Need this line
     
-    cout << "Generating random point cloud" << endl;
-    for (size_t i = 0; i < cloud->points.size(); ++i)
+    cout << "Converting to PCL point cloud" << endl;
+    cout << "Num points = " << pclPointCloud.numPoints << endl;
+
+    for (size_t i = 0; i < pclPointCloud.numPoints; i++)
     {
-        cloud->points[i].x = 1024 * rand () / (RAND_MAX + 1.0f);
-        cloud->points[i].y = 1024 * rand () / (RAND_MAX + 1.0f);
-        cloud->points[i].z = 1024 * rand () / (RAND_MAX + 1.0f);
+        cloud->points[i].x = pclPointCloud.points[i].x;
+        cloud->points[i].y = pclPointCloud.points[i].y;
+        cloud->points[i].z = pclPointCloud.points[i].z;
     }
-    
-    cout << "Loaded" << endl;
+
+    cout << "Loaded Point Cloud" << endl;
     
     cout << "Begin passthrough filter" << endl;
     PointCloud<PointXYZ>::Ptr filtered(new PointCloud<PointXYZ>());

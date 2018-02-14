@@ -13,9 +13,19 @@
 extern "C" {
 #endif
     
-    int performSurfaceReconstruction();
+    typedef struct PCLPoint3D {
+        double x, y, z;
+    } PCLPoint3D;
+    
+    typedef struct PCLPointCloud {
+        int numPoints;
+        PCLPoint3D *points;
+//        PCLColor *colors;
+    } PCLPointCloud;
+
+    int performSurfaceReconstruction(PCLPointCloud pointCloud);
     int test(int i);
-    const int  createTestCloud();
+    const int createTestCloud();
     
 #ifdef __cplusplus
 }

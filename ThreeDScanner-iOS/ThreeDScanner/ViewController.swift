@@ -210,8 +210,18 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
     // MARK: - UI Actions
     
     @IBAction func reconstructSurface(sender: UIButton) {
-        let hasSucceeded = performSurfaceReconstruction()
+        
+        let size = points.count
+        let pclPointsPointer = UnsafeMutablePointer<PCLPoint3D>.allocate(capacity: size)
+        for i in 0..<size {
+            let pclPoint3D = PCLPoint3D(x: Double(points[i].x), y: Double(points[i].y), z: Double(points[i].z))
+            pclPointsPointer.advanced(by: i).pointee = pclPoint3D
+        }
+        let pclPointCloud = PCLPointCloud(numPoints: Int32(points.count), points: pclPointsPointer)
+        
+        let hasSucceeded = performSurfaceReconstruction(pclPointCloud)
         if hasSucceeded == 0 {
+            pclPointsPointer.deallocate(capacity: size)
             showAlert(title: "Surface Reconstruction", message: "Has succeeded")
         }
     }
