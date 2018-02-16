@@ -115,23 +115,6 @@ PCLMesh performSurfaceReconstruction(PCLPointCloud pclPointCloud) {
         meshPoints[i].x = meshXYZPointCloud.points[i].x;
         meshPoints[i].y = meshXYZPointCloud.points[i].y;
         meshPoints[i].z = meshXYZPointCloud.points[i].z;
-        
-//        if ((numPoints - i) < 50) {
-//            cout << "x =" << meshCloud.points[i].x << "y =" << meshCloud.points[i].y << "z =" << meshCloud.points[i].z << endl;
-//        }
-        
-        if ((meshNumPoints - i) < 55) {
-            cout << "i = " << i << " x =" << meshPoints[i].x << " y =" << meshPoints[i].y << " z =" << meshPoints[i].z << endl;
-        }
-        
-        if (meshXYZPointCloud.points[i].x == 0 && meshXYZPointCloud.points[i].y == 0 && meshXYZPointCloud.points[i].z == 0) {
-            cout << "Origin in C" << endl;
-        }
-        
-        if (meshPoints[i].x == 0 && meshPoints[i].y == 0 && meshPoints[i].z == 0) {
-            cout << "Origin in C Pointer" << endl;
-        }
-        
     }
     
     cout << "4" << endl;
@@ -156,15 +139,6 @@ PCLMesh performSurfaceReconstruction(PCLPointCloud pclPointCloud) {
     pclMesh.points = meshPoints;
     pclMesh.polygons = meshPolygons;
     
-    
-//    for (size_t i = 0; i < meshNumPoints; i++)
-//    {
-//
-//        if ((meshNumPoints - i) < 55) {
-//            cout << "C 2,i = " << i << " x = " << pclMesh.points[i].x << " y = " << pclMesh.points[i].y << " z = " << pclMesh.points[i].z << endl;
-//        }
-//
-//    }
     
     cout << "6" << endl;
     

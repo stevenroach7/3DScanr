@@ -204,14 +204,14 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
     
     @IBAction func reconstructSurface(sender: UIButton) {
         
-        let size = points.count
-        let pclPointsPointer = UnsafeMutablePointer<PCLPoint3D>.allocate(capacity: size)
+        let inputPointCloudSize = points.count
+        let pclPointsPointer = UnsafeMutablePointer<PCLPoint3D>.allocate(capacity: inputPointCloudSize)
         defer {
-            pclPointsPointer.deinitialize(count: size)
-            pclPointsPointer.deallocate(capacity: size)
+            pclPointsPointer.deinitialize(count: inputPointCloudSize)
+            pclPointsPointer.deallocate(capacity: inputPointCloudSize)
         }
         
-        for i in 0..<size {
+        for i in 0..<inputPointCloudSize {
             let pclPoint3D = PCLPoint3D(x: Double(points[i].x), y: Double(points[i].y), z: Double(points[i].z))
             pclPointsPointer.advanced(by: i).pointee = pclPoint3D
         }
