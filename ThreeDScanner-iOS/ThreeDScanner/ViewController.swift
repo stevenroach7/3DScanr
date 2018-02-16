@@ -74,13 +74,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         createPointMaterial()
         
         sceneView.scene.rootNode.addChildNode(pointsParentNode)
-        
-//        let testChars = test()
-//        let str: String? = String(validatingUTF8: testChars!)
-//        print(str!)
-        
-        let testInt = test(9)
-        print("testInt \(testInt)")
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -213,6 +206,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         
         let size = points.count
         let pclPointsPointer = UnsafeMutablePointer<PCLPoint3D>.allocate(capacity: size)
+        defer {
+            pclPointsPointer.deinitialize(count: size)
+            pclPointsPointer.deallocate(capacity: size)
+        }
+        
         for i in 0..<size {
             let pclPoint3D = PCLPoint3D(x: Double(points[i].x), y: Double(points[i].y), z: Double(points[i].z))
             pclPointsPointer.advanced(by: i).pointee = pclPoint3D
@@ -220,13 +218,37 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         let pclPointCloud = PCLPointCloud(numPoints: Int32(points.count), points: pclPointsPointer)
         
         let pclMesh = performSurfaceReconstruction(pclPointCloud)
-        pclPointsPointer.deallocate(capacity: size)
+        defer {
+            free(pclMesh.points)
+            free(pclMesh.polygons)
+        }
+
+        print("mesh num points \(pclMesh.numPoints)")
         
-        // need to deallocate points and polygons pointers - Actually this causes an error, hmm
-//        pclMesh.points.deallocate(capacity: Int(pclMesh.numPoints))
-//        pclMesh.polygons.deallocate(capacity: pclMesh.numFaces)
+        let meshNumPoints = pclMesh.numPoints
+        var vertices = [SCNVector3]()
+        for i in 0..<meshNumPoints {
+            vertices.append(SCNVector3(x: Float(pclMesh.points[i].x), y: Float(pclMesh.points[i].y), z: Float(pclMesh.points[i].z)))
+        }
         
-        showAlert(title: "Surface Reconstruction", message: "Has succeeded with \(pclMesh.polygons[0])")
+        let vertexSource = SCNGeometrySource(vertices: vertices)
+        
+        var elements = [SCNGeometryElement]()
+        for i in 0..<pclMesh.numFaces {
+
+            let allPrimitives: [Int32] = [pclMesh.polygons[i].v1, pclMesh.polygons[i].v2, pclMesh.polygons[i].v3]
+            let element = SCNGeometryElement(indices: allPrimitives, primitiveType: .triangles)
+            elements.append(element)
+        }
+        
+        let geometry = SCNGeometry(sources: [vertexSource], elements: elements)
+        geometry.firstMaterial?.isDoubleSided = true;
+        geometry.firstMaterial?.diffuse.contents = UIColor(displayP3Red: 50/255, green: 50/255, blue: 120/255, alpha: 0.85)
+        
+        let polygonNode = SCNNode(geometry: geometry)
+        sceneView.scene.rootNode.addChildNode(polygonNode)
+        
+        showAlert(title: "Surface Reconstructed", message: "\(pclMesh.numFaces) faces")
     }
     
     @IBAction func uploadPointsTextFile(sender: UIButton) {
@@ -571,29 +593,20 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         
-        // TODO: Test if this is useful
-        // Create anchor using the camera’s current position
-//        if let currentFrame = sceneView.session.currentFrame {
-//            // Create a transform with a translation of 0.2 meters in front
-//            // of the camera
-//            var translation = matrix_identity_float4x4
-//            translation.columns.3.z = -0.2
-//            let transform = simd_mul(
-//                currentFrame.camera.transform,
-//                translation
-//            )
-//            // Add a new anchor to the session
-//            let anchor = ARAnchor(transform: transform)
-//            sceneView.session.add(anchor: anchor)
+//        let vertices = [
+//            SCNVector3(x: 5, y: 4, z: 0),
+//            SCNVector3(x: -5 , y: 4, z: 0),
+//            SCNVector3(x: -5, y: -5, z: 0),
+//            SCNVector3(x: 5, y: -5, z: 0)
+//        ]
 //
-//            let sphere = SCNSphere(radius: 0.01)
-//            let material = SCNMaterial()
-//            material.diffuse.contents = UIColor.blue
-//            sphere.firstMaterial = material
-//            let sphereNode = SCNNode(geometry: sphere)
-//            sphereNode.transform = SCNMatrix4(anchor.transform)
-//            pointsParentNode.addChildNode(sphereNode)
-//        }
+//        let allPrimitives: [Int32] = [0, 1, 2, 0, 2, 3]
+//        let vertexSource = SCNGeometrySource(vertices: vertices)
+//        let element = SCNGeometryElement(indices: allPrimitives, primitiveType: .triangles)
+//        let geometry = SCNGeometry(sources: [vertexSource], elements: [element])
+//
+//        let polygonNode = SCNNode(geometry: geometry)
+//        sceneView.scene.rootNode.addChildNode(polygonNode)
         
         guard let rawFeaturePoints = sceneView.session.currentFrame?.rawFeaturePoints else {
             return

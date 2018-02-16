@@ -32,7 +32,7 @@ extern "C" {
     } PCLPolygon;
     
     typedef struct PCLMesh {
-        int numPoints;
+        long int numPoints;
         long int numFaces;
         PCLPoint3D *points;
         PCLPolygon *polygons;

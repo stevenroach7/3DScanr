@@ -93,38 +93,80 @@ PCLMesh performSurfaceReconstruction(PCLPointCloud pclPointCloud) {
     cout << "Poisson reconstruction complete" << endl;
     
     // Convert to output format
+     cout << "1" << endl;
+    
     
     // Need mesh cloud in PointCloud<PointXYZ> format instead of PointCloud2
-    PointCloud<PointXYZ> meshCloud;
-    fromPCLPointCloud2(mesh.cloud, meshCloud);
+    PointCloud<PointXYZ> meshXYZPointCloud;
+    fromPCLPointCloud2(mesh.cloud, meshXYZPointCloud);
     
-    int numPoints = mesh.cloud.width;
-    long int numFaces = mesh.polygons.size();
+    cout << "2" << endl;
     
-    PCLPoint3D points[meshCloud.size()];
-    for (size_t i = 0; i < meshCloud.size(); i++)
+    long int meshNumPoints = meshXYZPointCloud.size();
+    long int meshNumFaces = mesh.polygons.size();
+    
+    cout << "3" << endl;
+    
+    PCLPoint3D *meshPoints;
+    meshPoints = (PCLPoint3D *) calloc(meshNumPoints, sizeof(*meshPoints));
+
+    for (size_t i = 0; i < meshNumPoints; i++)
     {
-        points[i].x = meshCloud.points[i].x;
-        points[i].y = meshCloud.points[i].y;
-        points[i].z = meshCloud.points[i].z;
+        meshPoints[i].x = meshXYZPointCloud.points[i].x;
+        meshPoints[i].y = meshXYZPointCloud.points[i].y;
+        meshPoints[i].z = meshXYZPointCloud.points[i].z;
+        
+//        if ((numPoints - i) < 50) {
+//            cout << "x =" << meshCloud.points[i].x << "y =" << meshCloud.points[i].y << "z =" << meshCloud.points[i].z << endl;
+//        }
+        
+        if ((meshNumPoints - i) < 55) {
+            cout << "i = " << i << " x =" << meshPoints[i].x << " y =" << meshPoints[i].y << " z =" << meshPoints[i].z << endl;
+        }
+        
+        if (meshXYZPointCloud.points[i].x == 0 && meshXYZPointCloud.points[i].y == 0 && meshXYZPointCloud.points[i].z == 0) {
+            cout << "Origin in C" << endl;
+        }
+        
+        if (meshPoints[i].x == 0 && meshPoints[i].y == 0 && meshPoints[i].z == 0) {
+            cout << "Origin in C Pointer" << endl;
+        }
+        
     }
     
-    PCLPolygon polygons[mesh.polygons.size()];
-    for (size_t i = 0; i < mesh.polygons.size(); i++)
+    cout << "4" << endl;
+    
+    PCLPolygon *meshPolygons;
+    meshPolygons = (PCLPolygon *) calloc(meshNumFaces, sizeof(*meshPolygons));
+    for (size_t i = 0; i < meshNumFaces; i++)
     {
         // Are all faces always triangles?
         PCLPolygon pclPolygon;
         pclPolygon.v1 = mesh.polygons[i].vertices[0];
         pclPolygon.v2 = mesh.polygons[i].vertices[1];
         pclPolygon.v3 = mesh.polygons[i].vertices[2];
-        polygons[i] = pclPolygon;
+        meshPolygons[i] = pclPolygon;
     }
     
+    cout << "5" << endl;
+    
     PCLMesh pclMesh;
-    pclMesh.numPoints = numPoints;
-    pclMesh.numFaces = numFaces;
-    pclMesh.points = points;
-    pclMesh.polygons = polygons;
+    pclMesh.numPoints = meshNumPoints;
+    pclMesh.numFaces = meshNumFaces;
+    pclMesh.points = meshPoints;
+    pclMesh.polygons = meshPolygons;
+    
+    
+//    for (size_t i = 0; i < meshNumPoints; i++)
+//    {
+//
+//        if ((meshNumPoints - i) < 55) {
+//            cout << "C 2,i = " << i << " x = " << pclMesh.points[i].x << " y = " << pclMesh.points[i].y << " z = " << pclMesh.points[i].z << endl;
+//        }
+//
+//    }
+    
+    cout << "6" << endl;
     
     return pclMesh;
 }

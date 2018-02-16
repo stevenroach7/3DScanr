@@ -202,9 +202,9 @@
 			children = (
 				B0BB32062030DC7C00FADAA4 /* PCLWrapper */,
 				B063CB151FC744A100C20C8D /* AppDelegate.swift */,
-				B063CB171FC744A100C20C8D /* art.scnassets */,
 				B063CB191FC744A100C20C8D /* ViewController.swift */,
 				B063CB1B1FC744A100C20C8D /* Main.storyboard */,
+				B063CB171FC744A100C20C8D /* art.scnassets */,
 				B063CB1E1FC744A100C20C8D /* Assets.xcassets */,
 				B063CB201FC744A100C20C8D /* LaunchScreen.storyboard */,
 				B063CB231FC744A100C20C8D /* Info.plist */,
