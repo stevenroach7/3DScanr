@@ -22,6 +22,38 @@
 using namespace pcl;
 using namespace std;
 
+
+/*
+ Helper method to compute normals.
+ */
+PointCloud<Normal>::Ptr computeNormals(PointCloud<PointXYZ>::Ptr pointCloud)
+{
+    cout << "Begin normal estimation" << endl;
+    search::KdTree<PointXYZ>::Ptr tree(new search::KdTree<PointXYZ>());
+    NormalEstimationOMP<PointXYZ, Normal> ne;
+    ne.setSearchMethod(tree);
+    ne.setNumberOfThreads(8);
+    ne.setInputCloud(pointCloud); // FIXME: Is this bad?
+    ne.setKSearch(100);
+    // Compute the centroid of pointcloud
+    Eigen::Vector4f centroid;
+    compute3DCentroid(*pointCloud, centroid);
+    ne.setViewPoint(centroid[0], centroid[1], centroid[2]);
+    // Compute normals
+    PointCloud<Normal>::Ptr cloudNormals(new PointCloud<Normal>());
+    ne.compute(*cloudNormals);
+    cout << "Normal estimation complete" << endl;
+    
+    // Reverse normals
+    cout << "Reverse normals' direction" << endl;
+    for (size_t i = 0; i < cloudNormals->size(); ++i) {
+        cloudNormals->points[i].normal_x *= -1;
+        cloudNormals->points[i].normal_y *= -1;
+        cloudNormals->points[i].normal_z *= -1;
+    }
+    return cloudNormals;
+}
+
 PCLMesh performSurfaceReconstruction(PCLPointCloud pclPointCloud) {
     
     // Convert PCLPointCloud to PointCloud<XYZ>
@@ -45,44 +77,22 @@ PCLMesh performSurfaceReconstruction(PCLPointCloud pclPointCloud) {
     cout << "Loaded Point Cloud" << endl;
     
     cout << "Begin passthrough filter" << endl;
-    PointCloud<PointXYZ>::Ptr filtered(new PointCloud<PointXYZ>());
+    PointCloud<PointXYZ>::Ptr filteredPointCloud(new PointCloud<PointXYZ>());
     PassThrough<PointXYZ> filter;
     filter.setInputCloud(cloud);
-    filter.filter(*filtered);
+    filter.filter(*filteredPointCloud);
     cout << "Passthrough filter complete" << endl;
     
-    cout << "Begin normal estimation" << endl;
-    search::KdTree<PointXYZ>::Ptr tree(new search::KdTree<PointXYZ>());
-    NormalEstimationOMP<PointXYZ, Normal> ne;
-    ne.setSearchMethod(tree);
-    ne.setNumberOfThreads(8);
-    ne.setInputCloud(filtered);
-    ne.setKSearch(100);
-    // Compute the centroid of pointcloud
-    Eigen::Vector4f centroid;
-    compute3DCentroid(*filtered, centroid);
-    ne.setViewPoint(centroid[0], centroid[1], centroid[2]);
-    // Compute normals
-    PointCloud<Normal>::Ptr cloud_normals(new PointCloud<Normal>());
-    ne.compute(*cloud_normals);
-    cout << "Normal estimation complete" << endl;
-    
-    // Reverse normals
-    cout << "Reverse normals' direction" << endl;
-    for (size_t i = 0; i < cloud_normals->size(); ++i) {
-        cloud_normals->points[i].normal_x *= -1;
-        cloud_normals->points[i].normal_y *= -1;
-        cloud_normals->points[i].normal_z *= -1;
-    }
+    PointCloud<Normal>::Ptr pointCloudNormals = computeNormals(filteredPointCloud);
     
     cout << "Combine points and normals" << endl;
-    PointCloud<PointNormal>::Ptr cloud_smoothed_normals(new PointCloud<PointNormal>());
-    concatenateFields(*filtered, *cloud_normals, *cloud_smoothed_normals);
+    PointCloud<PointNormal>::Ptr cloudSmoothedNormals(new PointCloud<PointNormal>());
+    concatenateFields(*filteredPointCloud, *pointCloudNormals, *cloudSmoothedNormals);
     
     cout << "Begin poisson reconstruction" << endl;
     Poisson<PointNormal> poisson;
-    poisson.setDepth(9);
-    poisson.setInputCloud(cloud_smoothed_normals);
+    poisson.setDepth(6);
+    poisson.setInputCloud(cloudSmoothedNormals);
     poisson.setPointWeight(0);
     poisson.setSamplesPerNode(1);
     
@@ -94,7 +104,6 @@ PCLMesh performSurfaceReconstruction(PCLPointCloud pclPointCloud) {
     
     // Convert to output format
      cout << "1" << endl;
-    
     
     // Need mesh cloud in PointCloud<PointXYZ> format instead of PointCloud2
     PointCloud<PointXYZ> meshXYZPointCloud;
@@ -133,45 +142,31 @@ PCLMesh performSurfaceReconstruction(PCLPointCloud pclPointCloud) {
     
     cout << "5" << endl;
     
+    
+//    // TODO: Construct normals
+//    PointCloud<Normal>::Ptr meshCloudNormals = computeNormals(meshXYZPointCloud.makeShared());
+//
+//    cout << "Mesh number of normals: " << meshCloudNormals->size() << endl;
+//
+//    PCLNormal3D *meshNormals;
+//    meshNormals = (PCLNormal3D *) calloc(meshCloudNormals->size(), sizeof(*meshNormals));
+//    for (size_t i = 0; i < meshCloudNormals->size(); i++)
+//    {
+//        PCLNormal3D pclNormal;
+//        pclNormal.nx = meshCloudNormals->points[i].normal_x;
+//        pclNormal.ny = meshCloudNormals->points[i].normal_y;
+//        pclNormal.nz = meshCloudNormals->points[i].normal_z;
+//        meshNormals[i] = pclNormal;
+//    }
+    
     PCLMesh pclMesh;
     pclMesh.numPoints = meshNumPoints;
     pclMesh.numFaces = meshNumFaces;
     pclMesh.points = meshPoints;
     pclMesh.polygons = meshPolygons;
-    
+//    pclMesh.normals = meshNormals;
     
     cout << "6" << endl;
     
     return pclMesh;
 }
-
-// Will call PCL code here.
-int test(int i)
-{
-    return i;
-}
-
-const int  createTestCloud()
-{
-    PointCloud<PointXYZ> cloud;
-
-    // Fill in the cloud data
-    cloud.width    = 5;
-    cloud.height   = 1;
-    cloud.is_dense = false;
-    cloud.points.resize (cloud.width * cloud.height);
-    
-    for (size_t i = 0; i < cloud.points.size (); ++i)
-    {
-        cloud.points[i].x = 1024 * rand () / (RAND_MAX + 1.0f);
-        cloud.points[i].y = 1024 * rand () / (RAND_MAX + 1.0f);
-        cloud.points[i].z = 1024 * rand () / (RAND_MAX + 1.0f);
-    }
-    
-    return 0;
-}
-
-
-
-
-

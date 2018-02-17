@@ -20,6 +20,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
     var points: [vector_float3] = []
     var colors: [UIColor?] = []
     var pointsParentNode = SCNNode()
+    var surfaceParentNode = SCNNode()
     var isTorchOn = false
     var addPointRatio = 1 // Show 1 / addPointRatio of the points
     var folderID = ""
@@ -74,6 +75,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         createPointMaterial()
         
         sceneView.scene.rootNode.addChildNode(pointsParentNode)
+        sceneView.scene.rootNode.addChildNode(surfaceParentNode)
+        
+        sceneView.autoenablesDefaultLighting = true
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -221,34 +225,48 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         defer {
             free(pclMesh.points)
             free(pclMesh.polygons)
+//            free(pclMesh.normals)
         }
 
         print("mesh num points \(pclMesh.numPoints)")
+        print("mesh num faces \(pclMesh.numFaces)")
         
-        let meshNumPoints = pclMesh.numPoints
+        // Remove current surfaces before displaying new surface
+        surfaceParentNode.enumerateChildNodes { (node, stop) in node.removeFromParentNode() }
+        
+        let surfaceNode = constructSurfaceNode(pclMesh: pclMesh)
+        surfaceParentNode.addChildNode(surfaceNode)
+        
+        showAlert(title: "Surface Reconstructed", message: "\(pclMesh.numFaces) faces")
+    }
+    
+    private func constructSurfaceNode(pclMesh: PCLMesh) -> SCNNode {
+        
         var vertices = [SCNVector3]()
-        for i in 0..<meshNumPoints {
+        for i in 0..<pclMesh.numPoints {
             vertices.append(SCNVector3(x: Float(pclMesh.points[i].x), y: Float(pclMesh.points[i].y), z: Float(pclMesh.points[i].z)))
         }
-        
         let vertexSource = SCNGeometrySource(vertices: vertices)
+        
+//        var normals = [SCNVector3]()
+//        for i in 0..<pclMesh.numPoints {
+//            normals.append(SCNVector3(x: Float(pclMesh.normals[i].nx), y: Float(pclMesh.normals[i].ny), z: Float(pclMesh.normals[i].nz)))
+//        }
+//        let normalsSource = SCNGeometrySource(normals: normals)
         
         var elements = [SCNGeometryElement]()
         for i in 0..<pclMesh.numFaces {
-
             let allPrimitives: [Int32] = [pclMesh.polygons[i].v1, pclMesh.polygons[i].v2, pclMesh.polygons[i].v3]
             let element = SCNGeometryElement(indices: allPrimitives, primitiveType: .triangles)
             elements.append(element)
         }
         
-        let geometry = SCNGeometry(sources: [vertexSource], elements: elements)
-        geometry.firstMaterial?.isDoubleSided = true;
-        geometry.firstMaterial?.diffuse.contents = UIColor(displayP3Red: 50/255, green: 50/255, blue: 120/255, alpha: 0.85)
-        
-        let polygonNode = SCNNode(geometry: geometry)
-        sceneView.scene.rootNode.addChildNode(polygonNode)
-        
-        showAlert(title: "Surface Reconstructed", message: "\(pclMesh.numFaces) faces")
+//        let surfaceGeometry = SCNGeometry(sources: [vertexSource, normalsSource], elements: elements)
+        let surfaceGeometry = SCNGeometry(sources: [vertexSource], elements: elements)
+        surfaceGeometry.firstMaterial?.isDoubleSided = true;
+        surfaceGeometry.firstMaterial?.diffuse.contents = UIColor(displayP3Red: 135/255, green: 206/255, blue: 250/255, alpha: 1)
+        surfaceGeometry.firstMaterial?.lightingModel = .blinn
+        return SCNNode(geometry: surfaceGeometry)
     }
     
     @IBAction func uploadPointsTextFile(sender: UIButton) {

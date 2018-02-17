@@ -19,6 +19,10 @@ extern "C" {
         double x, y, z;
     } PCLPoint3D;
     
+    typedef struct PCLNormal3D {
+        double nx, ny, nz;
+    } PCLNormal3D;
+    
     typedef struct PCLPointCloud {
         int numPoints;
         PCLPoint3D *points;
@@ -35,6 +39,7 @@ extern "C" {
         long int numPoints;
         long int numFaces;
         PCLPoint3D *points;
+        PCLNormal3D *normals;
         PCLPolygon *polygons;
     } PCLMesh;
     
@@ -42,8 +47,6 @@ extern "C" {
     // Header declarations
     
     PCLMesh performSurfaceReconstruction(PCLPointCloud pointCloud);
-    int test(int i);
-    const int createTestCloud();
     
 #ifdef __cplusplus
 }
