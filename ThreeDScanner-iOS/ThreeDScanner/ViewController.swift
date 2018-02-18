@@ -210,9 +210,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         
         let inputPointCloudSize = points.count
         
-        
         let pclPointsPointer = UnsafeMutablePointer<PCLPoint3D>.allocate(capacity: inputPointCloudSize)
-        pclPointsPointer.initialize(to: PCLPoint3D(x: 0, y: 0, z: 0)) // Test whether this helps avoid crashes
+        pclPointsPointer.initialize(to: PCLPoint3D(x: 0, y: 0, z: 0)) // Must initialize typed pointers for safety
         defer {
             pclPointsPointer.deinitialize(count: inputPointCloudSize)
             pclPointsPointer.deallocate(capacity: inputPointCloudSize)
