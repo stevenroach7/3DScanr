@@ -33,9 +33,9 @@ PointCloud<Normal>::Ptr computeNormals(PointCloud<PointXYZ>::Ptr pointCloud)
     NormalEstimationOMP<PointXYZ, Normal> ne;
     ne.setSearchMethod(tree);
     ne.setNumberOfThreads(8);
-    ne.setInputCloud(pointCloud); // FIXME: Is this bad?
+    ne.setInputCloud(pointCloud);
     ne.setKSearch(100);
-    // Compute the centroid of pointcloud
+    // Compute the centroid of point cloud
     Eigen::Vector4f centroid;
     compute3DCentroid(*pointCloud, centroid);
     ne.setViewPoint(centroid[0], centroid[1], centroid[2]);
@@ -103,18 +103,13 @@ PCLMesh performSurfaceReconstruction(PCLPointCloud pclPointCloud) {
     cout << "Poisson reconstruction complete" << endl;
     
     // Convert to output format
-     cout << "1" << endl;
     
     // Need mesh cloud in PointCloud<PointXYZ> format instead of PointCloud2
     PointCloud<PointXYZ> meshXYZPointCloud;
     fromPCLPointCloud2(mesh.cloud, meshXYZPointCloud);
     
-    cout << "2" << endl;
-    
     long int meshNumPoints = meshXYZPointCloud.size();
     long int meshNumFaces = mesh.polygons.size();
-    
-    cout << "3" << endl;
     
     PCLPoint3D *meshPoints;
     meshPoints = (PCLPoint3D *) calloc(meshNumPoints, sizeof(*meshPoints));
@@ -125,8 +120,6 @@ PCLMesh performSurfaceReconstruction(PCLPointCloud pclPointCloud) {
         meshPoints[i].y = meshXYZPointCloud.points[i].y;
         meshPoints[i].z = meshXYZPointCloud.points[i].z;
     }
-    
-    cout << "4" << endl;
     
     PCLPolygon *meshPolygons;
     meshPolygons = (PCLPolygon *) calloc(meshNumFaces, sizeof(*meshPolygons));
@@ -140,33 +133,11 @@ PCLMesh performSurfaceReconstruction(PCLPointCloud pclPointCloud) {
         meshPolygons[i] = pclPolygon;
     }
     
-    cout << "5" << endl;
-    
-    
-//    // TODO: Construct normals
-//    PointCloud<Normal>::Ptr meshCloudNormals = computeNormals(meshXYZPointCloud.makeShared());
-//
-//    cout << "Mesh number of normals: " << meshCloudNormals->size() << endl;
-//
-//    PCLNormal3D *meshNormals;
-//    meshNormals = (PCLNormal3D *) calloc(meshCloudNormals->size(), sizeof(*meshNormals));
-//    for (size_t i = 0; i < meshCloudNormals->size(); i++)
-//    {
-//        PCLNormal3D pclNormal;
-//        pclNormal.nx = meshCloudNormals->points[i].normal_x;
-//        pclNormal.ny = meshCloudNormals->points[i].normal_y;
-//        pclNormal.nz = meshCloudNormals->points[i].normal_z;
-//        meshNormals[i] = pclNormal;
-//    }
-    
     PCLMesh pclMesh;
     pclMesh.numPoints = meshNumPoints;
     pclMesh.numFaces = meshNumFaces;
     pclMesh.points = meshPoints;
     pclMesh.polygons = meshPolygons;
-//    pclMesh.normals = meshNormals;
-    
-    cout << "6" << endl;
     
     return pclMesh;
 }

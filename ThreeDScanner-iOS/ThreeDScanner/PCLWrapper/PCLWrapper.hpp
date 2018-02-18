@@ -19,14 +19,9 @@ extern "C" {
         double x, y, z;
     } PCLPoint3D;
     
-    typedef struct PCLNormal3D {
-        double nx, ny, nz;
-    } PCLNormal3D;
-    
     typedef struct PCLPointCloud {
         int numPoints;
         PCLPoint3D *points;
-//        PCLColor *colors;
     } PCLPointCloud;
     
     // Output
@@ -39,7 +34,6 @@ extern "C" {
         long int numPoints;
         long int numFaces;
         PCLPoint3D *points;
-        PCLNormal3D *normals;
         PCLPolygon *polygons;
     } PCLMesh;
     

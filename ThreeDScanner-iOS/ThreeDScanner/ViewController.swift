@@ -228,7 +228,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         defer {
             free(pclMesh.points)
             free(pclMesh.polygons)
-//            free(pclMesh.normals)
         }
 
         print("mesh num points \(pclMesh.numPoints)")
@@ -251,12 +250,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         }
         let vertexSource = SCNGeometrySource(vertices: vertices)
         
-//        var normals = [SCNVector3]()
-//        for i in 0..<pclMesh.numPoints {
-//            normals.append(SCNVector3(x: Float(pclMesh.normals[i].nx), y: Float(pclMesh.normals[i].ny), z: Float(pclMesh.normals[i].nz)))
-//        }
-//        let normalsSource = SCNGeometrySource(normals: normals)
-        
         var elements = [SCNGeometryElement]()
         for i in 0..<pclMesh.numFaces {
             let allPrimitives: [Int32] = [pclMesh.polygons[i].v1, pclMesh.polygons[i].v2, pclMesh.polygons[i].v3]
@@ -264,7 +257,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
             elements.append(element)
         }
         
-//        let surfaceGeometry = SCNGeometry(sources: [vertexSource, normalsSource], elements: elements)
         let surfaceGeometry = SCNGeometry(sources: [vertexSource], elements: elements)
         surfaceGeometry.firstMaterial?.isDoubleSided = true;
         surfaceGeometry.firstMaterial?.diffuse.contents = UIColor(displayP3Red: 135/255, green: 206/255, blue: 250/255, alpha: 1)
