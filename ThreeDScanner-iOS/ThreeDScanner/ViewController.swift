@@ -17,6 +17,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
     // MARK: - Properties
     
     @IBOutlet var sceneView: ARSCNView!
+    let sessionConfiguration = ARWorldTrackingConfiguration()
     var points: [vector_float3] = []
     var colors: [UIColor?] = []
     var pointsParentNode = SCNNode()
@@ -65,9 +66,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         // Add the sign-in button.
         view.addSubview(signInButton)
         
-        addUploadButton()
+        addReconstructButton()
         addToggleTorchButton()
         addInfoButton()
+        addResetButton()
         addOptionsButton()
         addMultipartUploadSwitch()
         addPendingImageUploadLabel()
@@ -83,14 +85,13 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        // Create a session configuration
-        let configuration = ARWorldTrackingConfiguration()
-        configuration.planeDetection = ARWorldTrackingConfiguration.PlaneDetection.horizontal
+        // Set Session configuration
+        sessionConfiguration.planeDetection = ARWorldTrackingConfiguration.PlaneDetection.horizontal
         
         // Run the view's session
-        sceneView.session.run(configuration)
+        sceneView.session.run(sessionConfiguration)
         
-        // Show feature points
+        // Show feature points and world origin
         sceneView.debugOptions.insert(ARSCNDebugOptions.showFeaturePoints)
         sceneView.debugOptions.insert(ARSCNDebugOptions.showWorldOrigin)
     }
@@ -110,21 +111,21 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
     
     // MARK: - UI
     
-    private func addUploadButton() {
-        let uploadButton = UIButton()
-        view.addSubview(uploadButton)
-        uploadButton.translatesAutoresizingMaskIntoConstraints = false
-        uploadButton.setTitle("Reconstruct", for: .normal)
-        uploadButton.setTitleColor(UIColor.red, for: .normal)
-        uploadButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
-        uploadButton.layer.cornerRadius = 4
-        uploadButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
-        uploadButton.addTarget(self, action: #selector(reconstructSurface(sender:)) , for: .touchUpInside)
+    private func addReconstructButton() {
+        let reconstructButton = UIButton()
+        view.addSubview(reconstructButton)
+        reconstructButton.translatesAutoresizingMaskIntoConstraints = false
+        reconstructButton.setTitle("Reconstruct", for: .normal)
+        reconstructButton.setTitleColor(UIColor.red, for: .normal)
+        reconstructButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
+        reconstructButton.layer.cornerRadius = 4
+        reconstructButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
+        reconstructButton.addTarget(self, action: #selector(reconstructSurface(sender:)) , for: .touchUpInside)
         
         // Contraints
-        uploadButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
-        uploadButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0.0).isActive = true
-        uploadButton.heightAnchor.constraint(equalToConstant: 50)
+        reconstructButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
+        reconstructButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0.0).isActive = true
+        reconstructButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
     private func addToggleTorchButton() {
@@ -159,6 +160,23 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         infoButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
         infoButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -8.0).isActive = true
         infoButton.heightAnchor.constraint(equalToConstant: 50)
+    }
+    
+    private func addResetButton() {
+        let resetButton = UIButton()
+        view.addSubview(resetButton)
+        resetButton.translatesAutoresizingMaskIntoConstraints = false
+        resetButton.setTitle("Reset", for: .normal)
+        resetButton.setTitleColor(UIColor.red, for: .normal)
+        resetButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
+        resetButton.layer.cornerRadius = 4
+        resetButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
+        resetButton.addTarget(self, action: #selector(resetScene(sender:)) , for: .touchUpInside)
+        
+        // Contraints
+        resetButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
+        resetButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -55.0).isActive = true
+        resetButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
     private func addOptionsButton() {
@@ -268,6 +286,20 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         
         let input = createXyzRgbString(points: points, pointColors: colors)
         uploadTextFile(input: input, name: "All_Points_and_Colors")
+    }
+    
+    @IBAction func resetScene(sender: UIButton) {
+        surfaceParentNode.enumerateChildNodes { (node, stop) in node.removeFromParentNode() }
+        pointsParentNode.enumerateChildNodes { (node, stop) in node.removeFromParentNode() }
+        
+        sceneView.debugOptions.remove(ARSCNDebugOptions.showFeaturePoints)
+        sceneView.debugOptions.remove(ARSCNDebugOptions.showWorldOrigin)
+        
+        // Run the view's session
+        sceneView.session.run(sessionConfiguration, options: [ARSession.RunOptions.resetTracking, ARSession.RunOptions.removeExistingAnchors])
+        
+        sceneView.debugOptions.insert(ARSCNDebugOptions.showFeaturePoints)
+        sceneView.debugOptions.insert(ARSCNDebugOptions.showWorldOrigin)
     }
     
     @IBAction func toggleTorch(sender: UIButton) {
