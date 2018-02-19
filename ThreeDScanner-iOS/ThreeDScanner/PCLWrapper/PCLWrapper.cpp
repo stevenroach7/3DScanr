@@ -17,6 +17,7 @@
 #include <pcl/surface/mls.h>
 #include <pcl/surface/poisson.h>
 #include <pcl/filters/passthrough.h>
+#include <pcl/filters/statistical_outlier_removal.h>
 #include <pcl/features/integral_image_normal.h>
 
 using namespace pcl;
@@ -41,8 +42,6 @@ PointCloud<Normal>::Ptr computeNormals(PointCloud<PointXYZ>::Ptr pointCloudPtr, 
     ne.compute(*cloudNormalsPtr);
     return cloudNormalsPtr;
 }
-
-
 
 PointCloud<PointNormal>::Ptr constructPointNormalCloud(PCLPointCloud inputPCLPointCloud) {
      cout << "Constructing Point Cloud with normals" << endl;
@@ -87,24 +86,30 @@ PointCloud<PointNormal>::Ptr constructPointNormalCloud(PCLPointCloud inputPCLPoi
     return pointCloudPtr;
 }
 
-
 PCLMesh performSurfaceReconstruction(PCLPointCloud inputPCLPointCloud) {
     
-    PointCloud<PointNormal>::Ptr cloudSmoothedNormalsPtr = constructPointNormalCloud(inputPCLPointCloud);
-    // Now filter if necessary
-    
+    PointCloud<PointNormal>::Ptr pointNormalCloud = constructPointNormalCloud(inputPCLPointCloud);
     cout << "Loaded Point Cloud with normals" << endl;
+    
+    cout << "Statistically Filtering points" << endl;
+    StatisticalOutlierRemoval<PointNormal> statFilter;
+    statFilter.setInputCloud(pointNormalCloud);
+    statFilter.setMeanK(50);
+    statFilter.setStddevMulThresh(1.0); // 0.6 - 1.0
+    
+    PointCloud<PointNormal>::Ptr filteredPointCloudPtr(new PointCloud<PointNormal>);
+    statFilter.filter(*filteredPointCloudPtr);
+    cout << "Statistical points filtering complete" << endl;
 
     cout << "Begin poisson reconstruction" << endl;
     Poisson<PointNormal> poisson;
     poisson.setDepth(6);
-    poisson.setInputCloud(cloudSmoothedNormalsPtr);
+    poisson.setInputCloud(filteredPointCloudPtr);
     poisson.setPointWeight(0);
     poisson.setSamplesPerNode(1);
     
     PolygonMesh mesh;
     poisson.reconstruct(mesh);
-    
     cout << "Mesh number of polygons: " << mesh.polygons.size() << endl;
     cout << "Poisson reconstruction complete" << endl;
     
