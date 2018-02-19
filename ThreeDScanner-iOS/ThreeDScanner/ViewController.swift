@@ -111,6 +111,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         print("Memory Warning")
     }
     
+    
     // MARK: - UI
     
     private func addReconstructButton() {
@@ -224,6 +225,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         pendingImageUploadLabel.heightAnchor.constraint(equalToConstant: 50)
     }
     
+    
     // MARK: - UI Actions
     
     @IBAction func reconstructSurface(sender: UIButton) {
@@ -246,9 +248,22 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
             pclPointsPointer.advanced(by: i).pointee = pclPoint3D
         }
         
-        // Viewpoints
+        // Sizes
 
         let inputNumFrames = pointCloudFrameViewpoints.count
+        
+        let pclPointCloudSizesPointer = UnsafeMutablePointer<Int32>.allocate(capacity: inputNumFrames)
+        pclPointCloudSizesPointer.initialize(to: 0) // Must initialize typed pointers for safety
+        defer {
+            pclPointCloudSizesPointer.deinitialize(count: inputNumFrames)
+            pclPointCloudSizesPointer.deallocate(capacity: inputNumFrames)
+        }
+        
+        for i in 0..<inputNumFrames {
+            pclPointCloudSizesPointer.advanced(by: i).pointee = pointCloudFrameSizes[i]
+        }
+        
+        // Viewpoints
         
         let pclFrameViewpointsPointer = UnsafeMutablePointer<PCLPoint3D>.allocate(capacity: inputNumFrames)
         pclFrameViewpointsPointer.initialize(to: PCLPoint3D(x: 0, y: 0, z: 0)) // Must initialize typed pointers for safety
@@ -262,21 +277,12 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
             pclFrameViewpointsPointer.advanced(by: i).pointee = pclViewpoint3D
         }
 
-        // Sizes
         
-        let pclPointCloudSizesPointer = UnsafeMutablePointer<Int32>.allocate(capacity: inputNumFrames)
-        pclPointCloudSizesPointer.initialize(to: 0) // Must initialize typed pointers for safety
-        defer {
-            pclPointCloudSizesPointer.deinitialize(count: inputNumFrames)
-            pclPointCloudSizesPointer.deallocate(capacity: inputNumFrames)
-        }
-        
-        for i in 0..<inputNumFrames {
-            pclPointCloudSizesPointer.advanced(by: i).pointee = pointCloudFrameSizes[i]
-        }
-        
-        let pclPointCloud = PCLPointCloud(numPoints: Int32(points.count), points: pclPointsPointer, numFrames: Int32(inputNumFrames), pointFrameLengths: pclPointCloudSizesPointer, viewpoints: pclFrameViewpointsPointer)
-        
+        let pclPointCloud = PCLPointCloud(numPoints: Int32(points.count),
+                                          points: pclPointsPointer,
+                                          numFrames: Int32(inputNumFrames),
+                                          pointFrameLengths: pclPointCloudSizesPointer,
+                                          viewpoints: pclFrameViewpointsPointer)
         
         let pclMesh = performSurfaceReconstruction(pclPointCloud)
         defer {
@@ -326,6 +332,12 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
     }
     
     @IBAction func resetScene(sender: UIButton) {
+        
+        points = []
+        colors = []
+        pointCloudFrameSizes = []
+        pointCloudFrameViewpoints = []
+        
         surfaceParentNode.enumerateChildNodes { (node, stop) in node.removeFromParentNode() }
         pointsParentNode.enumerateChildNodes { (node, stop) in node.removeFromParentNode() }
         

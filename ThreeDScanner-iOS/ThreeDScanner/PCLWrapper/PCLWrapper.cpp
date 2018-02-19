@@ -90,7 +90,6 @@ PointCloud<PointNormal>::Ptr constructPointNormalCloud(PCLPointCloud inputPCLPoi
 
 PCLMesh performSurfaceReconstruction(PCLPointCloud inputPCLPointCloud) {
     
-    
     PointCloud<PointNormal>::Ptr cloudSmoothedNormalsPtr = constructPointNormalCloud(inputPCLPointCloud);
     // Now filter if necessary
     
