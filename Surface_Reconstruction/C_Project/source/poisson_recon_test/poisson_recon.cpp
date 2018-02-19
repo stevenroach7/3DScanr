@@ -20,6 +20,7 @@ int
    PointCloud<PointXYZ>::Ptr cloud (new PointCloud<PointXYZ>);
    if(io::loadPLYFile<PointXYZ> ("All_Points.ply", *cloud) == -1){
       cout << "fail" << endl;
+	  system("pause");
 
    } else {
 
