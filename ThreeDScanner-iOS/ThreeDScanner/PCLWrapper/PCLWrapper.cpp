@@ -26,69 +26,76 @@ using namespace std;
 /*
  Helper method to compute normals.
  */
-PointCloud<Normal>::Ptr computeNormals(PointCloud<PointXYZ>::Ptr pointCloudPtr)
+PointCloud<Normal>::Ptr computeNormals(PointCloud<PointXYZ>::Ptr pointCloudPtr, PCLPoint3D viewpoint)
 {
-    cout << "Begin normal estimation" << endl;
     search::KdTree<PointXYZ>::Ptr tree(new search::KdTree<PointXYZ>());
     NormalEstimationOMP<PointXYZ, Normal> ne;
     ne.setSearchMethod(tree);
     ne.setNumberOfThreads(8);
     ne.setInputCloud(pointCloudPtr);
     ne.setKSearch(100);
-    // Compute the centroid of point cloud
-    Eigen::Vector4f centroid;
-    compute3DCentroid(*pointCloudPtr, centroid);
-    ne.setViewPoint(centroid[0], centroid[1], centroid[2]);
+    ne.setViewPoint(viewpoint.x, viewpoint.y, viewpoint.z);
+    
     // Compute normals
     PointCloud<Normal>::Ptr cloudNormalsPtr(new PointCloud<Normal>());
     ne.compute(*cloudNormalsPtr);
-    cout << "Normal estimation complete" << endl;
-    
-    // Reverse normals
-    cout << "Reverse normals' direction" << endl;
-    for (size_t i = 0; i < cloudNormalsPtr->size(); ++i) {
-        cloudNormalsPtr->points[i].normal_x *= -1;
-        cloudNormalsPtr->points[i].normal_y *= -1;
-        cloudNormalsPtr->points[i].normal_z *= -1;
-    }
     return cloudNormalsPtr;
 }
 
-PCLMesh performSurfaceReconstruction(PCLPointCloud inputPCLPointCloud) {
-    
-    // Convert PCLPointCloud to PointCloud<XYZ>
-    PointCloud<PointXYZ>::Ptr pointCloudPtr(new PointCloud<PointXYZ>);
 
-    pointCloudPtr->width    = inputPCLPointCloud.numPoints; // Always size of cloud
+
+PointCloud<PointNormal>::Ptr constructPointNormalCloud(PCLPointCloud inputPCLPointCloud) {
+     cout << "Constructing Point Cloud with normals" << endl;
+    
+    // Initalize Empty Point Cloud
+    PointCloud<PointNormal>::Ptr pointCloudPtr(new PointCloud<PointNormal>);
+    pointCloudPtr->width    = 0; // Always size of cloud
     pointCloudPtr->height   = 1; // Always 1
     pointCloudPtr->is_dense = false;
     pointCloudPtr->points.resize (pointCloudPtr->width * pointCloudPtr->height); // Need this line
     
-    cout << "Converting to PCL point cloud" << endl;
-    cout << "Num points = " << inputPCLPointCloud.numPoints << endl;
+    int currentPointsIdx = 0;
+    for (size_t frameIdx = 0; frameIdx < inputPCLPointCloud.numFrames; frameIdx++) {
+        
+        int framePointCloudSize = inputPCLPointCloud.pointFrameLengths[frameIdx];
+        
+        PointCloud<PointXYZ>::Ptr tempPointCloudPtr(new PointCloud<PointXYZ>);
+        tempPointCloudPtr->width    = framePointCloudSize; // Always size of cloud
+        tempPointCloudPtr->height   = 1; // Always 1
+        tempPointCloudPtr->is_dense = false;
+        tempPointCloudPtr->points.resize (tempPointCloudPtr->width * tempPointCloudPtr->height);
 
-    for (size_t i = 0; i < inputPCLPointCloud.numPoints; i++)
-    {
-        pointCloudPtr->points[i].x = inputPCLPointCloud.points[i].x;
-        pointCloudPtr->points[i].y = inputPCLPointCloud.points[i].y;
-        pointCloudPtr->points[i].z = inputPCLPointCloud.points[i].z;
+        for (size_t i = 0; i < framePointCloudSize; i++, currentPointsIdx++)
+        {
+            tempPointCloudPtr->points[i].x = inputPCLPointCloud.points[currentPointsIdx].x;
+            tempPointCloudPtr->points[i].y = inputPCLPointCloud.points[currentPointsIdx].y;
+            tempPointCloudPtr->points[i].z = inputPCLPointCloud.points[currentPointsIdx].z;
+        }
+        PointCloud<Normal>::Ptr tempPointCloudNormalsPtr = computeNormals(tempPointCloudPtr, inputPCLPointCloud.viewpoints[frameIdx]);
+        
+        // Combine Points and Normals
+        PointCloud<PointNormal>::Ptr tempCloudSmoothedNormalsPtr(new PointCloud<PointNormal>());
+        concatenateFields(*tempPointCloudPtr, *tempPointCloudNormalsPtr, *tempCloudSmoothedNormalsPtr);
+        
+        // Append temp cloud to full cloud
+        *pointCloudPtr += *tempCloudSmoothedNormalsPtr;
     }
+    
+    // Sanity Check
+    cout << "Num points = " << inputPCLPointCloud.numPoints << ", Last Current Points Index = " << currentPointsIdx << endl;
+    
+    return pointCloudPtr;
+}
 
-    cout << "Loaded Point Cloud" << endl;
+
+PCLMesh performSurfaceReconstruction(PCLPointCloud inputPCLPointCloud) {
     
-    cout << "Begin passthrough filter" << endl;
-    PointCloud<PointXYZ>::Ptr filteredPointCloudPtr(new PointCloud<PointXYZ>());
-    PassThrough<PointXYZ> filter;
-    filter.setInputCloud(pointCloudPtr);
-    filter.filter(*filteredPointCloudPtr);
-    cout << "Passthrough filter complete" << endl;
     
-    PointCloud<Normal>::Ptr pointCloudNormalsPtr = computeNormals(filteredPointCloudPtr);
+    PointCloud<PointNormal>::Ptr cloudSmoothedNormalsPtr = constructPointNormalCloud(inputPCLPointCloud);
+    // Now filter if necessary
     
-    cout << "Combine points and normals" << endl;
-    PointCloud<PointNormal>::Ptr cloudSmoothedNormalsPtr(new PointCloud<PointNormal>());
-    concatenateFields(*filteredPointCloudPtr, *pointCloudNormalsPtr, *cloudSmoothedNormalsPtr);
-    
+    cout << "Loaded Point Cloud with normals" << endl;
+
     cout << "Begin poisson reconstruction" << endl;
     Poisson<PointNormal> poisson;
     poisson.setDepth(6);

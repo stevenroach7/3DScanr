@@ -20,6 +20,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
     let sessionConfiguration = ARWorldTrackingConfiguration()
     var points: [vector_float3] = []
     var colors: [UIColor?] = []
+    var pointCloudFrameSizes: [Int32] = []
+    var pointCloudFrameViewpoints: [SCNVector3] = []
     var pointsParentNode = SCNNode()
     var surfaceParentNode = SCNNode()
     var isTorchOn = false
@@ -226,6 +228,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
     
     @IBAction func reconstructSurface(sender: UIButton) {
         
+        // TODO: Decompose input preperation
+        
+        // Points
+        
         let inputPointCloudSize = points.count
         
         let pclPointsPointer = UnsafeMutablePointer<PCLPoint3D>.allocate(capacity: inputPointCloudSize)
@@ -239,7 +245,38 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
             let pclPoint3D = PCLPoint3D(x: Double(points[i].x), y: Double(points[i].y), z: Double(points[i].z))
             pclPointsPointer.advanced(by: i).pointee = pclPoint3D
         }
-        let pclPointCloud = PCLPointCloud(numPoints: Int32(points.count), points: pclPointsPointer)
+        
+        // Viewpoints
+
+        let inputNumFrames = pointCloudFrameViewpoints.count
+        
+        let pclFrameViewpointsPointer = UnsafeMutablePointer<PCLPoint3D>.allocate(capacity: inputNumFrames)
+        pclFrameViewpointsPointer.initialize(to: PCLPoint3D(x: 0, y: 0, z: 0)) // Must initialize typed pointers for safety
+        defer {
+            pclFrameViewpointsPointer.deinitialize(count: inputNumFrames)
+            pclFrameViewpointsPointer.deallocate(capacity: inputNumFrames)
+        }
+        
+        for i in 0..<inputNumFrames{
+            let pclViewpoint3D = PCLPoint3D(x: Double(pointCloudFrameViewpoints[i].x), y: Double(pointCloudFrameViewpoints[i].y), z: Double(pointCloudFrameViewpoints[i].z))
+            pclFrameViewpointsPointer.advanced(by: i).pointee = pclViewpoint3D
+        }
+
+        // Sizes
+        
+        let pclPointCloudSizesPointer = UnsafeMutablePointer<Int32>.allocate(capacity: inputNumFrames)
+        pclPointCloudSizesPointer.initialize(to: 0) // Must initialize typed pointers for safety
+        defer {
+            pclPointCloudSizesPointer.deinitialize(count: inputNumFrames)
+            pclPointCloudSizesPointer.deallocate(capacity: inputNumFrames)
+        }
+        
+        for i in 0..<inputNumFrames {
+            pclPointCloudSizesPointer.advanced(by: i).pointee = pointCloudFrameSizes[i]
+        }
+        
+        let pclPointCloud = PCLPointCloud(numPoints: Int32(points.count), points: pclPointsPointer, numFrames: Int32(inputNumFrames), pointFrameLengths: pclPointCloudSizesPointer, viewpoints: pclFrameViewpointsPointer)
+        
         
         let pclMesh = performSurfaceReconstruction(pclPointCloud)
         defer {
@@ -637,28 +674,15 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         
-//        let vertices = [
-//            SCNVector3(x: 5, y: 4, z: 0),
-//            SCNVector3(x: -5 , y: 4, z: 0),
-//            SCNVector3(x: -5, y: -5, z: 0),
-//            SCNVector3(x: 5, y: -5, z: 0)
-//        ]
-//
-//        let allPrimitives: [Int32] = [0, 1, 2, 0, 2, 3]
-//        let vertexSource = SCNGeometrySource(vertices: vertices)
-//        let element = SCNGeometryElement(indices: allPrimitives, primitiveType: .triangles)
-//        let geometry = SCNGeometry(sources: [vertexSource], elements: [element])
-//
-//        let polygonNode = SCNNode(geometry: geometry)
-//        sceneView.scene.rootNode.addChildNode(polygonNode)
-        
         guard let rawFeaturePoints = sceneView.session.currentFrame?.rawFeaturePoints else {
             return
         }
         let currentPoints = rawFeaturePoints.points
-    
+        
         let pointColors = capturePointColors(currentPoints: currentPoints)
         colors += pointColors // Add current colors to global list
+    
+        let camera = sceneView.session.currentFrame?.camera
    
         if isMultipartUploadOn {
             uploadFolder() // Only uploads if folder hasn't been uploaded
@@ -688,7 +712,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
             uploadTextFile(input: createXyzString(points: point2DPositions), name: "2D_Point_Positions_\(timeString)")
             
             // Upload camera info text file
-            let camera = sceneView.session.currentFrame?.camera
             let transform: String = "Transform: " + (camera?.transform.debugDescription)!
             let eulerAngles: String = "Euler Angles: " + (camera?.eulerAngles.debugDescription)!
             let intrinsics: String = "Intrinsics: " + (camera?.intrinsics.debugDescription)!
@@ -703,6 +726,17 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
             }
             i += 1
         }
-        points += rawFeaturePoints.points
+        points += currentPoints
+        pointCloudFrameSizes.append(Int32(currentPoints.count))
+        
+        // Add view point
+        if let transform = camera?.transform {
+            let position = SCNVector3(
+                transform.columns.3.x,
+                transform.columns.3.y,
+                transform.columns.3.z
+            )
+            pointCloudFrameViewpoints.append(position)
+        }
     }
 }

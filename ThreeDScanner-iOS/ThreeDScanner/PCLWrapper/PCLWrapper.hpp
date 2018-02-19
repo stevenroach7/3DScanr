@@ -22,6 +22,9 @@ extern "C" {
     typedef struct PCLPointCloud {
         int numPoints;
         PCLPoint3D *points;
+        int numFrames;
+        int *pointFrameLengths;
+        PCLPoint3D *viewpoints;
     } PCLPointCloud;
     
     // Output
