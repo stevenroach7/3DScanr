@@ -17,9 +17,13 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
     // MARK: - Properties
     
     @IBOutlet var sceneView: ARSCNView!
+    let sessionConfiguration = ARWorldTrackingConfiguration()
     var points: [vector_float3] = []
     var colors: [UIColor?] = []
+    var pointCloudFrameSizes: [Int32] = []
+    var pointCloudFrameViewpoints: [SCNVector3] = []
     var pointsParentNode = SCNNode()
+    var surfaceParentNode = SCNNode()
     var isTorchOn = false
     var addPointRatio = 1 // Show 1 / addPointRatio of the points
     var folderID = ""
@@ -64,9 +68,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         // Add the sign-in button.
         view.addSubview(signInButton)
         
-        addUploadButton()
+        addReconstructButton()
         addToggleTorchButton()
         addInfoButton()
+        addResetButton()
         addOptionsButton()
         addMultipartUploadSwitch()
         addPendingImageUploadLabel()
@@ -74,26 +79,21 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         createPointMaterial()
         
         sceneView.scene.rootNode.addChildNode(pointsParentNode)
+        sceneView.scene.rootNode.addChildNode(surfaceParentNode)
         
-        let testChars = test()
-        let str: String? = String(validatingUTF8: testChars!)
-        print(str!)
-        
-        let testInt = createTestCloud()
-        print("testInt \(testInt)")
+        sceneView.autoenablesDefaultLighting = true
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        // Create a session configuration
-        let configuration = ARWorldTrackingConfiguration()
-        configuration.planeDetection = ARWorldTrackingConfiguration.PlaneDetection.horizontal
+        // Set Session configuration
+        sessionConfiguration.planeDetection = ARWorldTrackingConfiguration.PlaneDetection.horizontal
         
         // Run the view's session
-        sceneView.session.run(configuration)
+        sceneView.session.run(sessionConfiguration)
         
-        // Show feature points
+        // Show feature points and world origin
         sceneView.debugOptions.insert(ARSCNDebugOptions.showFeaturePoints)
         sceneView.debugOptions.insert(ARSCNDebugOptions.showWorldOrigin)
     }
@@ -111,23 +111,24 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         print("Memory Warning")
     }
     
+    
     // MARK: - UI
     
-    private func addUploadButton() {
-        let uploadButton = UIButton()
-        view.addSubview(uploadButton)
-        uploadButton.translatesAutoresizingMaskIntoConstraints = false
-        uploadButton.setTitle("Upload All", for: .normal)
-        uploadButton.setTitleColor(UIColor.red, for: .normal)
-        uploadButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
-        uploadButton.layer.cornerRadius = 4
-        uploadButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
-        uploadButton.addTarget(self, action: #selector(uploadPointsTextFile(sender:)) , for: .touchUpInside)
+    private func addReconstructButton() {
+        let reconstructButton = UIButton()
+        view.addSubview(reconstructButton)
+        reconstructButton.translatesAutoresizingMaskIntoConstraints = false
+        reconstructButton.setTitle("Reconstruct", for: .normal)
+        reconstructButton.setTitleColor(UIColor.red, for: .normal)
+        reconstructButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
+        reconstructButton.layer.cornerRadius = 4
+        reconstructButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
+        reconstructButton.addTarget(self, action: #selector(reconstructSurface(sender:)) , for: .touchUpInside)
         
         // Contraints
-        uploadButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
-        uploadButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0.0).isActive = true
-        uploadButton.heightAnchor.constraint(equalToConstant: 50)
+        reconstructButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
+        reconstructButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0.0).isActive = true
+        reconstructButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
     private func addToggleTorchButton() {
@@ -162,6 +163,23 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         infoButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
         infoButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -8.0).isActive = true
         infoButton.heightAnchor.constraint(equalToConstant: 50)
+    }
+    
+    private func addResetButton() {
+        let resetButton = UIButton()
+        view.addSubview(resetButton)
+        resetButton.translatesAutoresizingMaskIntoConstraints = false
+        resetButton.setTitle("Reset", for: .normal)
+        resetButton.setTitleColor(UIColor.red, for: .normal)
+        resetButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
+        resetButton.layer.cornerRadius = 4
+        resetButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
+        resetButton.addTarget(self, action: #selector(resetScene(sender:)) , for: .touchUpInside)
+        
+        // Contraints
+        resetButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
+        resetButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -55.0).isActive = true
+        resetButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
     private func addOptionsButton() {
@@ -207,13 +225,130 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         pendingImageUploadLabel.heightAnchor.constraint(equalToConstant: 50)
     }
     
+    
     // MARK: - UI Actions
+    
+    @IBAction func reconstructSurface(sender: UIButton) {
+        
+        // TODO: Decompose input preperation
+        
+        // Points
+        
+        let inputPointCloudSize = points.count
+        
+        let pclPointsPointer = UnsafeMutablePointer<PCLPoint3D>.allocate(capacity: inputPointCloudSize)
+        pclPointsPointer.initialize(to: PCLPoint3D(x: 0, y: 0, z: 0)) // Must initialize typed pointers for safety
+        defer {
+            pclPointsPointer.deinitialize(count: inputPointCloudSize)
+            pclPointsPointer.deallocate(capacity: inputPointCloudSize)
+        }
+        
+        for i in 0..<inputPointCloudSize {
+            let pclPoint3D = PCLPoint3D(x: Double(points[i].x), y: Double(points[i].y), z: Double(points[i].z))
+            pclPointsPointer.advanced(by: i).pointee = pclPoint3D
+        }
+        
+        // Sizes
+
+        let inputNumFrames = pointCloudFrameViewpoints.count
+        
+        let pclPointCloudSizesPointer = UnsafeMutablePointer<Int32>.allocate(capacity: inputNumFrames)
+        pclPointCloudSizesPointer.initialize(to: 0) // Must initialize typed pointers for safety
+        defer {
+            pclPointCloudSizesPointer.deinitialize(count: inputNumFrames)
+            pclPointCloudSizesPointer.deallocate(capacity: inputNumFrames)
+        }
+        
+        for i in 0..<inputNumFrames {
+            pclPointCloudSizesPointer.advanced(by: i).pointee = pointCloudFrameSizes[i]
+        }
+        
+        // Viewpoints
+        
+        let pclFrameViewpointsPointer = UnsafeMutablePointer<PCLPoint3D>.allocate(capacity: inputNumFrames)
+        pclFrameViewpointsPointer.initialize(to: PCLPoint3D(x: 0, y: 0, z: 0)) // Must initialize typed pointers for safety
+        defer {
+            pclFrameViewpointsPointer.deinitialize(count: inputNumFrames)
+            pclFrameViewpointsPointer.deallocate(capacity: inputNumFrames)
+        }
+        
+        for i in 0..<inputNumFrames{
+            let pclViewpoint3D = PCLPoint3D(x: Double(pointCloudFrameViewpoints[i].x), y: Double(pointCloudFrameViewpoints[i].y), z: Double(pointCloudFrameViewpoints[i].z))
+            pclFrameViewpointsPointer.advanced(by: i).pointee = pclViewpoint3D
+        }
+
+        
+        let pclPointCloud = PCLPointCloud(numPoints: Int32(points.count),
+                                          points: pclPointsPointer,
+                                          numFrames: Int32(inputNumFrames),
+                                          pointFrameLengths: pclPointCloudSizesPointer,
+                                          viewpoints: pclFrameViewpointsPointer)
+        
+        let pclMesh = performSurfaceReconstruction(pclPointCloud)
+        defer {
+            free(pclMesh.points)
+            free(pclMesh.polygons)
+        }
+
+        print("mesh num points \(pclMesh.numPoints)")
+        print("mesh num faces \(pclMesh.numFaces)")
+        
+        // Remove current surfaces before displaying new surface
+        surfaceParentNode.enumerateChildNodes { (node, stop) in node.removeFromParentNode() }
+        
+        let surfaceNode = constructSurfaceNode(pclMesh: pclMesh)
+        surfaceParentNode.addChildNode(surfaceNode)
+        
+        showAlert(title: "Surface Reconstructed", message: "\(pclMesh.numFaces) faces")
+    }
+    
+    private func constructSurfaceNode(pclMesh: PCLMesh) -> SCNNode {
+        
+        var vertices = [SCNVector3]()
+        for i in 0..<pclMesh.numPoints {
+            vertices.append(SCNVector3(x: Float(pclMesh.points[i].x), y: Float(pclMesh.points[i].y), z: Float(pclMesh.points[i].z)))
+        }
+        let vertexSource = SCNGeometrySource(vertices: vertices)
+        
+        var elements = [SCNGeometryElement]()
+        for i in 0..<pclMesh.numFaces {
+            let allPrimitives: [Int32] = [pclMesh.polygons[i].v1, pclMesh.polygons[i].v2, pclMesh.polygons[i].v3]
+            let element = SCNGeometryElement(indices: allPrimitives, primitiveType: .triangles)
+            elements.append(element)
+        }
+        
+        let surfaceGeometry = SCNGeometry(sources: [vertexSource], elements: elements)
+        surfaceGeometry.firstMaterial?.isDoubleSided = true;
+        surfaceGeometry.firstMaterial?.diffuse.contents = UIColor(displayP3Red: 135/255, green: 206/255, blue: 250/255, alpha: 1)
+        surfaceGeometry.firstMaterial?.lightingModel = .blinn
+        return SCNNode(geometry: surfaceGeometry)
+    }
     
     @IBAction func uploadPointsTextFile(sender: UIButton) {
         uploadFolder()
         
         let input = createXyzRgbString(points: points, pointColors: colors)
         uploadTextFile(input: input, name: "All_Points_and_Colors")
+    }
+    
+    @IBAction func resetScene(sender: UIButton) {
+        
+        points = []
+        colors = []
+        pointCloudFrameSizes = []
+        pointCloudFrameViewpoints = []
+        
+        surfaceParentNode.enumerateChildNodes { (node, stop) in node.removeFromParentNode() }
+        pointsParentNode.enumerateChildNodes { (node, stop) in node.removeFromParentNode() }
+        
+        sceneView.debugOptions.remove(ARSCNDebugOptions.showFeaturePoints)
+        sceneView.debugOptions.remove(ARSCNDebugOptions.showWorldOrigin)
+        
+        // Run the view's session
+        sceneView.session.run(sessionConfiguration, options: [ARSession.RunOptions.resetTracking, ARSession.RunOptions.removeExistingAnchors])
+        
+        sceneView.debugOptions.insert(ARSCNDebugOptions.showFeaturePoints)
+        sceneView.debugOptions.insert(ARSCNDebugOptions.showWorldOrigin)
     }
     
     @IBAction func toggleTorch(sender: UIButton) {
@@ -551,37 +686,15 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         
-        // TODO: Test if this is useful
-        // Create anchor using the camera’s current position
-//        if let currentFrame = sceneView.session.currentFrame {
-//            // Create a transform with a translation of 0.2 meters in front
-//            // of the camera
-//            var translation = matrix_identity_float4x4
-//            translation.columns.3.z = -0.2
-//            let transform = simd_mul(
-//                currentFrame.camera.transform,
-//                translation
-//            )
-//            // Add a new anchor to the session
-//            let anchor = ARAnchor(transform: transform)
-//            sceneView.session.add(anchor: anchor)
-//
-//            let sphere = SCNSphere(radius: 0.01)
-//            let material = SCNMaterial()
-//            material.diffuse.contents = UIColor.blue
-//            sphere.firstMaterial = material
-//            let sphereNode = SCNNode(geometry: sphere)
-//            sphereNode.transform = SCNMatrix4(anchor.transform)
-//            pointsParentNode.addChildNode(sphereNode)
-//        }
-        
         guard let rawFeaturePoints = sceneView.session.currentFrame?.rawFeaturePoints else {
             return
         }
         let currentPoints = rawFeaturePoints.points
-    
+        
         let pointColors = capturePointColors(currentPoints: currentPoints)
         colors += pointColors // Add current colors to global list
+    
+        let camera = sceneView.session.currentFrame?.camera
    
         if isMultipartUploadOn {
             uploadFolder() // Only uploads if folder hasn't been uploaded
@@ -611,7 +724,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
             uploadTextFile(input: createXyzString(points: point2DPositions), name: "2D_Point_Positions_\(timeString)")
             
             // Upload camera info text file
-            let camera = sceneView.session.currentFrame?.camera
             let transform: String = "Transform: " + (camera?.transform.debugDescription)!
             let eulerAngles: String = "Euler Angles: " + (camera?.eulerAngles.debugDescription)!
             let intrinsics: String = "Intrinsics: " + (camera?.intrinsics.debugDescription)!
@@ -626,6 +738,17 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
             }
             i += 1
         }
-        points += rawFeaturePoints.points
+        points += currentPoints
+        pointCloudFrameSizes.append(Int32(currentPoints.count))
+        
+        // Add view point
+        if let transform = camera?.transform {
+            let position = SCNVector3(
+                transform.columns.3.x,
+                transform.columns.3.y,
+                transform.columns.3.z
+            )
+            pointCloudFrameViewpoints.append(position)
+        }
     }
 }
