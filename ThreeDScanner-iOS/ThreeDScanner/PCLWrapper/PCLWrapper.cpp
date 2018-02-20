@@ -86,6 +86,38 @@ PointCloud<PointNormal>::Ptr constructPointNormalCloud(PCLPointCloud inputPCLPoi
     return pointCloudPtr;
 }
 
+PCLPointNormalCloud constructPointCloudWithNormalsForTesting(PCLPointCloud inputPCLPointCloud) {
+    
+    PointCloud<PointNormal>::Ptr pointNormalCloud = constructPointNormalCloud(inputPCLPointCloud);
+    
+    // Convert to output format
+    long int numPoints = pointNormalCloud->size();
+    
+    PCLPoint3D *pointsPtr;
+    pointsPtr = (PCLPoint3D *) calloc(numPoints, sizeof(*pointsPtr)); // Must be freed in Swift after method call
+    PCLPoint3D *normalsPtr;
+    normalsPtr = (PCLPoint3D *) calloc(numPoints, sizeof(*normalsPtr)); // Must be freed in Swift after method call
+    for (size_t i = 0; i < numPoints; i++)
+    {
+        pointsPtr[i].x = pointNormalCloud->points[i].x;
+        pointsPtr[i].y = pointNormalCloud->points[i].y;
+        pointsPtr[i].z = pointNormalCloud->points[i].z;
+        normalsPtr[i].x = pointNormalCloud->points[i].normal_x;
+        normalsPtr[i].y = pointNormalCloud->points[i].normal_y;
+        normalsPtr[i].z = pointNormalCloud->points[i].normal_z;
+    }
+
+    PCLPointNormalCloud pclPointNormalCloud;
+    pclPointNormalCloud.numPoints = (int) numPoints;
+    pclPointNormalCloud.points = pointsPtr;
+    pclPointNormalCloud.normals = normalsPtr;
+    pclPointNormalCloud.numFrames = inputPCLPointCloud.numFrames;
+    pclPointNormalCloud.pointFrameLengths = inputPCLPointCloud.pointFrameLengths;
+    pclPointNormalCloud.viewpoints = inputPCLPointCloud.viewpoints;
+    
+    return pclPointNormalCloud;
+}
+
 PCLMesh performSurfaceReconstruction(PCLPointCloud inputPCLPointCloud) {
     
     PointCloud<PointNormal>::Ptr pointNormalCloud = constructPointNormalCloud(inputPCLPointCloud);

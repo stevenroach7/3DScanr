@@ -289,7 +289,18 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
             free(pclMesh.points)
             free(pclMesh.polygons)
         }
-
+        
+        
+        if isMultipartUploadOn {
+            // For Testing
+            let pclPointNormalTestingCloud = constructPointCloudWithNormalsForTesting(pclPointCloud)
+            uploadPointNormalViewpointTextFiles(pclPointNormalCloud: pclPointNormalTestingCloud)
+            defer {
+                free(pclPointNormalTestingCloud.points)
+                free(pclPointNormalTestingCloud.normals)
+            }
+        }
+        
         print("mesh num points \(pclMesh.numPoints)")
         print("mesh num faces \(pclMesh.numFaces)")
         
@@ -300,6 +311,39 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         surfaceParentNode.addChildNode(surfaceNode)
         
         showAlert(title: "Surface Reconstructed", message: "\(pclMesh.numFaces) faces")
+    }
+    
+    private func uploadPointNormalViewpointTextFiles(pclPointNormalCloud: PCLPointNormalCloud) {
+        
+        var currentPointsIdx = 0
+        
+        var allPointsNormalsString = "\n"
+        
+        for frameIdx in 0..<Int(pclPointNormalCloud.numFrames) {
+            
+            var framePointsNormalsString = ""
+            framePointsNormalsString.append("\(pclPointNormalCloud.viewpoints[frameIdx].x);")
+            framePointsNormalsString.append("\(pclPointNormalCloud.viewpoints[frameIdx].y);")
+            framePointsNormalsString.append("\(pclPointNormalCloud.viewpoints[frameIdx].z)\n")
+            
+            for _ in 0..<pclPointNormalCloud.pointFrameLengths[frameIdx] {
+                
+                var pointNormalLineString = ""
+                pointNormalLineString.append("\(pclPointNormalCloud.points[currentPointsIdx].x);")
+                pointNormalLineString.append("\(pclPointNormalCloud.points[currentPointsIdx].y);")
+                pointNormalLineString.append("\(pclPointNormalCloud.points[currentPointsIdx].z);")
+                pointNormalLineString.append("\(pclPointNormalCloud.normals[currentPointsIdx].x);")
+                pointNormalLineString.append("\(pclPointNormalCloud.normals[currentPointsIdx].y);")
+                pointNormalLineString.append("\(pclPointNormalCloud.normals[currentPointsIdx].z)\n")
+                
+                framePointsNormalsString.append(pointNormalLineString)
+                allPointsNormalsString.append(pointNormalLineString)
+                
+                currentPointsIdx += 1
+            }
+            uploadTextFile(input: framePointsNormalsString, name: "Frame_index_\(frameIdx)")
+        }
+        uploadTextFile(input: allPointsNormalsString, name: "All_Points_and_Normals")
     }
     
     private func constructSurfaceNode(pclMesh: PCLMesh) -> SCNNode {
@@ -696,39 +740,39 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
     
         let camera = sceneView.session.currentFrame?.camera
    
-        if isMultipartUploadOn {
-            uploadFolder() // Only uploads if folder hasn't been uploaded
-
-            // Create corresponding file name for different types of uploads
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "H:m:ss:SSSS"
-            let timeString = dateFormatter.string(from: Date())
+//        if isMultipartUploadOn {
+//            uploadFolder() // Only uploads if folder hasn't been uploaded
+//
+//            // Create corresponding file name for different types of uploads
+//            let dateFormatter = DateFormatter()
+//            dateFormatter.dateFormat = "H:m:ss:SSSS"
+//            let timeString = dateFormatter.string(from: Date())
+//
+//            // Upload Image
+//            if let frame = sceneView.session.currentFrame {
+//                let imageWithCVPixelBuffer = frame.capturedImage
+//                let ciImage = CIImage(cvPixelBuffer: imageWithCVPixelBuffer)
+//                let tempContext = CIContext()
+//                let videoImage = tempContext.createCGImage(ciImage, from: CGRect(x: 0, y: 0, width: CGFloat(CVPixelBufferGetWidth(imageWithCVPixelBuffer)), height: CGFloat(CVPixelBufferGetHeight(imageWithCVPixelBuffer))))
+//                let image = UIImage(cgImage: videoImage!, scale: 1.0, orientation: determineImageOrientation())
+//
+//                pendingImageUploads += 1
+//                uploadImageFile(image: image, name: "Photo_\(timeString)")
+//            }
             
-            // Upload Image
-            if let frame = sceneView.session.currentFrame {
-                let imageWithCVPixelBuffer = frame.capturedImage
-                let ciImage = CIImage(cvPixelBuffer: imageWithCVPixelBuffer)
-                let tempContext = CIContext()
-                let videoImage = tempContext.createCGImage(ciImage, from: CGRect(x: 0, y: 0, width: CGFloat(CVPixelBufferGetWidth(imageWithCVPixelBuffer)), height: CGFloat(CVPixelBufferGetHeight(imageWithCVPixelBuffer))))
-                let image = UIImage(cgImage: videoImage!, scale: 1.0, orientation: determineImageOrientation())
-
-                pendingImageUploads += 1
-                uploadImageFile(image: image, name: "Photo_\(timeString)")
-            }
+//            // Upload Points and Colors text file
+//            uploadTextFile(input: createXyzRgbString(points: currentPoints, pointColors: pointColors), name: "Points_and_Colors_\(timeString)")
             
-            // Upload Points and Colors text file
-            uploadTextFile(input: createXyzRgbString(points: currentPoints, pointColors: pointColors), name: "Points_and_Colors_\(timeString)")
+//            // Upload 2D point positions
+//            let point2DPositions = projectPoint2DPositions(currentPoints: currentPoints)
+//            uploadTextFile(input: createXyzString(points: point2DPositions), name: "2D_Point_Positions_\(timeString)")
             
-            // Upload 2D point positions
-            let point2DPositions = projectPoint2DPositions(currentPoints: currentPoints)
-            uploadTextFile(input: createXyzString(points: point2DPositions), name: "2D_Point_Positions_\(timeString)")
-            
-            // Upload camera info text file
-            let transform: String = "Transform: " + (camera?.transform.debugDescription)!
-            let eulerAngles: String = "Euler Angles: " + (camera?.eulerAngles.debugDescription)!
-            let intrinsics: String = "Intrinsics: " + (camera?.intrinsics.debugDescription)!
-            uploadTextFile(input: transform + "\n" + eulerAngles + "\n" + intrinsics, name: "6DOF_\(timeString)")
-        }
+//            // Upload camera info text file
+//            let transform: String = "Transform: " + (camera?.transform.debugDescription)!
+//            let eulerAngles: String = "Euler Angles: " + (camera?.eulerAngles.debugDescription)!
+//            let intrinsics: String = "Intrinsics: " + (camera?.intrinsics.debugDescription)!
+//            uploadTextFile(input: transform + "\n" + eulerAngles + "\n" + intrinsics, name: "6DOF_\(timeString)")
+//        }
         
         // Display points
         var i = 0
