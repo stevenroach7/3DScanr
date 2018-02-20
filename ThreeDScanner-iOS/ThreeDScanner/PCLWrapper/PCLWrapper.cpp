@@ -17,6 +17,7 @@
 #include <pcl/surface/mls.h>
 #include <pcl/surface/poisson.h>
 #include <pcl/filters/passthrough.h>
+#include <pcl/filters/statistical_outlier_removal.h>
 #include <pcl/features/integral_image_normal.h>
 
 using namespace pcl;
@@ -41,8 +42,6 @@ PointCloud<Normal>::Ptr computeNormals(PointCloud<PointXYZ>::Ptr pointCloudPtr, 
     ne.compute(*cloudNormalsPtr);
     return cloudNormalsPtr;
 }
-
-
 
 PointCloud<PointNormal>::Ptr constructPointNormalCloud(PCLPointCloud inputPCLPointCloud) {
      cout << "Constructing Point Cloud with normals" << endl;
@@ -87,24 +86,62 @@ PointCloud<PointNormal>::Ptr constructPointNormalCloud(PCLPointCloud inputPCLPoi
     return pointCloudPtr;
 }
 
+PCLPointNormalCloud constructPointCloudWithNormalsForTesting(PCLPointCloud inputPCLPointCloud) {
+    
+    PointCloud<PointNormal>::Ptr pointNormalCloud = constructPointNormalCloud(inputPCLPointCloud);
+    
+    // Convert to output format
+    long int numPoints = pointNormalCloud->size();
+    
+    PCLPoint3D *pointsPtr;
+    pointsPtr = (PCLPoint3D *) calloc(numPoints, sizeof(*pointsPtr)); // Must be freed in Swift after method call
+    PCLPoint3D *normalsPtr;
+    normalsPtr = (PCLPoint3D *) calloc(numPoints, sizeof(*normalsPtr)); // Must be freed in Swift after method call
+    for (size_t i = 0; i < numPoints; i++)
+    {
+        pointsPtr[i].x = pointNormalCloud->points[i].x;
+        pointsPtr[i].y = pointNormalCloud->points[i].y;
+        pointsPtr[i].z = pointNormalCloud->points[i].z;
+        normalsPtr[i].x = pointNormalCloud->points[i].normal_x;
+        normalsPtr[i].y = pointNormalCloud->points[i].normal_y;
+        normalsPtr[i].z = pointNormalCloud->points[i].normal_z;
+    }
+
+    PCLPointNormalCloud pclPointNormalCloud;
+    pclPointNormalCloud.numPoints = (int) numPoints;
+    pclPointNormalCloud.points = pointsPtr;
+    pclPointNormalCloud.normals = normalsPtr;
+    pclPointNormalCloud.numFrames = inputPCLPointCloud.numFrames;
+    pclPointNormalCloud.pointFrameLengths = inputPCLPointCloud.pointFrameLengths;
+    pclPointNormalCloud.viewpoints = inputPCLPointCloud.viewpoints;
+    
+    return pclPointNormalCloud;
+}
 
 PCLMesh performSurfaceReconstruction(PCLPointCloud inputPCLPointCloud) {
     
-    PointCloud<PointNormal>::Ptr cloudSmoothedNormalsPtr = constructPointNormalCloud(inputPCLPointCloud);
-    // Now filter if necessary
-    
+    PointCloud<PointNormal>::Ptr pointNormalCloud = constructPointNormalCloud(inputPCLPointCloud);
     cout << "Loaded Point Cloud with normals" << endl;
+    
+    cout << "Statistically Filtering points" << endl;
+    StatisticalOutlierRemoval<PointNormal> statFilter;
+    statFilter.setInputCloud(pointNormalCloud);
+    statFilter.setMeanK(50);
+    statFilter.setStddevMulThresh(1.0); // 0.6 - 1.0
+    
+    PointCloud<PointNormal>::Ptr filteredPointCloudPtr(new PointCloud<PointNormal>);
+    statFilter.filter(*filteredPointCloudPtr);
+    cout << "Statistical points filtering complete" << endl;
 
     cout << "Begin poisson reconstruction" << endl;
     Poisson<PointNormal> poisson;
     poisson.setDepth(6);
-    poisson.setInputCloud(cloudSmoothedNormalsPtr);
+    poisson.setInputCloud(filteredPointCloudPtr);
     poisson.setPointWeight(0);
     poisson.setSamplesPerNode(1);
     
     PolygonMesh mesh;
     poisson.reconstruct(mesh);
-    
     cout << "Mesh number of polygons: " << mesh.polygons.size() << endl;
     cout << "Poisson reconstruction complete" << endl;
     

@@ -40,10 +40,20 @@ extern "C" {
         PCLPolygon *polygons;
     } PCLMesh;
     
+    typedef struct PCLPointNormalCloud { // Used for outputting to text files for testing
+        int numPoints;
+        PCLPoint3D *points;
+        PCLPoint3D *normals;
+        int numFrames;
+        int *pointFrameLengths;
+        PCLPoint3D *viewpoints;
+    } PCLPointNormalCloud;
+    
     
     // Header declarations
     
     PCLMesh performSurfaceReconstruction(PCLPointCloud pointCloud);
+    PCLPointNormalCloud constructPointCloudWithNormalsForTesting(PCLPointCloud inputPCLPointCloud);
     
 #ifdef __cplusplus
 }
