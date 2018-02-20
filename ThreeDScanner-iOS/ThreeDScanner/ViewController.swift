@@ -74,7 +74,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         addResetButton()
         addOptionsButton()
         addMultipartUploadSwitch()
-        addPendingImageUploadLabel()
+//        addPendingImageUploadLabel()
+        addExportButton()
         
         createPointMaterial()
         
@@ -218,11 +219,28 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         pendingImageUploadLabel.translatesAutoresizingMaskIntoConstraints = false
         pendingImageUploadLabel.textAlignment = .center
         pendingImageUploadLabel.text = "\(pendingImageUploads) pending uploads"
-        
+
         // Contraints
         pendingImageUploadLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 24.0).isActive = true
         pendingImageUploadLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0.0).isActive = true
         pendingImageUploadLabel.heightAnchor.constraint(equalToConstant: 50)
+    }
+    
+    private func addExportButton() {
+        let exportButton = UIButton()
+        view.addSubview(exportButton)
+        exportButton.translatesAutoresizingMaskIntoConstraints = false
+        exportButton.setTitle("Export Surface", for: .normal)
+        exportButton.setTitleColor(UIColor.red, for: .normal)
+        exportButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
+        exportButton.layer.cornerRadius = 4
+        exportButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
+        exportButton.addTarget(self, action: #selector(exportSurface(sender:)) , for: .touchUpInside)
+        
+        // Contraints
+        exportButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
+        exportButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0.0).isActive = true
+        exportButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
     
@@ -368,6 +386,16 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         return SCNNode(geometry: surfaceGeometry)
     }
     
+    @IBAction func exportSurface(sender: UIButton) {
+        let plyString = createPlyMeshString()
+        // TODO: upload text file
+    }
+    
+    private func createPlyMeshString() -> String {
+        // TODO: Write this function
+        return ""
+    }
+    
     @IBAction func uploadPointsTextFile(sender: UIButton) {
         uploadFolder()
         
@@ -480,6 +508,28 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
     }
     
     // MARK: - Google Drive Helper Functions
+    
+    private func uploadObjFile(input: String, name: String) {
+        let fileData = input.data(using: .utf8)!
+
+        let metadata = GTLRDrive_File()
+        metadata.parents = [folderID]
+        metadata.name = name + ".obj"
+
+        let uploadParameters: GTLRUploadParameters = GTLRUploadParameters(data: fileData, mimeType: "text/plain")
+        uploadParameters.shouldUploadWithSingleRequest = true
+
+        let query = GTLRDriveQuery_FilesCreate.query(withObject: metadata, uploadParameters: uploadParameters)
+        self.service.executeQuery(query, completionHandler: {(ticket:GTLRServiceTicket, object:Any?, error:Error?) in
+            if error == nil {
+                print("Text File Upload Success")
+            }
+            else {
+                print("An error occurred: \(String(describing: error))")
+                self.showAlert(title: "Upload Error", message: "Make sure that the folder has been uploaded successfully and try again.")
+            }
+        })
+    }
     
     private func uploadTextFile(input: String, name: String) {
         let fileData = input.data(using: .utf8)!
