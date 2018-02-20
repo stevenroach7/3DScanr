@@ -127,7 +127,7 @@ PCLMesh performSurfaceReconstruction(PCLPointCloud inputPCLPointCloud) {
     StatisticalOutlierRemoval<PointNormal> statFilter;
     statFilter.setInputCloud(pointNormalCloud);
     statFilter.setMeanK(50);
-    statFilter.setStddevMulThresh(1.0); // 0.6 - 1.0
+    statFilter.setStddevMulThresh(0.75); // 0.6 - 1.0
     
     PointCloud<PointNormal>::Ptr filteredPointCloudPtr(new PointCloud<PointNormal>);
     statFilter.filter(*filteredPointCloudPtr);
@@ -137,8 +137,8 @@ PCLMesh performSurfaceReconstruction(PCLPointCloud inputPCLPointCloud) {
     Poisson<PointNormal> poisson;
     poisson.setDepth(6);
     poisson.setInputCloud(filteredPointCloudPtr);
-    poisson.setPointWeight(0);
-    poisson.setSamplesPerNode(1);
+    poisson.setPointWeight(4);
+    poisson.setSamplesPerNode(1.5);
     
     PolygonMesh mesh;
     poisson.reconstruct(mesh);
