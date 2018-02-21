@@ -260,6 +260,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         
         let pclMesh = performSurfaceReconstruction(pclPointCloud)
         defer {
+            // The mesh points and polygons pointers were allocated in C so need to be freed here
             free(pclMesh.points)
             free(pclMesh.polygons)
         }
@@ -269,6 +270,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
             let pclPointNormalTestingCloud = constructPointCloudWithNormalsForTesting(pclPointCloud)
             uploadPointNormalViewpointTextFiles(pclPointNormalCloud: pclPointNormalTestingCloud)
             defer {
+                // The points and normals pointers were allocated in C so need to be freed here
                 free(pclPointNormalTestingCloud.points)
                 free(pclPointNormalTestingCloud.normals)
             }

@@ -112,8 +112,9 @@ PCLPointNormalCloud constructPointCloudWithNormalsForTesting(PCLPointCloud input
     pclPointNormalCloud.points = pointsPtr;
     pclPointNormalCloud.normals = normalsPtr;
     pclPointNormalCloud.numFrames = inputPCLPointCloud.numFrames;
+    // These are pointing to memory managed by Swift but it shouldn't get cleaned up until after the Swift function finishes executing so is okay as a temporary measure
     pclPointNormalCloud.pointFrameLengths = inputPCLPointCloud.pointFrameLengths;
-    pclPointNormalCloud.viewpoints = inputPCLPointCloud.viewpoints; // Does this need to be freed?
+    pclPointNormalCloud.viewpoints = inputPCLPointCloud.viewpoints;
     
     return pclPointNormalCloud;
 }
