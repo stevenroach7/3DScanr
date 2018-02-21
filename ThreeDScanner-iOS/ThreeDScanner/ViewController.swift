@@ -11,6 +11,7 @@ import SceneKit
 import ARKit
 import GoogleAPIClientForREST
 import GoogleSignIn
+import SceneKit.ModelIO
 
 class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDelegate, GIDSignInDelegate, GIDSignInUIDelegate {
 
@@ -248,66 +249,20 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
     
     @IBAction func reconstructSurface(sender: UIButton) {
         
-        // TODO: Decompose input preperation
-        
-        // Points
-        
-        let inputPointCloudSize = points.count
-        
-        let pclPointsPointer = UnsafeMutablePointer<PCLPoint3D>.allocate(capacity: inputPointCloudSize)
-        pclPointsPointer.initialize(to: PCLPoint3D(x: 0, y: 0, z: 0)) // Must initialize typed pointers for safety
-        defer {
-            pclPointsPointer.deinitialize(count: inputPointCloudSize)
-            pclPointsPointer.deallocate(capacity: inputPointCloudSize)
-        }
-        
-        for i in 0..<inputPointCloudSize {
-            let pclPoint3D = PCLPoint3D(x: Double(points[i].x), y: Double(points[i].y), z: Double(points[i].z))
-            pclPointsPointer.advanced(by: i).pointee = pclPoint3D
-        }
-        
-        // Sizes
-
-        let inputNumFrames = pointCloudFrameViewpoints.count
-        
-        let pclPointCloudSizesPointer = UnsafeMutablePointer<Int32>.allocate(capacity: inputNumFrames)
-        pclPointCloudSizesPointer.initialize(to: 0) // Must initialize typed pointers for safety
-        defer {
-            pclPointCloudSizesPointer.deinitialize(count: inputNumFrames)
-            pclPointCloudSizesPointer.deallocate(capacity: inputNumFrames)
-        }
-        
-        for i in 0..<inputNumFrames {
-            pclPointCloudSizesPointer.advanced(by: i).pointee = pointCloudFrameSizes[i]
-        }
-        
-        // Viewpoints
-        
-        let pclFrameViewpointsPointer = UnsafeMutablePointer<PCLPoint3D>.allocate(capacity: inputNumFrames)
-        pclFrameViewpointsPointer.initialize(to: PCLPoint3D(x: 0, y: 0, z: 0)) // Must initialize typed pointers for safety
-        defer {
-            pclFrameViewpointsPointer.deinitialize(count: inputNumFrames)
-            pclFrameViewpointsPointer.deallocate(capacity: inputNumFrames)
-        }
-        
-        for i in 0..<inputNumFrames{
-            let pclViewpoint3D = PCLPoint3D(x: Double(pointCloudFrameViewpoints[i].x), y: Double(pointCloudFrameViewpoints[i].y), z: Double(pointCloudFrameViewpoints[i].z))
-            pclFrameViewpointsPointer.advanced(by: i).pointee = pclViewpoint3D
-        }
-
+        let pclPoints = points.map { PCLPoint3D(x: Double($0.x), y: Double($0.y), z: Double($0.z)) }
+        let pclViewpoints = pointCloudFrameViewpoints.map { PCLPoint3D(x: Double($0.x), y: Double($0.y), z: Double($0.z)) }
         
         let pclPointCloud = PCLPointCloud(numPoints: Int32(points.count),
-                                          points: pclPointsPointer,
-                                          numFrames: Int32(inputNumFrames),
-                                          pointFrameLengths: pclPointCloudSizesPointer,
-                                          viewpoints: pclFrameViewpointsPointer)
+                                          points: pclPoints,
+                                          numFrames: Int32(pointCloudFrameViewpoints.count),
+                                          pointFrameLengths: pointCloudFrameSizes,
+                                          viewpoints: pclViewpoints)
         
         let pclMesh = performSurfaceReconstruction(pclPointCloud)
         defer {
             free(pclMesh.points)
             free(pclMesh.polygons)
         }
-        
         
         if isMultipartUploadOn {
             // For Testing
@@ -387,13 +342,19 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
     }
     
     @IBAction func exportSurface(sender: UIButton) {
-        let plyString = createPlyMeshString()
-        // TODO: upload text file
-    }
+        let mdlAsset = MDLAsset()
+        surfaceParentNode.enumerateChildNodes { (node, stop) in mdlAsset.add(MDLObject(scnNode: node)) }
+        
+        // Create temporary file
+        
+        // Write to file
+        
+        // Read from file
+        
+        // Upload String contents to G drive
+        
+        // Discard file
     
-    private func createPlyMeshString() -> String {
-        // TODO: Write this function
-        return ""
     }
     
     @IBAction func uploadPointsTextFile(sender: UIButton) {

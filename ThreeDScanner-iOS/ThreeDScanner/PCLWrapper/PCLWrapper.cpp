@@ -113,7 +113,7 @@ PCLPointNormalCloud constructPointCloudWithNormalsForTesting(PCLPointCloud input
     pclPointNormalCloud.normals = normalsPtr;
     pclPointNormalCloud.numFrames = inputPCLPointCloud.numFrames;
     pclPointNormalCloud.pointFrameLengths = inputPCLPointCloud.pointFrameLengths;
-    pclPointNormalCloud.viewpoints = inputPCLPointCloud.viewpoints;
+    pclPointNormalCloud.viewpoints = inputPCLPointCloud.viewpoints; // Does this need to be freed?
     
     return pclPointNormalCloud;
 }
