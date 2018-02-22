@@ -44,6 +44,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
     }
     let imageQuality = 0.85 // Value between 0 and 1
     var pointMaterial: SCNMaterial?
+    var surfaceGeometry: SCNGeometry?
 
     // If modifying these scopes, delete your previously saved credentials by
     // resetting the iOS simulator or uninstall the app.
@@ -316,9 +317,13 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
                 
                 currentPointsIdx += 1
             }
-            uploadTextFile(input: framePointsNormalsString, name: "Frame_index_\(frameIdx)")
+            do {
+                try uploadTextFile(input: framePointsNormalsString, name: "Frame_index_\(frameIdx)")
+            } catch {}
         }
-        uploadTextFile(input: allPointsNormalsString, name: "All_Points_and_Normals")
+        do {
+            try uploadTextFile(input: allPointsNormalsString, name: "All_Points_and_Normals")
+        } catch {}
     }
     
     private func constructSurfaceNode(pclMesh: PCLMesh) -> SCNNode {
@@ -336,34 +341,73 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
             elements.append(element)
         }
         
-        let surfaceGeometry = SCNGeometry(sources: [vertexSource], elements: elements)
-        surfaceGeometry.firstMaterial?.isDoubleSided = true;
-        surfaceGeometry.firstMaterial?.diffuse.contents = UIColor(displayP3Red: 135/255, green: 206/255, blue: 250/255, alpha: 1)
-        surfaceGeometry.firstMaterial?.lightingModel = .blinn
-        return SCNNode(geometry: surfaceGeometry)
+        surfaceGeometry = SCNGeometry(sources: [vertexSource], elements: elements)
+        surfaceGeometry!.firstMaterial?.isDoubleSided = true;
+        surfaceGeometry!.firstMaterial?.diffuse.contents = UIColor(displayP3Red: 135/255, green: 206/255, blue: 250/255, alpha: 1)
+        surfaceGeometry!.firstMaterial?.lightingModel = .blinn
+        return SCNNode(geometry: surfaceGeometry!)
     }
     
     @IBAction func exportSurface(sender: UIButton) {
-        let mdlAsset = MDLAsset()
-        surfaceParentNode.enumerateChildNodes { (node, stop) in mdlAsset.add(MDLObject(scnNode: node)) }
+        uploadFolder()
+        
+        guard let surfaceGeometry = surfaceGeometry else {
+            showAlert(title: "No Surface to Export", message: "Press Reconstruct Surface and then export.")
+            return
+        }
+        
+        // Create MDLAsset that can be exported
+        var mdlAsset = MDLAsset()
+        let mdlMesh = MDLMesh(scnGeometry: surfaceGeometry)
+        mdlAsset = MDLAsset(bufferAllocator: mdlMesh.allocator)
+        mdlAsset.add(mdlMesh)
         
         // Create temporary file
+        let fileManager = FileManager.default
         
-        // Write to file
+        var tempFileURL = URL(fileURLWithPath: "SurfaceModel", relativeTo: fileManager.temporaryDirectory)
+        tempFileURL.appendPathExtension("obj")
+        fileManager.createFile(atPath: tempFileURL.path, contents: Data())
         
-        // Read from file
-        
-        // Upload String contents to G drive
-        
-        // Discard file
-    
+        // Export mesh to temporary file
+        do {
+            print(MDLAsset.canExportFileExtension("obj"))
+            try mdlAsset.export(to: tempFileURL)
+            
+            // Read from file
+            let plyString = try String(contentsOf: tempFileURL, encoding: .utf8)
+            
+            // Upload file
+            do {
+                try uploadTextFile(input: plyString, name: "SurfaceModel", fileExtension: "obj")
+            } catch {
+                showAlert(title: "Upload Error", message: "Make sure that the folder has been uploaded successfully and try again.")
+                return
+            }
+            showAlert(title: "Sucessful Upload", message: "Mesh was uploaded to Google Drive Folder")
+
+            // Discard file
+            do {
+                try fileManager.removeItem(at: tempFileURL)
+            } catch {
+                print("Temp file not deleted")
+            }
+            
+        } catch {
+            showAlert(title: "Error exporting to file", message: "")
+            return
+        }
     }
     
     @IBAction func uploadPointsTextFile(sender: UIButton) {
         uploadFolder()
         
         let input = createXyzRgbString(points: points, pointColors: colors)
-        uploadTextFile(input: input, name: "All_Points_and_Colors")
+        do {
+            try uploadTextFile(input: input, name: "All_Points_and_Colors")
+        } catch {
+            showAlert(title: "Upload Error", message: "Make sure that the folder has been uploaded successfully and try again.")
+        }
     }
     
     @IBAction func resetScene(sender: UIButton) {
@@ -472,34 +516,16 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
     
     // MARK: - Google Drive Helper Functions
     
-    private func uploadObjFile(input: String, name: String) {
-        let fileData = input.data(using: .utf8)!
-
-        let metadata = GTLRDrive_File()
-        metadata.parents = [folderID]
-        metadata.name = name + ".obj"
-
-        let uploadParameters: GTLRUploadParameters = GTLRUploadParameters(data: fileData, mimeType: "text/plain")
-        uploadParameters.shouldUploadWithSingleRequest = true
-
-        let query = GTLRDriveQuery_FilesCreate.query(withObject: metadata, uploadParameters: uploadParameters)
-        self.service.executeQuery(query, completionHandler: {(ticket:GTLRServiceTicket, object:Any?, error:Error?) in
-            if error == nil {
-                print("Text File Upload Success")
-            }
-            else {
-                print("An error occurred: \(String(describing: error))")
-                self.showAlert(title: "Upload Error", message: "Make sure that the folder has been uploaded successfully and try again.")
-            }
-        })
+    enum UploadError: Error {
+        case fileUploadError
     }
     
-    private func uploadTextFile(input: String, name: String) {
+    private func uploadTextFile(input: String, name: String, fileExtension: String = "txt") throws {
         let fileData = input.data(using: .utf8)!
     
         let metadata = GTLRDrive_File()
         metadata.parents = [folderID]
-        metadata.name = name + ".txt"
+        metadata.name = name + ".\(fileExtension)"
         
         let uploadParameters: GTLRUploadParameters = GTLRUploadParameters(data: fileData, mimeType: "text/plain")
         uploadParameters.shouldUploadWithSingleRequest = true
@@ -508,12 +534,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         self.service.executeQuery(query, completionHandler: {(ticket:GTLRServiceTicket, object:Any?, error:Error?) in
             if error == nil {
                 print("Text File Upload Success")
-            }
-            else {
+            } else {
                 print("An error occurred: \(String(describing: error))")
-                 self.showAlert(title: "Upload Error", message: "Make sure that the folder has been uploaded successfully and try again.")
+                throw UploadError.fileUploadError
             }
-        })
+            } as? GTLRServiceCompletionHandler)
     }
     
     private func uploadImageFile(image: UIImage, name: String) {
