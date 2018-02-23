@@ -26,7 +26,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
     var pointsParentNode = SCNNode()
     var surfaceParentNode = SCNNode()
     var isTorchOn = false
-    var addPointRatio = 1 // Show 1 / addPointRatio of the points
+    var addPointRatio = 3 // Show 1 / addPointRatio of the points
     var folderID = ""
     var hasFolderBeenUploaded = false
     var isMultipartUploadOn = false {
