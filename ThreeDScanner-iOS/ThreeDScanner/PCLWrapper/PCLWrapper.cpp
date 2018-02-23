@@ -43,6 +43,18 @@ PointCloud<Normal>::Ptr computeNormals(PointCloud<PointXYZ>::Ptr pointCloudPtr, 
     return cloudNormalsPtr;
 }
 
+PointCloud<PointXYZ>::Ptr filterPointCloudPerFrame(PointCloud<PointXYZ>::Ptr pointCloudPtr) {
+    
+    // Filtering Statistically
+    StatisticalOutlierRemoval<PointXYZ> statFilter;
+    statFilter.setInputCloud(pointCloudPtr);
+    statFilter.setMeanK(((int) pointCloudPtr->size() - 1));
+    statFilter.setStddevMulThresh(50 / pointCloudPtr->size()); // Should depend on size of cloud
+    PointCloud<PointXYZ>::Ptr filteredPointCloudPtr(new PointCloud<PointXYZ>);
+    statFilter.filter(*filteredPointCloudPtr);
+    return filteredPointCloudPtr;
+}
+
 PointCloud<PointNormal>::Ptr constructPointNormalCloud(PCLPointCloud inputPCLPointCloud) {
      cout << "Constructing Point Cloud with normals" << endl;
     
@@ -70,11 +82,14 @@ PointCloud<PointNormal>::Ptr constructPointNormalCloud(PCLPointCloud inputPCLPoi
             tempPointCloudPtr->points[i].y = inputPCLPointCloud.points[currentPointsIdx].y;
             tempPointCloudPtr->points[i].z = inputPCLPointCloud.points[currentPointsIdx].z;
         }
-        PointCloud<Normal>::Ptr tempPointCloudNormalsPtr = computeNormals(tempPointCloudPtr, inputPCLPointCloud.viewpoints[frameIdx]);
+        
+        PointCloud<PointXYZ>::Ptr tempFilteredPointCloudPtr = filterPointCloudPerFrame(tempPointCloudPtr);
+        
+        PointCloud<Normal>::Ptr tempPointCloudNormalsPtr = computeNormals(tempFilteredPointCloudPtr, inputPCLPointCloud.viewpoints[frameIdx]);
         
         // Combine Points and Normals
         PointCloud<PointNormal>::Ptr tempCloudSmoothedNormalsPtr(new PointCloud<PointNormal>());
-        concatenateFields(*tempPointCloudPtr, *tempPointCloudNormalsPtr, *tempCloudSmoothedNormalsPtr);
+        concatenateFields(*tempFilteredPointCloudPtr, *tempPointCloudNormalsPtr, *tempCloudSmoothedNormalsPtr);
         
         // Append temp cloud to full cloud
         *pointCloudPtr += *tempCloudSmoothedNormalsPtr;
@@ -128,7 +143,7 @@ PCLMesh performSurfaceReconstruction(PCLPointCloud inputPCLPointCloud) {
     StatisticalOutlierRemoval<PointNormal> statFilter;
     statFilter.setInputCloud(pointNormalCloud);
     statFilter.setMeanK(50);
-    statFilter.setStddevMulThresh(0.75); // 0.6 - 1.0
+    statFilter.setStddevMulThresh(3); // 0.6 - 1.0
     
     PointCloud<PointNormal>::Ptr filteredPointCloudPtr(new PointCloud<PointNormal>);
     statFilter.filter(*filteredPointCloudPtr);
