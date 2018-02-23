@@ -366,20 +366,21 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         let fileManager = FileManager.default
         
         var tempFileURL = URL(fileURLWithPath: "SurfaceModel", relativeTo: fileManager.temporaryDirectory)
-        tempFileURL.appendPathExtension("obj")
+        let extensionString = "obj"
+        tempFileURL.appendPathExtension(extensionString)
         fileManager.createFile(atPath: tempFileURL.path, contents: Data())
         
-        // Export mesh to temporary file
         do {
-            print(MDLAsset.canExportFileExtension("obj"))
+            // Export mesh to temporary file
             try mdlAsset.export(to: tempFileURL)
-            
+
             // Read from file
-            let plyString = try String(contentsOf: tempFileURL, encoding: .utf8)
-            
+            var plyString = ""
+            plyString = try String(contentsOf: tempFileURL, encoding: .utf8)
+                
             // Upload file
             do {
-                try uploadTextFile(input: plyString, name: "SurfaceModel", fileExtension: "obj")
+                try uploadTextFile(input: plyString, name: "SurfaceModel", fileExtension: extensionString)
             } catch {
                 showAlert(title: "Upload Error", message: "Make sure that the folder has been uploaded successfully and try again.")
                 return
@@ -387,11 +388,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
             showAlert(title: "Sucessful Upload", message: "Mesh was uploaded to Google Drive Folder")
 
             // Discard file
-            do {
-                try fileManager.removeItem(at: tempFileURL)
-            } catch {
-                print("Temp file not deleted")
-            }
+            try fileManager.removeItem(at: tempFileURL)
             
         } catch {
             showAlert(title: "Error exporting to file", message: "")
