@@ -34,7 +34,7 @@ PointCloud<Normal>::Ptr computeNormals(PointCloud<PointXYZ>::Ptr pointCloudPtr, 
     ne.setSearchMethod(tree);
     ne.setNumberOfThreads(8);
     ne.setInputCloud(pointCloudPtr);
-    ne.setKSearch(100);
+    ne.setKSearch(10);
     ne.setViewPoint(viewpoint.x, viewpoint.y, viewpoint.z);
     
     // Compute normals
@@ -112,6 +112,7 @@ PCLPointNormalCloud constructPointCloudWithNormalsForTesting(PCLPointCloud input
     pclPointNormalCloud.points = pointsPtr;
     pclPointNormalCloud.normals = normalsPtr;
     pclPointNormalCloud.numFrames = inputPCLPointCloud.numFrames;
+    // These are pointing to memory managed by Swift but it shouldn't get cleaned up until after the Swift function finishes executing so is okay as a temporary measure
     pclPointNormalCloud.pointFrameLengths = inputPCLPointCloud.pointFrameLengths;
     pclPointNormalCloud.viewpoints = inputPCLPointCloud.viewpoints;
     
@@ -127,7 +128,7 @@ PCLMesh performSurfaceReconstruction(PCLPointCloud inputPCLPointCloud) {
     StatisticalOutlierRemoval<PointNormal> statFilter;
     statFilter.setInputCloud(pointNormalCloud);
     statFilter.setMeanK(50);
-    statFilter.setStddevMulThresh(1.0); // 0.6 - 1.0
+    statFilter.setStddevMulThresh(0.75); // 0.6 - 1.0
     
     PointCloud<PointNormal>::Ptr filteredPointCloudPtr(new PointCloud<PointNormal>);
     statFilter.filter(*filteredPointCloudPtr);
@@ -137,8 +138,8 @@ PCLMesh performSurfaceReconstruction(PCLPointCloud inputPCLPointCloud) {
     Poisson<PointNormal> poisson;
     poisson.setDepth(6);
     poisson.setInputCloud(filteredPointCloudPtr);
-    poisson.setPointWeight(0);
-    poisson.setSamplesPerNode(1);
+    poisson.setPointWeight(4);
+    poisson.setSamplesPerNode(1.5);
     
     PolygonMesh mesh;
     poisson.reconstruct(mesh);

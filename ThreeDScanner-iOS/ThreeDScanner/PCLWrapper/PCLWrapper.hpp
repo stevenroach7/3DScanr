@@ -21,10 +21,10 @@ extern "C" {
     
     typedef struct PCLPointCloud {
         int numPoints;
-        PCLPoint3D *points;
+        const PCLPoint3D *points;
         int numFrames;
-        int *pointFrameLengths;
-        PCLPoint3D *viewpoints;
+        const int *pointFrameLengths;
+        const PCLPoint3D *viewpoints;
     } PCLPointCloud;
     
     // Output
@@ -45,8 +45,8 @@ extern "C" {
         PCLPoint3D *points;
         PCLPoint3D *normals;
         int numFrames;
-        int *pointFrameLengths;
-        PCLPoint3D *viewpoints;
+        const int *pointFrameLengths;
+        const PCLPoint3D *viewpoints;
     } PCLPointNormalCloud;
     
     

@@ -11,6 +11,7 @@ import SceneKit
 import ARKit
 import GoogleAPIClientForREST
 import GoogleSignIn
+import SceneKit.ModelIO
 
 class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDelegate, GIDSignInDelegate, GIDSignInUIDelegate {
 
@@ -43,6 +44,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
     }
     let imageQuality = 0.85 // Value between 0 and 1
     var pointMaterial: SCNMaterial?
+    var surfaceGeometry: SCNGeometry?
 
     // If modifying these scopes, delete your previously saved credentials by
     // resetting the iOS simulator or uninstall the app.
@@ -74,7 +76,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         addResetButton()
         addOptionsButton()
         addMultipartUploadSwitch()
-        addPendingImageUploadLabel()
+//        addPendingImageUploadLabel()
+        addExportButton()
         
         createPointMaterial()
         
@@ -218,11 +221,28 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         pendingImageUploadLabel.translatesAutoresizingMaskIntoConstraints = false
         pendingImageUploadLabel.textAlignment = .center
         pendingImageUploadLabel.text = "\(pendingImageUploads) pending uploads"
-        
+
         // Contraints
         pendingImageUploadLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 24.0).isActive = true
         pendingImageUploadLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0.0).isActive = true
         pendingImageUploadLabel.heightAnchor.constraint(equalToConstant: 50)
+    }
+    
+    private func addExportButton() {
+        let exportButton = UIButton()
+        view.addSubview(exportButton)
+        exportButton.translatesAutoresizingMaskIntoConstraints = false
+        exportButton.setTitle("Export Surface", for: .normal)
+        exportButton.setTitleColor(UIColor.red, for: .normal)
+        exportButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
+        exportButton.layer.cornerRadius = 4
+        exportButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
+        exportButton.addTarget(self, action: #selector(exportSurface(sender:)) , for: .touchUpInside)
+        
+        // Contraints
+        exportButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
+        exportButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0.0).isActive = true
+        exportButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
     
@@ -230,72 +250,28 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
     
     @IBAction func reconstructSurface(sender: UIButton) {
         
-        // TODO: Decompose input preperation
-        
-        // Points
-        
-        let inputPointCloudSize = points.count
-        
-        let pclPointsPointer = UnsafeMutablePointer<PCLPoint3D>.allocate(capacity: inputPointCloudSize)
-        pclPointsPointer.initialize(to: PCLPoint3D(x: 0, y: 0, z: 0)) // Must initialize typed pointers for safety
-        defer {
-            pclPointsPointer.deinitialize(count: inputPointCloudSize)
-            pclPointsPointer.deallocate(capacity: inputPointCloudSize)
-        }
-        
-        for i in 0..<inputPointCloudSize {
-            let pclPoint3D = PCLPoint3D(x: Double(points[i].x), y: Double(points[i].y), z: Double(points[i].z))
-            pclPointsPointer.advanced(by: i).pointee = pclPoint3D
-        }
-        
-        // Sizes
-
-        let inputNumFrames = pointCloudFrameViewpoints.count
-        
-        let pclPointCloudSizesPointer = UnsafeMutablePointer<Int32>.allocate(capacity: inputNumFrames)
-        pclPointCloudSizesPointer.initialize(to: 0) // Must initialize typed pointers for safety
-        defer {
-            pclPointCloudSizesPointer.deinitialize(count: inputNumFrames)
-            pclPointCloudSizesPointer.deallocate(capacity: inputNumFrames)
-        }
-        
-        for i in 0..<inputNumFrames {
-            pclPointCloudSizesPointer.advanced(by: i).pointee = pointCloudFrameSizes[i]
-        }
-        
-        // Viewpoints
-        
-        let pclFrameViewpointsPointer = UnsafeMutablePointer<PCLPoint3D>.allocate(capacity: inputNumFrames)
-        pclFrameViewpointsPointer.initialize(to: PCLPoint3D(x: 0, y: 0, z: 0)) // Must initialize typed pointers for safety
-        defer {
-            pclFrameViewpointsPointer.deinitialize(count: inputNumFrames)
-            pclFrameViewpointsPointer.deallocate(capacity: inputNumFrames)
-        }
-        
-        for i in 0..<inputNumFrames{
-            let pclViewpoint3D = PCLPoint3D(x: Double(pointCloudFrameViewpoints[i].x), y: Double(pointCloudFrameViewpoints[i].y), z: Double(pointCloudFrameViewpoints[i].z))
-            pclFrameViewpointsPointer.advanced(by: i).pointee = pclViewpoint3D
-        }
-
+        let pclPoints = points.map { PCLPoint3D(x: Double($0.x), y: Double($0.y), z: Double($0.z)) }
+        let pclViewpoints = pointCloudFrameViewpoints.map { PCLPoint3D(x: Double($0.x), y: Double($0.y), z: Double($0.z)) }
         
         let pclPointCloud = PCLPointCloud(numPoints: Int32(points.count),
-                                          points: pclPointsPointer,
-                                          numFrames: Int32(inputNumFrames),
-                                          pointFrameLengths: pclPointCloudSizesPointer,
-                                          viewpoints: pclFrameViewpointsPointer)
+                                          points: pclPoints,
+                                          numFrames: Int32(pointCloudFrameViewpoints.count),
+                                          pointFrameLengths: pointCloudFrameSizes,
+                                          viewpoints: pclViewpoints)
         
         let pclMesh = performSurfaceReconstruction(pclPointCloud)
         defer {
+            // The mesh points and polygons pointers were allocated in C so need to be freed here
             free(pclMesh.points)
             free(pclMesh.polygons)
         }
-        
         
         if isMultipartUploadOn {
             // For Testing
             let pclPointNormalTestingCloud = constructPointCloudWithNormalsForTesting(pclPointCloud)
             uploadPointNormalViewpointTextFiles(pclPointNormalCloud: pclPointNormalTestingCloud)
             defer {
+                // The points and normals pointers were allocated in C so need to be freed here
                 free(pclPointNormalTestingCloud.points)
                 free(pclPointNormalTestingCloud.normals)
             }
@@ -341,9 +317,13 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
                 
                 currentPointsIdx += 1
             }
-            uploadTextFile(input: framePointsNormalsString, name: "Frame_index_\(frameIdx)")
+            do {
+                try uploadTextFile(input: framePointsNormalsString, name: "Frame_index_\(frameIdx)")
+            } catch {}
         }
-        uploadTextFile(input: allPointsNormalsString, name: "All_Points_and_Normals")
+        do {
+            try uploadTextFile(input: allPointsNormalsString, name: "All_Points_and_Normals")
+        } catch {}
     }
     
     private func constructSurfaceNode(pclMesh: PCLMesh) -> SCNNode {
@@ -361,18 +341,73 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
             elements.append(element)
         }
         
-        let surfaceGeometry = SCNGeometry(sources: [vertexSource], elements: elements)
-        surfaceGeometry.firstMaterial?.isDoubleSided = true;
-        surfaceGeometry.firstMaterial?.diffuse.contents = UIColor(displayP3Red: 135/255, green: 206/255, blue: 250/255, alpha: 1)
-        surfaceGeometry.firstMaterial?.lightingModel = .blinn
-        return SCNNode(geometry: surfaceGeometry)
+        surfaceGeometry = SCNGeometry(sources: [vertexSource], elements: elements)
+        surfaceGeometry!.firstMaterial?.isDoubleSided = true;
+        surfaceGeometry!.firstMaterial?.diffuse.contents = UIColor(displayP3Red: 135/255, green: 206/255, blue: 250/255, alpha: 1)
+        surfaceGeometry!.firstMaterial?.lightingModel = .blinn
+        return SCNNode(geometry: surfaceGeometry!)
+    }
+    
+    @IBAction func exportSurface(sender: UIButton) {
+        uploadFolder()
+        
+        guard let surfaceGeometry = surfaceGeometry else {
+            showAlert(title: "No Surface to Export", message: "Press Reconstruct Surface and then export.")
+            return
+        }
+        
+        // Create MDLAsset that can be exported
+        var mdlAsset = MDLAsset()
+        let mdlMesh = MDLMesh(scnGeometry: surfaceGeometry)
+        mdlAsset = MDLAsset(bufferAllocator: mdlMesh.allocator)
+        mdlAsset.add(mdlMesh)
+        
+        // Create temporary file
+        let fileManager = FileManager.default
+        
+        var tempFileURL = URL(fileURLWithPath: "SurfaceModel", relativeTo: fileManager.temporaryDirectory)
+        tempFileURL.appendPathExtension("obj")
+        fileManager.createFile(atPath: tempFileURL.path, contents: Data())
+        
+        // Export mesh to temporary file
+        do {
+            print(MDLAsset.canExportFileExtension("obj"))
+            try mdlAsset.export(to: tempFileURL)
+            
+            // Read from file
+            let plyString = try String(contentsOf: tempFileURL, encoding: .utf8)
+            
+            // Upload file
+            do {
+                try uploadTextFile(input: plyString, name: "SurfaceModel", fileExtension: "obj")
+            } catch {
+                showAlert(title: "Upload Error", message: "Make sure that the folder has been uploaded successfully and try again.")
+                return
+            }
+            showAlert(title: "Sucessful Upload", message: "Mesh was uploaded to Google Drive Folder")
+
+            // Discard file
+            do {
+                try fileManager.removeItem(at: tempFileURL)
+            } catch {
+                print("Temp file not deleted")
+            }
+            
+        } catch {
+            showAlert(title: "Error exporting to file", message: "")
+            return
+        }
     }
     
     @IBAction func uploadPointsTextFile(sender: UIButton) {
         uploadFolder()
         
         let input = createXyzRgbString(points: points, pointColors: colors)
-        uploadTextFile(input: input, name: "All_Points_and_Colors")
+        do {
+            try uploadTextFile(input: input, name: "All_Points_and_Colors")
+        } catch {
+            showAlert(title: "Upload Error", message: "Make sure that the folder has been uploaded successfully and try again.")
+        }
     }
     
     @IBAction func resetScene(sender: UIButton) {
@@ -481,12 +516,16 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
     
     // MARK: - Google Drive Helper Functions
     
-    private func uploadTextFile(input: String, name: String) {
+    enum UploadError: Error {
+        case fileUploadError
+    }
+    
+    private func uploadTextFile(input: String, name: String, fileExtension: String = "txt") throws {
         let fileData = input.data(using: .utf8)!
     
         let metadata = GTLRDrive_File()
         metadata.parents = [folderID]
-        metadata.name = name + ".txt"
+        metadata.name = name + ".\(fileExtension)"
         
         let uploadParameters: GTLRUploadParameters = GTLRUploadParameters(data: fileData, mimeType: "text/plain")
         uploadParameters.shouldUploadWithSingleRequest = true
@@ -495,12 +534,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         self.service.executeQuery(query, completionHandler: {(ticket:GTLRServiceTicket, object:Any?, error:Error?) in
             if error == nil {
                 print("Text File Upload Success")
-            }
-            else {
+            } else {
                 print("An error occurred: \(String(describing: error))")
-                 self.showAlert(title: "Upload Error", message: "Make sure that the folder has been uploaded successfully and try again.")
+                throw UploadError.fileUploadError
             }
-        })
+            } as? GTLRServiceCompletionHandler)
     }
     
     private func uploadImageFile(image: UIImage, name: String) {
