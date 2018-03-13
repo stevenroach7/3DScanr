@@ -72,7 +72,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         
         addReconstructButton()
         addToggleTorchButton()
-        addInfoButton()
+//        addInfoButton()
+        addUploadButton()
         addResetButton()
         addOptionsButton()
         addMultipartUploadSwitch()
@@ -126,7 +127,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         reconstructButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
         reconstructButton.layer.cornerRadius = 4
         reconstructButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
-        reconstructButton.addTarget(self, action: #selector(reconstructSurface(sender:)) , for: .touchUpInside)
+        reconstructButton.addTarget(self, action: #selector(reconstructButtonTapped(sender:)) , for: .touchUpInside)
         
         // Contraints
         reconstructButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
@@ -143,7 +144,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         toggleTorchButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
         toggleTorchButton.layer.cornerRadius = 4
         toggleTorchButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
-        toggleTorchButton.addTarget(self, action: #selector(toggleTorch(sender:)) , for: .touchUpInside)
+        toggleTorchButton.addTarget(self, action: #selector(toggleButtonTapped(sender:)) , for: .touchUpInside)
         
         // Contraints
         toggleTorchButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
@@ -160,8 +161,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         infoButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
         infoButton.layer.cornerRadius = 4
         infoButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
-        infoButton.addTarget(self, action: #selector(showInfoPopup(sender:)) , for: .touchUpInside)
-        
+        infoButton.addTarget(self, action: #selector(infoButtonTapped(sender:)) , for: .touchUpInside)
+
         // Contraints
         infoButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
         infoButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -8.0).isActive = true
@@ -177,11 +178,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         resetButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
         resetButton.layer.cornerRadius = 4
         resetButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
-        resetButton.addTarget(self, action: #selector(resetScene(sender:)) , for: .touchUpInside)
+        resetButton.addTarget(self, action: #selector(resetButtonTapped(sender:)) , for: .touchUpInside)
         
         // Contraints
         resetButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
-        resetButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -55.0).isActive = true
+        resetButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -90.0).isActive = true
         resetButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
@@ -194,7 +195,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         optionsButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
         optionsButton.layer.cornerRadius = 4
         optionsButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
-        optionsButton.addTarget(self, action: #selector(showOptionsPopup(sender:)) , for: .touchUpInside)
+        optionsButton.addTarget(self, action: #selector(optionsButtonTapped(sender:)) , for: .touchUpInside)
         
         // Contraints
         optionsButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
@@ -232,23 +233,56 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         let exportButton = UIButton()
         view.addSubview(exportButton)
         exportButton.translatesAutoresizingMaskIntoConstraints = false
-        exportButton.setTitle("Export Surface", for: .normal)
+        exportButton.setTitle("Export", for: .normal)
         exportButton.setTitleColor(UIColor.red, for: .normal)
         exportButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
         exportButton.layer.cornerRadius = 4
         exportButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
-        exportButton.addTarget(self, action: #selector(exportSurface(sender:)) , for: .touchUpInside)
+        exportButton.addTarget(self, action: #selector(exportButtonTapped(sender:)) , for: .touchUpInside)
         
         // Contraints
         exportButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
-        exportButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0.0).isActive = true
+        exportButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 90.0).isActive = true
         exportButton.heightAnchor.constraint(equalToConstant: 50)
+    }
+    
+    private func addUploadButton() {
+        let uploadButton = UIButton()
+        view.addSubview(uploadButton)
+        uploadButton.translatesAutoresizingMaskIntoConstraints = false
+        uploadButton.setTitle("Upload", for: .normal)
+        uploadButton.setTitleColor(UIColor.red, for: .normal)
+        uploadButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
+        uploadButton.layer.cornerRadius = 4
+        uploadButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
+        uploadButton.addTarget(self, action: #selector(uploadButtonTapped(sender:)) , for: .touchUpInside)
+        
+        // Contraints
+        uploadButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
+        uploadButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -8.0).isActive = true
+        uploadButton.heightAnchor.constraint(equalToConstant: 50)
+    }
+    
+    // Helper for showing an alert
+    private func showAlert(title : String, message: String) {
+        let alert = UIAlertController(
+            title: title,
+            message: message,
+            preferredStyle: UIAlertControllerStyle.alert
+        )
+        let ok = UIAlertAction(
+            title: "OK",
+            style: UIAlertActionStyle.default,
+            handler: nil
+        )
+        alert.addAction(ok)
+        present(alert, animated: true, completion: nil)
     }
     
     
     // MARK: - UI Actions
     
-    @IBAction func reconstructSurface(sender: UIButton) {
+    @IBAction func reconstructButtonTapped(sender: UIButton) {
         
         let pclPoints = points.map { PCLPoint3D(x: Double($0.x), y: Double($0.y), z: Double($0.z)) }
         let pclViewpoints = pointCloudFrameViewpoints.map { PCLPoint3D(x: Double($0.x), y: Double($0.y), z: Double($0.z)) }
@@ -266,22 +300,14 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
             free(pclMesh.polygons)
         }
         
-        if isMultipartUploadOn {
-            // For Testing
-            let pclPointNormalTestingCloud = constructPointCloudWithNormalsForTesting(pclPointCloud)
-            uploadPointNormalViewpointTextFiles(pclPointNormalCloud: pclPointNormalTestingCloud)
-            defer {
-                // The points and normals pointers were allocated in C so need to be freed here
-                free(pclPointNormalTestingCloud.points)
-                free(pclPointNormalTestingCloud.normals)
-            }
-        }
-        
         print("mesh num points \(pclMesh.numPoints)")
         print("mesh num faces \(pclMesh.numFaces)")
         
         // Remove current surfaces before displaying new surface
-        surfaceParentNode.enumerateChildNodes { (node, stop) in node.removeFromParentNode() }
+        surfaceParentNode.enumerateChildNodes { (node, stop) in
+            node.removeFromParentNode()
+            node.geometry = nil
+        }
         
         let surfaceNode = constructSurfaceNode(pclMesh: pclMesh)
         surfaceParentNode.addChildNode(surfaceNode)
@@ -289,66 +315,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         showAlert(title: "Surface Reconstructed", message: "\(pclMesh.numFaces) faces")
     }
     
-    private func uploadPointNormalViewpointTextFiles(pclPointNormalCloud: PCLPointNormalCloud) {
-        
-        var currentPointsIdx = 0
-        
-        var allPointsNormalsString = "\n"
-        
-        for frameIdx in 0..<Int(pclPointNormalCloud.numFrames) {
-            
-            var framePointsNormalsString = ""
-            framePointsNormalsString.append("\(pclPointNormalCloud.viewpoints[frameIdx].x);")
-            framePointsNormalsString.append("\(pclPointNormalCloud.viewpoints[frameIdx].y);")
-            framePointsNormalsString.append("\(pclPointNormalCloud.viewpoints[frameIdx].z)\n")
-            
-            for _ in 0..<pclPointNormalCloud.pointFrameLengths[frameIdx] {
-                
-                var pointNormalLineString = ""
-                pointNormalLineString.append("\(pclPointNormalCloud.points[currentPointsIdx].x);")
-                pointNormalLineString.append("\(pclPointNormalCloud.points[currentPointsIdx].y);")
-                pointNormalLineString.append("\(pclPointNormalCloud.points[currentPointsIdx].z);")
-                pointNormalLineString.append("\(pclPointNormalCloud.normals[currentPointsIdx].x);")
-                pointNormalLineString.append("\(pclPointNormalCloud.normals[currentPointsIdx].y);")
-                pointNormalLineString.append("\(pclPointNormalCloud.normals[currentPointsIdx].z)\n")
-                
-                framePointsNormalsString.append(pointNormalLineString)
-                allPointsNormalsString.append(pointNormalLineString)
-                
-                currentPointsIdx += 1
-            }
-            do {
-                try uploadTextFile(input: framePointsNormalsString, name: "Frame_index_\(frameIdx)")
-            } catch {}
-        }
-        do {
-            try uploadTextFile(input: allPointsNormalsString, name: "All_Points_and_Normals")
-        } catch {}
-    }
-    
-    private func constructSurfaceNode(pclMesh: PCLMesh) -> SCNNode {
-        
-        var vertices = [SCNVector3]()
-        for i in 0..<pclMesh.numPoints {
-            vertices.append(SCNVector3(x: Float(pclMesh.points[i].x), y: Float(pclMesh.points[i].y), z: Float(pclMesh.points[i].z)))
-        }
-        let vertexSource = SCNGeometrySource(vertices: vertices)
-        
-        var elements = [SCNGeometryElement]()
-        for i in 0..<pclMesh.numFaces {
-            let allPrimitives: [Int32] = [pclMesh.polygons[i].v1, pclMesh.polygons[i].v2, pclMesh.polygons[i].v3]
-            let element = SCNGeometryElement(indices: allPrimitives, primitiveType: .triangles)
-            elements.append(element)
-        }
-        
-        surfaceGeometry = SCNGeometry(sources: [vertexSource], elements: elements)
-        surfaceGeometry!.firstMaterial?.isDoubleSided = true;
-        surfaceGeometry!.firstMaterial?.diffuse.contents = UIColor(displayP3Red: 135/255, green: 206/255, blue: 250/255, alpha: 1)
-        surfaceGeometry!.firstMaterial?.lightingModel = .blinn
-        return SCNNode(geometry: surfaceGeometry!)
-    }
-    
-    @IBAction func exportSurface(sender: UIButton) {
+    @IBAction func exportButtonTapped(sender: UIButton) {
         uploadFolder()
         
         guard let surfaceGeometry = surfaceGeometry else {
@@ -396,7 +363,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         }
     }
     
-    @IBAction func uploadPointsTextFile(sender: UIButton) {
+    @IBAction func uploadButtonTapped(sender: UIButton) {
         uploadFolder()
         
         let input = createXyzRgbString(points: points, pointColors: colors)
@@ -407,16 +374,21 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         }
     }
     
-    @IBAction func resetScene(sender: UIButton) {
+    @IBAction func resetButtonTapped(sender: UIButton) {
         
         points = []
         colors = []
         pointCloudFrameSizes = []
         pointCloudFrameViewpoints = []
-        
-        surfaceParentNode.enumerateChildNodes { (node, stop) in node.removeFromParentNode() }
-        pointsParentNode.enumerateChildNodes { (node, stop) in node.removeFromParentNode() }
-        
+
+        sceneView.scene.rootNode.enumerateChildNodes { (node, stop) in node.removeFromParentNode() }
+
+        pointsParentNode = SCNNode()
+        surfaceParentNode = SCNNode()
+
+        sceneView.scene.rootNode.addChildNode(pointsParentNode)
+        sceneView.scene.rootNode.addChildNode(surfaceParentNode)
+
         sceneView.debugOptions.remove(ARSCNDebugOptions.showFeaturePoints)
         sceneView.debugOptions.remove(ARSCNDebugOptions.showWorldOrigin)
         
@@ -427,7 +399,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         sceneView.debugOptions.insert(ARSCNDebugOptions.showWorldOrigin)
     }
     
-    @IBAction func toggleTorch(sender: UIButton) {
+    @IBAction func toggleButtonTapped(sender: UIButton) {
         guard let device = AVCaptureDevice.default(for: AVMediaType.video)
             else {return}
         
@@ -452,13 +424,13 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         }
     }
     
-    @IBAction func showInfoPopup(sender: UIButton) {
+    @IBAction func infoButtonTapped(sender: UIButton) {
         let title = "Info"
         let message = "Detected points are shown in yellow. Tap the screen to add currently detected ponts to the captured point cloud sample. Captured points are shown in white. Press Upload to upload a text file of the captured points to the associated Google Drive account."
         showAlert(title: title, message: message)
     }
     
-    @IBAction func showOptionsPopup(sender: UIButton) {
+    @IBAction func optionsButtonTapped(sender: UIButton) {
         let alert = UIAlertController(title: "Adjust Add Point Ratio", message: "1 out of every _ points will be shown.", preferredStyle: UIAlertControllerStyle.alert)
         alert.addTextField(configurationHandler: {(textField: UITextField!) in
             textField.text = self.addPointRatio.description
@@ -495,21 +467,71 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         }
     }
     
-    // Helper for showing an alert
-    private func showAlert(title : String, message: String) {
-        let alert = UIAlertController(
-            title: title,
-            message: message,
-            preferredStyle: UIAlertControllerStyle.alert
-        )
-        let ok = UIAlertAction(
-            title: "OK",
-            style: UIAlertActionStyle.default,
-            handler: nil
-        )
-        alert.addAction(ok)
-        present(alert, animated: true, completion: nil)
+    
+    // MARK: - PCL Helper Functions
+    
+    private func uploadPointNormalViewpointTextFiles(pclPointNormalCloud: PCLPointNormalCloud) {
+        
+        var currentPointsIdx = 0
+        
+        var allPointsNormalsString = "\n"
+        
+        for frameIdx in 0..<Int(pclPointNormalCloud.numFrames) {
+            
+            var framePointsNormalsString = ""
+            framePointsNormalsString.append("\(pclPointNormalCloud.viewpoints[frameIdx].x);")
+            framePointsNormalsString.append("\(pclPointNormalCloud.viewpoints[frameIdx].y);")
+            framePointsNormalsString.append("\(pclPointNormalCloud.viewpoints[frameIdx].z)\n")
+            
+            for _ in 0..<pclPointNormalCloud.pointFrameLengths[frameIdx] {
+                
+                var pointNormalLineString = ""
+                pointNormalLineString.append("\(pclPointNormalCloud.points[currentPointsIdx].x);")
+                pointNormalLineString.append("\(pclPointNormalCloud.points[currentPointsIdx].y);")
+                pointNormalLineString.append("\(pclPointNormalCloud.points[currentPointsIdx].z);")
+                pointNormalLineString.append("\(pclPointNormalCloud.normals[currentPointsIdx].x);")
+                pointNormalLineString.append("\(pclPointNormalCloud.normals[currentPointsIdx].y);")
+                pointNormalLineString.append("\(pclPointNormalCloud.normals[currentPointsIdx].z)\n")
+                
+                framePointsNormalsString.append(pointNormalLineString)
+                allPointsNormalsString.append(pointNormalLineString)
+                
+                currentPointsIdx += 1
+            }
+            do {
+                try uploadTextFile(input: framePointsNormalsString, name: "Frame_index_\(frameIdx)")
+            } catch {}
+        }
+        do {
+            try uploadTextFile(input: allPointsNormalsString, name: "All_Points_and_Normals")
+        } catch {}
     }
+    
+    
+    // MARK: - Surface Helper Functions
+    
+    private func constructSurfaceNode(pclMesh: PCLMesh) -> SCNNode {
+        
+        var vertices = [SCNVector3]()
+        for i in 0..<pclMesh.numPoints {
+            vertices.append(SCNVector3(x: Float(pclMesh.points[i].x), y: Float(pclMesh.points[i].y), z: Float(pclMesh.points[i].z)))
+        }
+        let vertexSource = SCNGeometrySource(vertices: vertices)
+        
+        var elements = [SCNGeometryElement]()
+        for i in 0..<pclMesh.numFaces {
+            let allPrimitives: [Int32] = [pclMesh.polygons[i].v1, pclMesh.polygons[i].v2, pclMesh.polygons[i].v3]
+            let element = SCNGeometryElement(indices: allPrimitives, primitiveType: .triangles)
+            elements.append(element)
+        }
+        
+        surfaceGeometry = SCNGeometry(sources: [vertexSource], elements: elements)
+        surfaceGeometry!.firstMaterial?.isDoubleSided = true;
+        surfaceGeometry!.firstMaterial?.diffuse.contents = UIColor(displayP3Red: 135/255, green: 206/255, blue: 250/255, alpha: 1)
+        surfaceGeometry!.firstMaterial?.lightingModel = .blinn
+        return SCNNode(geometry: surfaceGeometry!)
+    }
+    
     
     // MARK: - Google Drive Helper Functions
     
@@ -589,7 +611,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
                 self.folderID = (file?.identifier)!
                 self.hasFolderBeenUploaded = true
                 print("Folder Upload Success")
-                self.showAlert(title: "Folder Upload Success", message: "You may now tap to add images to the folder.")
+                self.showAlert(title: "Folder Upload Success", message: "Happy Scanning!")
             }
             else {
                 print("An error occurred: \(String(describing: error))")
@@ -730,24 +752,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
  
     // MARK: - ARSCNViewDelegate
     
-//    func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
-        // This visualization covers only detected planes.
-//        if let planeAnchor = anchor as? ARPlaneAnchor {
-//            print("Plane anchor!")
-//            // Create a SceneKit plane to visualize the node using its position and extent.
-//            let plane = SCNPlane(width: CGFloat(planeAnchor.extent.x), height: CGFloat(planeAnchor.extent.z))
-//            let planeNode = SCNNode(geometry: plane)
-//            planeNode.position = SCNVector3Make(planeAnchor.center.x, 0, planeAnchor.center.z)
-//
-//            // SCNPlanes are vertically oriented in their local coordinate space.
-//            // Rotate it to match the horizontal orientation of the ARPlaneAnchor.
-//            planeNode.transform = SCNMatrix4MakeRotation(-Float.pi / 2, 1, 0, 0)
-//
-//            // ARKit owns the node corresponding to the anchor, so make the plane a child node.
-//            node.addChildNode(planeNode)
-//        }
-//    }
-    
     func session(_ session: ARSession, didFailWithError error: Error) {
         // Present an error message to the user
         
@@ -769,10 +773,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
             return
         }
         let currentPoints = rawFeaturePoints.points
-        
-        let pointColors = capturePointColors(currentPoints: currentPoints)
-        colors += pointColors // Add current colors to global list
-    
+
+//        let pointColors = capturePointColors(currentPoints: currentPoints)
+//        colors += pointColors // Add current colors to global list
+
         let camera = sceneView.session.currentFrame?.camera
    
 //        if isMultipartUploadOn {
@@ -815,11 +819,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
             if i % addPointRatio == 0 {
                 addPointToView(position: rawPoint)
             }
-            i += 1
+            i += 1                    
         }
         points += currentPoints
         pointCloudFrameSizes.append(Int32(currentPoints.count))
-        
+
         // Add view point
         if let transform = camera?.transform {
             let position = SCNVector3(
