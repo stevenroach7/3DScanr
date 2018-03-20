@@ -738,6 +738,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
     
     private func addPointToView(position: vector_float3) {
         let sphere = SCNSphere(radius: 0.00066)
+        sphere.segmentCount = 8
         
         if let pointMaterial = pointMaterial {
             sphere.firstMaterial = pointMaterial
