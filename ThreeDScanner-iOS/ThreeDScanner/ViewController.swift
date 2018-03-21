@@ -42,6 +42,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
             pendingImageUploadLabel.text = "\(pendingImageUploads) pending uploads"
         }
     }
+    let exportExtensionString = "stl"
     let imageQuality = 0.85 // Value between 0 and 1
     var pointMaterial: SCNMaterial?
     var surfaceGeometry: SCNGeometry?
@@ -333,21 +334,17 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         let fileManager = FileManager.default
         
         var tempFileURL = URL(fileURLWithPath: "SurfaceModel", relativeTo: fileManager.temporaryDirectory)
-        let extensionString = "obj"
-        tempFileURL.appendPathExtension(extensionString)
-        fileManager.createFile(atPath: tempFileURL.path, contents: Data())
-        
+        tempFileURL.appendPathExtension(exportExtensionString)
         do {
             // Export mesh to temporary file
             try mdlAsset.export(to: tempFileURL)
 
             // Read from file
-            var plyString = ""
-            plyString = try String(contentsOf: tempFileURL, encoding: .utf8)
-                
+            let surfaceFileContents = try Data(contentsOf: tempFileURL)
+            
             // Upload file
             do {
-                try uploadTextFile(input: plyString, name: "SurfaceModel", fileExtension: extensionString)
+                try uploadDataFile(fileData: surfaceFileContents, name: "SurfaceModel", fileExtension: exportExtensionString)
             } catch {
                 showAlert(title: "Upload Error", message: "Make sure that the folder has been uploaded successfully and try again.")
                 return
@@ -356,7 +353,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
 
             // Discard file
             try fileManager.removeItem(at: tempFileURL)
-            
         } catch {
             showAlert(title: "Error exporting to file", message: "")
             return
@@ -541,7 +537,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
     
     private func uploadTextFile(input: String, name: String, fileExtension: String = "txt") throws {
         let fileData = input.data(using: .utf8)!
+        try uploadDataFile(fileData: fileData, name: name, fileExtension: fileExtension)
+    }
     
+    private func uploadDataFile(fileData: Data, name: String, fileExtension: String) throws {
         let metadata = GTLRDrive_File()
         metadata.parents = [folderID]
         metadata.name = name + ".\(fileExtension)"
