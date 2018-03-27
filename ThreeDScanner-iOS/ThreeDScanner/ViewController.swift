@@ -18,40 +18,40 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
     // MARK: - Properties
     
     @IBOutlet var sceneView: ARSCNView!
-    let sessionConfiguration = ARWorldTrackingConfiguration()
-    var points: [vector_float3] = []
-    var colors: [UIColor?] = []
-    var pointCloudFrameSizes: [Int32] = []
-    var pointCloudFrameViewpoints: [SCNVector3] = []
-    var pointsParentNode = SCNNode()
-    var surfaceParentNode = SCNNode()
-    var isTorchOn = false
-    var addPointRatio = 3 // Show 1 / addPointRatio of the points
-    var folderID = ""
-    var hasFolderBeenUploaded = false
-    var isMultipartUploadOn = false {
+    private let sessionConfiguration = ARWorldTrackingConfiguration()
+    private var points: [vector_float3] = []
+    private var colors: [UIColor?] = []
+    private var pointCloudFrameSizes: [Int32] = []
+    private var pointCloudFrameViewpoints: [SCNVector3] = []
+    private var pointsParentNode = SCNNode()
+    private var surfaceParentNode = SCNNode()
+    private var isTorchOn = false
+    private var addPointRatio = 3 // Show 1 / addPointRatio of the points
+    private var folderID = ""
+    private var hasFolderBeenUploaded = false
+    private var isMultipartUploadOn = false {
         didSet {
             if isMultipartUploadOn {
                 uploadFolder()
             }
         }
     }
-    let pendingImageUploadLabel: UILabel = UILabel(frame: CGRect(x: 0, y: 0, width: 200, height: 21))
-    var pendingImageUploads = 0 {
+    private let pendingImageUploadLabel: UILabel = UILabel(frame: CGRect(x: 0, y: 0, width: 200, height: 21))
+    private var pendingImageUploads = 0 {
         didSet {
             pendingImageUploadLabel.text = "\(pendingImageUploads) pending uploads"
         }
     }
-    let exportExtensionString = "stl"
-    let imageQuality = 0.85 // Value between 0 and 1
-    var pointMaterial: SCNMaterial?
-    var surfaceGeometry: SCNGeometry?
+    private let exportExtensionString = "stl"
+    private let imageQuality = 0.85 // Value between 0 and 1
+    private var pointMaterial: SCNMaterial?
+    private var surfaceGeometry: SCNGeometry?
 
     // If modifying these scopes, delete your previously saved credentials by
     // resetting the iOS simulator or uninstall the app.
     private let scopes = ["https://www.googleapis.com/auth/drive"]
     private let service = GTLRDriveService()
-    let signInButton = GIDSignInButton()
+    private let signInButton = GIDSignInButton()
     
     
     // MARK: - UIViewController
@@ -447,8 +447,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
     @IBAction func switchValueDidChange(sender:UISwitch!) {
         if (sender.isOn){
             isMultipartUploadOn = true
-        }
-        else {
+        } else {
             isMultipartUploadOn = false
         }
     }
@@ -460,6 +459,74 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         } else {
             self.signInButton.isHidden = true
             self.service.authorizer = user.authentication.fetcherAuthorizer()
+        }
+    }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        
+        guard let rawFeaturePoints = sceneView.session.currentFrame?.rawFeaturePoints else {
+            return
+        }
+        let currentPoints = rawFeaturePoints.points
+        
+        //        let pointColors = capturePointColors(currentPoints: currentPoints)
+        //        colors += pointColors // Add current colors to global list
+        
+        let camera = sceneView.session.currentFrame?.camera
+        
+        //        if isMultipartUploadOn {
+        //            uploadFolder() // Only uploads if folder hasn't been uploaded
+        //
+        //            // Create corresponding file name for different types of uploads
+        //            let dateFormatter = DateFormatter()
+        //            dateFormatter.dateFormat = "H:m:ss:SSSS"
+        //            let timeString = dateFormatter.string(from: Date())
+        //
+        //            // Upload Image
+        //            if let frame = sceneView.session.currentFrame {
+        //                let imageWithCVPixelBuffer = frame.capturedImage
+        //                let ciImage = CIImage(cvPixelBuffer: imageWithCVPixelBuffer)
+        //                let tempContext = CIContext()
+        //                let videoImage = tempContext.createCGImage(ciImage, from: CGRect(x: 0, y: 0, width: CGFloat(CVPixelBufferGetWidth(imageWithCVPixelBuffer)), height: CGFloat(CVPixelBufferGetHeight(imageWithCVPixelBuffer))))
+        //                let image = UIImage(cgImage: videoImage!, scale: 1.0, orientation: determineImageOrientation())
+        //
+        //                pendingImageUploads += 1
+        //                uploadImageFile(image: image, name: "Photo_\(timeString)")
+        //            }
+        
+        //            // Upload Points and Colors text file
+        //            uploadTextFile(input: createXyzRgbString(points: currentPoints, pointColors: pointColors), name: "Points_and_Colors_\(timeString)")
+        
+        //            // Upload 2D point positions
+        //            let point2DPositions = projectPoint2DPositions(currentPoints: currentPoints)
+        //            uploadTextFile(input: createXyzString(points: point2DPositions), name: "2D_Point_Positions_\(timeString)")
+        
+        //            // Upload camera info text file
+        //            let transform: String = "Transform: " + (camera?.transform.debugDescription)!
+        //            let eulerAngles: String = "Euler Angles: " + (camera?.eulerAngles.debugDescription)!
+        //            let intrinsics: String = "Intrinsics: " + (camera?.intrinsics.debugDescription)!
+        //            uploadTextFile(input: transform + "\n" + eulerAngles + "\n" + intrinsics, name: "6DOF_\(timeString)")
+        //        }
+        
+        // Display points
+        var i = 0
+        for rawPoint in currentPoints {
+            if i % addPointRatio == 0 {
+                addPointToView(position: rawPoint)
+            }
+            i += 1
+        }
+        points += currentPoints
+        pointCloudFrameSizes.append(Int32(currentPoints.count))
+        
+        // Add view point
+        if let transform = camera?.transform {
+            let position = SCNVector3(
+                transform.columns.3.x,
+                transform.columns.3.y,
+                transform.columns.3.z
+            )
+            pointCloudFrameViewpoints.append(position)
         }
     }
     
@@ -765,73 +832,5 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
     func sessionInterruptionEnded(_ session: ARSession) {
         // Reset tracking and/or remove existing anchors if consistent tracking is required
         
-    }
-    
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        
-        guard let rawFeaturePoints = sceneView.session.currentFrame?.rawFeaturePoints else {
-            return
-        }
-        let currentPoints = rawFeaturePoints.points
-
-//        let pointColors = capturePointColors(currentPoints: currentPoints)
-//        colors += pointColors // Add current colors to global list
-
-        let camera = sceneView.session.currentFrame?.camera
-   
-//        if isMultipartUploadOn {
-//            uploadFolder() // Only uploads if folder hasn't been uploaded
-//
-//            // Create corresponding file name for different types of uploads
-//            let dateFormatter = DateFormatter()
-//            dateFormatter.dateFormat = "H:m:ss:SSSS"
-//            let timeString = dateFormatter.string(from: Date())
-//
-//            // Upload Image
-//            if let frame = sceneView.session.currentFrame {
-//                let imageWithCVPixelBuffer = frame.capturedImage
-//                let ciImage = CIImage(cvPixelBuffer: imageWithCVPixelBuffer)
-//                let tempContext = CIContext()
-//                let videoImage = tempContext.createCGImage(ciImage, from: CGRect(x: 0, y: 0, width: CGFloat(CVPixelBufferGetWidth(imageWithCVPixelBuffer)), height: CGFloat(CVPixelBufferGetHeight(imageWithCVPixelBuffer))))
-//                let image = UIImage(cgImage: videoImage!, scale: 1.0, orientation: determineImageOrientation())
-//
-//                pendingImageUploads += 1
-//                uploadImageFile(image: image, name: "Photo_\(timeString)")
-//            }
-            
-//            // Upload Points and Colors text file
-//            uploadTextFile(input: createXyzRgbString(points: currentPoints, pointColors: pointColors), name: "Points_and_Colors_\(timeString)")
-            
-//            // Upload 2D point positions
-//            let point2DPositions = projectPoint2DPositions(currentPoints: currentPoints)
-//            uploadTextFile(input: createXyzString(points: point2DPositions), name: "2D_Point_Positions_\(timeString)")
-            
-//            // Upload camera info text file
-//            let transform: String = "Transform: " + (camera?.transform.debugDescription)!
-//            let eulerAngles: String = "Euler Angles: " + (camera?.eulerAngles.debugDescription)!
-//            let intrinsics: String = "Intrinsics: " + (camera?.intrinsics.debugDescription)!
-//            uploadTextFile(input: transform + "\n" + eulerAngles + "\n" + intrinsics, name: "6DOF_\(timeString)")
-//        }
-        
-        // Display points
-        var i = 0
-        for rawPoint in currentPoints {
-            if i % addPointRatio == 0 {
-                addPointToView(position: rawPoint)
-            }
-            i += 1                    
-        }
-        points += currentPoints
-        pointCloudFrameSizes.append(Int32(currentPoints.count))
-
-        // Add view point
-        if let transform = camera?.transform {
-            let position = SCNVector3(
-                transform.columns.3.x,
-                transform.columns.3.y,
-                transform.columns.3.z
-            )
-            pointCloudFrameViewpoints.append(position)
-        }
     }
 }
