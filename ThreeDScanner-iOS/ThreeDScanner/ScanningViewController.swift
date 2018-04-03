@@ -24,6 +24,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     private var pointCloudFrameViewpoints: [SCNVector3] = []
     
     private let xyzStringFormatter = XYZStringFormatter()
+    private let googleDriveUploader = GoogleDriveUploader()
     
     private var pointsParentNode = SCNNode()
     private var surfaceParentNode = SCNNode()
@@ -32,7 +33,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     private var addPointRatio = 3 // Show 1 / addPointRatio of the points
     
     private let exportExtensionString = "stl"
-    private var fileName = "SurfaceModel"
+    private var fileName = "Model"
     private let imageQuality = 0.85 // Value between 0 and 1
     private var pointMaterial: SCNMaterial?
     private var surfaceGeometry: SCNGeometry?
@@ -44,7 +45,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     private let signInButton = GIDSignInButton()
     
 
-    
     // MARK: - UIViewController
     
     override func viewDidLoad() {
@@ -421,7 +421,11 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
             
             // Upload file
             do {
-                try uploadDataFile(fileData: surfaceFileContents, name: "SurfaceModel", fileExtension: exportExtensionString)
+                try googleDriveUploader.uploadDataFile(
+                    service: service,
+                    fileData: surfaceFileContents,
+                    name: fileName,
+                    fileExtension: exportExtensionString)
             } catch {
                 showAlert(title: "Upload Error", message: "Please try again.")
                 return
@@ -465,32 +469,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         }
         else { return SCNNode() } // FIXME: Maybe this should throw?
     }
-    
-    
-    // MARK: - Google Drive Helper Functions
-    
-    enum UploadError: Error {
-        case fileUploadError
-    }
-    
-    private func uploadDataFile(fileData: Data, name: String, fileExtension: String) throws {
-        let metadata = GTLRDrive_File()
-        metadata.name = name + ".\(fileExtension)"
-        
-        let uploadParameters: GTLRUploadParameters = GTLRUploadParameters(data: fileData, mimeType: "text/plain")
-        uploadParameters.shouldUploadWithSingleRequest = true
-        
-        let query = GTLRDriveQuery_FilesCreate.query(withObject: metadata, uploadParameters: uploadParameters)
-        self.service.executeQuery(query, completionHandler: {(ticket:GTLRServiceTicket, object:Any?, error:Error?) in
-            if error == nil {
-                print("Text File Upload Success")
-            } else {
-                print("An error occurred: \(String(describing: error))")
-                throw UploadError.fileUploadError
-            }
-            } as? GTLRServiceCompletionHandler)
-    }
-    
     
     // MARK: - Display Helper Functions
     

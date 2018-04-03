@@ -1,0 +1,35 @@
+//
+//  GoogleDriveUploader.swift
+//  ThreeDScanner
+//
+//  Created by Steven Roach on 4/2/18.
+//  Copyright © 2018 Steven Roach. All rights reserved.
+//
+
+import Foundation
+import GoogleAPIClientForREST
+
+internal class GoogleDriveUploader {
+    
+    private enum UploadError: Error {
+        case fileUploadError
+    }
+    
+    internal func uploadDataFile(service: GTLRDriveService, fileData: Data, name: String, fileExtension: String) throws {
+        let metadata = GTLRDrive_File()
+        metadata.name = name + ".\(fileExtension)"
+        
+        let uploadParameters: GTLRUploadParameters = GTLRUploadParameters(data: fileData, mimeType: "text/plain")
+        uploadParameters.shouldUploadWithSingleRequest = true
+        
+        let query = GTLRDriveQuery_FilesCreate.query(withObject: metadata, uploadParameters: uploadParameters)
+        service.executeQuery(query, completionHandler: {(ticket:GTLRServiceTicket, object:Any?, error:Error?) in
+            if error == nil {
+                print("Text File Upload Success")
+            } else {
+                print("An error occurred: \(String(describing: error))")
+                throw UploadError.fileUploadError
+            }
+            } as? GTLRServiceCompletionHandler)
+    }
+}

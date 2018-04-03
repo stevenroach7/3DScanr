@@ -10,6 +10,7 @@
 		4C4FD6D27D0A790EA33C36DA /* Pods_ThreeDScanner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E1A3A8D013ACA949EB5C45A8 /* Pods_ThreeDScanner.framework */; };
 		B02AC9FF1FED6F020025F835 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B02AC9FE1FED6F020025F835 /* GoogleService-Info.plist */; };
 		B03EDABD207307F200912531 /* XYZStringFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B03EDABC207307F200912531 /* XYZStringFormatter.swift */; };
+		B03EDABF2073253C00912531 /* GoogleDriveUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B03EDABE2073253C00912531 /* GoogleDriveUploader.swift */; };
 		B063CB161FC744A100C20C8D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B063CB151FC744A100C20C8D /* AppDelegate.swift */; };
 		B063CB181FC744A100C20C8D /* art.scnassets in Resources */ = {isa = PBXBuildFile; fileRef = B063CB171FC744A100C20C8D /* art.scnassets */; };
 		B063CB1A1FC744A100C20C8D /* ScanningViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B063CB191FC744A100C20C8D /* ScanningViewController.swift */; };
@@ -67,6 +68,7 @@
 		A6001CAE9A27F8CB01B7CC37 /* Pods-ThreeDScanner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ThreeDScanner.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ThreeDScanner/Pods-ThreeDScanner.debug.xcconfig"; sourceTree = "<group>"; };
 		B02AC9FE1FED6F020025F835 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../../ThreeDScanner_Resources/GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B03EDABC207307F200912531 /* XYZStringFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XYZStringFormatter.swift; sourceTree = "<group>"; };
+		B03EDABE2073253C00912531 /* GoogleDriveUploader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleDriveUploader.swift; sourceTree = "<group>"; };
 		B063CB121FC744A100C20C8D /* ThreeDScanner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ThreeDScanner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B063CB151FC744A100C20C8D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B063CB171FC744A100C20C8D /* art.scnassets */ = {isa = PBXFileReference; lastKnownFileType = wrapper.scnassets; path = art.scnassets; sourceTree = "<group>"; };
@@ -209,6 +211,7 @@
 				B063CB201FC744A100C20C8D /* LaunchScreen.storyboard */,
 				B063CB231FC744A100C20C8D /* Info.plist */,
 				B03EDABC207307F200912531 /* XYZStringFormatter.swift */,
+				B03EDABE2073253C00912531 /* GoogleDriveUploader.swift */,
 			);
 			path = ThreeDScanner;
 			sourceTree = "<group>";
@@ -486,6 +489,7 @@
 			files = (
 				B063CB1A1FC744A100C20C8D /* ScanningViewController.swift in Sources */,
 				B063CB161FC744A100C20C8D /* AppDelegate.swift in Sources */,
+				B03EDABF2073253C00912531 /* GoogleDriveUploader.swift in Sources */,
 				B065E777202E1242003DD254 /* PCLWrapper.cpp in Sources */,
 				B03EDABD207307F200912531 /* XYZStringFormatter.swift in Sources */,
 			);
