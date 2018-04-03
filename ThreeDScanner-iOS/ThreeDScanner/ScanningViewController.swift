@@ -30,15 +30,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     
     private var isTorchOn = false
     private var addPointRatio = 3 // Show 1 / addPointRatio of the points
-    private var folderID = ""
-    private var hasFolderBeenUploaded = false
-    private var isMultipartUploadOn = false {
-        didSet {
-            if isMultipartUploadOn {
-                uploadFolder()
-            }
-        }
-    }
     
     private let exportExtensionString = "stl"
     private let imageQuality = 0.85 // Value between 0 and 1
@@ -71,7 +62,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         
         addReconstructButton()
         addToggleTorchButton()
-        addUploadButton()
         addResetButton()
         addOptionsButton()
         addExportButton()
@@ -199,22 +189,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         exportButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
-    private func addUploadButton() {
-        let uploadButton = UIButton()
-        view.addSubview(uploadButton)
-        uploadButton.translatesAutoresizingMaskIntoConstraints = false
-        uploadButton.setTitle("Upload", for: .normal)
-        uploadButton.setTitleColor(UIColor.red, for: .normal)
-        uploadButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
-        uploadButton.layer.cornerRadius = 4
-        uploadButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
-        uploadButton.addTarget(self, action: #selector(uploadButtonTapped(sender:)) , for: .touchUpInside)
-        
-        // Contraints
-        uploadButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
-        uploadButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -8.0).isActive = true
-        uploadButton.heightAnchor.constraint(equalToConstant: 50)
-    }
     
     // Helper for showing an alert
     private func showAlert(title : String, message: String) {
@@ -269,7 +243,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     }
     
     @IBAction func exportButtonTapped(sender: UIButton) {
-        uploadFolder()
         
         guard let surfaceGeometry = surfaceGeometry else {
             showAlert(title: "No Surface to Export", message: "Press Reconstruct Surface and then export.")
@@ -298,27 +271,16 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
             do {
                 try uploadDataFile(fileData: surfaceFileContents, name: "SurfaceModel", fileExtension: exportExtensionString)
             } catch {
-                showAlert(title: "Upload Error", message: "Make sure that the folder has been uploaded successfully and try again.")
+                showAlert(title: "Upload Error", message: "Please try again.")
                 return
             }
-            showAlert(title: "Sucessful Upload", message: "Mesh was uploaded to Google Drive Folder")
+            showAlert(title: "Sucessful Upload", message: "")
 
             // Discard file
             try fileManager.removeItem(at: tempFileURL)
         } catch {
             showAlert(title: "Error exporting to file", message: "")
             return
-        }
-    }
-    
-    @IBAction func uploadButtonTapped(sender: UIButton) {
-        uploadFolder()
-        
-        let xyzString = xyzStringFormatter.createXyzString(points: points)
-        do {
-            try uploadTextFile(input: xyzString, name: "All_Points")
-        } catch {
-            showAlert(title: "Upload Error", message: "Make sure that the folder has been uploaded successfully and try again.")
         }
     }
     
@@ -347,8 +309,9 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     }
     
     @IBAction func toggleButtonTapped(sender: UIButton) {
-        guard let device = AVCaptureDevice.default(for: AVMediaType.video)
-            else {return}
+        guard let device = AVCaptureDevice.default(for: AVMediaType.video) else {
+            return
+        }
         
         if device.hasTorch {
             do {
@@ -467,14 +430,8 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         case fileUploadError
     }
     
-    private func uploadTextFile(input: String, name: String, fileExtension: String = "txt") throws {
-        let fileData = input.data(using: .utf8)!
-        try uploadDataFile(fileData: fileData, name: name, fileExtension: fileExtension)
-    }
-    
     private func uploadDataFile(fileData: Data, name: String, fileExtension: String) throws {
         let metadata = GTLRDrive_File()
-        metadata.parents = [folderID]
         metadata.name = name + ".\(fileExtension)"
         
         let uploadParameters: GTLRUploadParameters = GTLRUploadParameters(data: fileData, mimeType: "text/plain")
@@ -489,64 +446,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
                 throw UploadError.fileUploadError
             }
             } as? GTLRServiceCompletionHandler)
-    }
-    
-    private func uploadImageFile(image: UIImage, name: String) {
-        
-        let content = image
-        let mimeType = "image/jpeg"
-        
-        let metadata = GTLRDrive_File()
-        metadata.parents = [folderID]
-        metadata.name = name + ".jpg"
-        
-        guard let data = UIImageJPEGRepresentation(content, CGFloat(imageQuality)) else {
-            return
-        }
-        
-        let uploadParameters = GTLRUploadParameters(data: data, mimeType: mimeType)
-        uploadParameters.shouldUploadWithSingleRequest = true
-
-        let query = GTLRDriveQuery_FilesCreate.query(withObject: metadata, uploadParameters: uploadParameters)
-        self.service.executeQuery(query, completionHandler: {(ticket:GTLRServiceTicket, object:Any?, error:Error?) in
-            if error == nil {
-                print("Image File Success")
-            }
-            else {
-                print("An error occurred: \(String(describing: error))")
-                self.showAlert(title: "Image Upload Error", message: "Make sure that the folder has been uploaded successfully and try again.")
-            }
-        })
-    }
-    
-    private func uploadFolder() {
-        if hasFolderBeenUploaded {
-            return
-        }
-        
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateStyle = DateFormatter.Style.short
-        dateFormatter.timeStyle = DateFormatter.Style.short
-        let timeDateString = dateFormatter.string(from: Date())
-        let name = timeDateString
-        
-        let metadata = GTLRDrive_File()
-        metadata.name = name
-        metadata.mimeType = "application/vnd.google-apps.folder"
-        
-        let query = GTLRDriveQuery_FilesCreate.query(withObject: metadata, uploadParameters: nil)
-        self.service.executeQuery(query, completionHandler: {(ticket:GTLRServiceTicket, object: Any?, error:Error?) in
-            if error == nil {
-                let file = object as? GTLRDrive_File
-                self.folderID = (file?.identifier)!
-                self.hasFolderBeenUploaded = true
-                print("Folder Upload Success")
-                self.showAlert(title: "Folder Upload Success", message: "Happy Scanning!")
-            }
-            else {
-                print("An error occurred: \(String(describing: error))")
-            }
-        })
     }
     
     
