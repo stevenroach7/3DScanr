@@ -32,6 +32,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     private var addPointRatio = 3 // Show 1 / addPointRatio of the points
     
     private let exportExtensionString = "stl"
+    private var fileName = "SurfaceModel"
     private let imageQuality = 0.85 // Value between 0 and 1
     private var pointMaterial: SCNMaterial?
     private var surfaceGeometry: SCNGeometry?
@@ -41,6 +42,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     private let scopes = ["https://www.googleapis.com/auth/drive"]
     private let service = GTLRDriveService()
     private let signInButton = GIDSignInButton()
+    
 
     
     // MARK: - UIViewController
@@ -244,44 +246,40 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     
     @IBAction func exportButtonTapped(sender: UIButton) {
         
-        guard let surfaceGeometry = surfaceGeometry else {
-            showAlert(title: "No Surface to Export", message: "Press Reconstruct Surface and then export.")
-            return
-        }
-        
-        // Create MDLAsset that can be exported
-        var mdlAsset = MDLAsset()
-        let mdlMesh = MDLMesh(scnGeometry: surfaceGeometry)
-        mdlAsset = MDLAsset(bufferAllocator: mdlMesh.allocator)
-        mdlAsset.add(mdlMesh)
-        
-        // Create temporary file
-        let fileManager = FileManager.default
-        
-        var tempFileURL = URL(fileURLWithPath: "SurfaceModel", relativeTo: fileManager.temporaryDirectory)
-        tempFileURL.appendPathExtension(exportExtensionString)
-        do {
-            // Export mesh to temporary file
-            try mdlAsset.export(to: tempFileURL)
-
-            // Read from file
-            let surfaceFileContents = try Data(contentsOf: tempFileURL)
-            
-            // Upload file
-            do {
-                try uploadDataFile(fileData: surfaceFileContents, name: "SurfaceModel", fileExtension: exportExtensionString)
-            } catch {
-                showAlert(title: "Upload Error", message: "Please try again.")
-                return
-            }
-            showAlert(title: "Sucessful Upload", message: "")
-
-            // Discard file
-            try fileManager.removeItem(at: tempFileURL)
-        } catch {
-            showAlert(title: "Error exporting to file", message: "")
-            return
-        }
+        // TODO: Now working yet
+//        // Prompt user for file name
+//        let fileNameDialog = UIAlertController(
+//            title: "File Name",
+//            message: "Please provide a name for your exported file",
+//            preferredStyle: UIAlertControllerStyle.alert
+//        )
+//
+//        let enterAction = UIAlertAction(
+//            title: "Enter",
+//            style: UIAlertActionStyle.default,
+//            handler: { [weak fileNameDialog] (_) in
+//                self.fileName = fileNameDialog!.textFields![0].text!
+////                    ?? self.fileName
+//            }
+//        )
+//
+//        let cancelAction = UIAlertAction(
+//            title: "Cancel",
+//            style: UIAlertActionStyle.cancel,
+//            handler: { (_) in
+//                return
+//            }
+//        )
+//
+//        fileNameDialog.addTextField(configurationHandler: {(textField: UITextField!) in
+//            textField.text = self.fileName
+//            textField.keyboardType = UIKeyboardType.asciiCapable
+//        })
+//        fileNameDialog.addAction(enterAction)
+//        fileNameDialog.addAction(cancelAction)
+//
+//        self.present(fileNameDialog, animated: true, completion: exportSurface)
+        exportSurface()
     }
     
     @IBAction func resetButtonTapped(sender: UIButton) {
@@ -342,7 +340,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         })
         
         alert.addAction(UIAlertAction(title: "Enter", style: UIAlertActionStyle.default, handler: { [weak alert] (_) in
-            let textField = alert?.textFields![0] // Force unwrapping because we know it exists.
+            let textField = alert?.textFields![0] // Force unwrapping because we know the text field exists (we just added it).
             if let text = textField!.text {
                 if let newRatio = Int(text) {
                     self.addPointRatio = newRatio
@@ -390,6 +388,51 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
                 transform.columns.3.z
             )
             pointCloudFrameViewpoints.append(position)
+        }
+    }
+    
+    
+    // MARK: Export
+    
+    private func exportSurface() {
+        
+        guard let surfaceGeometry = surfaceGeometry else {
+            showAlert(title: "No Surface to Export", message: "Press Reconstruct Surface and then export.")
+            return
+        }
+        
+        // Create MDLAsset that can be exported
+        var mdlAsset = MDLAsset()
+        let mdlMesh = MDLMesh(scnGeometry: surfaceGeometry)
+        mdlAsset = MDLAsset(bufferAllocator: mdlMesh.allocator)
+        mdlAsset.add(mdlMesh)
+        
+        // Create temporary file
+        let fileManager = FileManager.default
+        
+        var tempFileURL = URL(fileURLWithPath: fileName, relativeTo: fileManager.temporaryDirectory)
+        tempFileURL.appendPathExtension(exportExtensionString)
+        do {
+            // Export mesh to temporary file
+            try mdlAsset.export(to: tempFileURL)
+            
+            // Read from file
+            let surfaceFileContents = try Data(contentsOf: tempFileURL)
+            
+            // Upload file
+            do {
+                try uploadDataFile(fileData: surfaceFileContents, name: "SurfaceModel", fileExtension: exportExtensionString)
+            } catch {
+                showAlert(title: "Upload Error", message: "Please try again.")
+                return
+            }
+            showAlert(title: "Sucessful Upload", message: "")
+            
+            // Discard file
+            try fileManager.removeItem(at: tempFileURL)
+        } catch {
+            showAlert(title: "Error exporting to file", message: "")
+            return
         }
     }
     
