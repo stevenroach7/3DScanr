@@ -577,22 +577,27 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
         
         var vertices = [SCNVector3]()
         for i in 0..<pclMesh.numPoints {
-            vertices.append(SCNVector3(x: Float(pclMesh.points[i].x), y: Float(pclMesh.points[i].y), z: Float(pclMesh.points[i].z)))
+            vertices.append(SCNVector3(x: Float(pclMesh.points[i].x),
+                                       y: Float(pclMesh.points[i].y),
+                                       z: Float(pclMesh.points[i].z)))
         }
         let vertexSource = SCNGeometrySource(vertices: vertices)
         
         var elements = [SCNGeometryElement]()
         for i in 0..<pclMesh.numFaces {
             let allPrimitives: [Int32] = [pclMesh.polygons[i].v1, pclMesh.polygons[i].v2, pclMesh.polygons[i].v3]
-            let element = SCNGeometryElement(indices: allPrimitives, primitiveType: .triangles)
-            elements.append(element)
+            elements.append(SCNGeometryElement(indices: allPrimitives, primitiveType: .triangles))
         }
         
         surfaceGeometry = SCNGeometry(sources: [vertexSource], elements: elements)
-        surfaceGeometry!.firstMaterial?.isDoubleSided = true;
-        surfaceGeometry!.firstMaterial?.diffuse.contents = UIColor(displayP3Red: 135/255, green: 206/255, blue: 250/255, alpha: 1)
-        surfaceGeometry!.firstMaterial?.lightingModel = .blinn
-        return SCNNode(geometry: surfaceGeometry!)
+        if let surfaceGeometry = surfaceGeometry {
+            surfaceGeometry.firstMaterial?.isDoubleSided = true;
+            surfaceGeometry.firstMaterial?.diffuse.contents =
+                UIColor(displayP3Red: 135/255, green: 206/255, blue: 250/255, alpha: 1)
+            surfaceGeometry.firstMaterial?.lightingModel = .blinn
+            return SCNNode(geometry: surfaceGeometry)
+        }
+        else { return SCNNode() } // FIXME: Maybe this should throw?
     }
     
     
@@ -743,11 +748,12 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDeleg
                 
                 for point in currentPoints {
                     let point2DPos = sceneView.projectPoint(SCNVector3(point))
-                    if let pointColor = capturedImageSampler.getColor(atX: CGFloat(point2DPos.x) / sceneView.frame.maxX, y: CGFloat(point2DPos.y) / sceneView.frame.maxY) {
-                        pointColors.append(pointColor)
-                    } else {
-                        pointColors.append(nil)
-                    }
+                    
+                    let pointColor = capturedImageSampler.getColor(
+                        atX: CGFloat(point2DPos.x) / sceneView.frame.maxX,
+                        y: CGFloat(point2DPos.y) / sceneView.frame.maxY)
+                        ?? nil
+                    pointColors.append(pointColor)
                 }
                 return pointColors
             } catch {
