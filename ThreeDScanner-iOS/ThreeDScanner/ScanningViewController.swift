@@ -23,8 +23,10 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     private var colors: [UIColor?] = []
     private var pointCloudFrameSizes: [Int32] = []
     private var pointCloudFrameViewpoints: [SCNVector3] = []
+    
     private var pointsParentNode = SCNNode()
     private var surfaceParentNode = SCNNode()
+    
     private var isTorchOn = false
     private var addPointRatio = 3 // Show 1 / addPointRatio of the points
     private var folderID = ""
@@ -42,6 +44,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
             pendingImageUploadLabel.text = "\(pendingImageUploads) pending uploads"
         }
     }
+    
     private let exportExtensionString = "stl"
     private let imageQuality = 0.85 // Value between 0 and 1
     private var pointMaterial: SCNMaterial?
@@ -52,7 +55,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     private let scopes = ["https://www.googleapis.com/auth/drive"]
     private let service = GTLRDriveService()
     private let signInButton = GIDSignInButton()
-    
+
     
     // MARK: - UIViewController
     
@@ -820,23 +823,5 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         sphereNode.pivot = SCNMatrix4MakeRotation(-Float.pi / 2, 0, 1, 0)
         sphereNode.position = SCNVector3(position)
         pointsParentNode.addChildNode(sphereNode)
-    }
-    
- 
-    // MARK: - ARSCNViewDelegate
-    
-    func session(_ session: ARSession, didFailWithError error: Error) {
-        // Present an error message to the user
-        
-    }
-    
-    func sessionWasInterrupted(_ session: ARSession) {
-        // Inform the user that the session has been interrupted, for example, by presenting an overlay
-        
-    }
-    
-    func sessionInterruptionEnded(_ session: ARSession) {
-        // Reset tracking and/or remove existing anchors if consistent tracking is required
-        
     }
 }
