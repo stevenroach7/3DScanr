@@ -22,7 +22,6 @@
 		B065E770202E0A05003DD254 /* libpcl_features.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B065E76E202E0A05003DD254 /* libpcl_features.a */; };
 		B065E777202E1242003DD254 /* PCLWrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B065E775202E1242003DD254 /* PCLWrapper.cpp */; };
 		B06EC47820334E2500508DCB /* libflann_cpp_s.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B06EC47720334E2500508DCB /* libflann_cpp_s.a */; };
-		B090726D200420430072BDC3 /* CapturedImageSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B090726C200420430072BDC3 /* CapturedImageSampler.swift */; };
 		B0BB31E02030D56700FADAA4 /* libboost_date_time.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B0BB31D82030D56600FADAA4 /* libboost_date_time.a */; };
 		B0BB31E12030D56700FADAA4 /* libboost_program_options.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B0BB31D92030D56600FADAA4 /* libboost_program_options.a */; };
 		B0BB31E22030D56700FADAA4 /* libboost_signals.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B0BB31DA2030D56600FADAA4 /* libboost_signals.a */; };
@@ -88,7 +87,6 @@
 		B065E775202E1242003DD254 /* PCLWrapper.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = PCLWrapper.cpp; sourceTree = "<group>"; };
 		B065E776202E1242003DD254 /* PCLWrapper.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = PCLWrapper.hpp; sourceTree = "<group>"; };
 		B06EC47720334E2500508DCB /* libflann_cpp_s.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libflann_cpp_s.a; path = "flann-ios-device/lib/libflann_cpp_s.a"; sourceTree = "<group>"; };
-		B090726C200420430072BDC3 /* CapturedImageSampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturedImageSampler.swift; sourceTree = "<group>"; };
 		B0BB31D82030D56600FADAA4 /* libboost_date_time.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_date_time.a; path = "boost-ios-device/lib/libboost_date_time.a"; sourceTree = "<group>"; };
 		B0BB31D92030D56600FADAA4 /* libboost_program_options.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_program_options.a; path = "boost-ios-device/lib/libboost_program_options.a"; sourceTree = "<group>"; };
 		B0BB31DA2030D56600FADAA4 /* libboost_signals.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_signals.a; path = "boost-ios-device/lib/libboost_signals.a"; sourceTree = "<group>"; };
@@ -210,7 +208,6 @@
 				B063CB1E1FC744A100C20C8D /* Assets.xcassets */,
 				B063CB201FC744A100C20C8D /* LaunchScreen.storyboard */,
 				B063CB231FC744A100C20C8D /* Info.plist */,
-				B090726C200420430072BDC3 /* CapturedImageSampler.swift */,
 				B03EDABC207307F200912531 /* XYZStringFormatter.swift */,
 			);
 			path = ThreeDScanner;
@@ -488,7 +485,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				B063CB1A1FC744A100C20C8D /* ScanningViewController.swift in Sources */,
-				B090726D200420430072BDC3 /* CapturedImageSampler.swift in Sources */,
 				B063CB161FC744A100C20C8D /* AppDelegate.swift in Sources */,
 				B065E777202E1242003DD254 /* PCLWrapper.cpp in Sources */,
 				B03EDABD207307F200912531 /* XYZStringFormatter.swift in Sources */,

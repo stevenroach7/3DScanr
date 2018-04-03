@@ -20,7 +20,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     @IBOutlet var sceneView: ARSCNView!
     private let sessionConfiguration = ARWorldTrackingConfiguration()
     private var points: [vector_float3] = []
-    private var colors: [UIColor?] = []
     private var pointCloudFrameSizes: [Int32] = []
     private var pointCloudFrameViewpoints: [SCNVector3] = []
     
@@ -38,12 +37,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
             if isMultipartUploadOn {
                 uploadFolder()
             }
-        }
-    }
-    private let pendingImageUploadLabel: UILabel = UILabel(frame: CGRect(x: 0, y: 0, width: 200, height: 21))
-    private var pendingImageUploads = 0 {
-        didSet {
-            pendingImageUploadLabel.text = "\(pendingImageUploads) pending uploads"
         }
     }
     
@@ -78,12 +71,9 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         
         addReconstructButton()
         addToggleTorchButton()
-//        addInfoButton()
         addUploadButton()
         addResetButton()
         addOptionsButton()
-        addMultipartUploadSwitch()
-//        addPendingImageUploadLabel()
         addExportButton()
         
         createPointMaterial()
@@ -158,23 +148,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         toggleTorchButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
-    private func addInfoButton() {
-        let infoButton = UIButton()
-        view.addSubview(infoButton)
-        infoButton.translatesAutoresizingMaskIntoConstraints = false
-        infoButton.setTitle("Info", for: .normal)
-        infoButton.setTitleColor(UIColor.red, for: .normal)
-        infoButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
-        infoButton.layer.cornerRadius = 4
-        infoButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
-        infoButton.addTarget(self, action: #selector(infoButtonTapped(sender:)) , for: .touchUpInside)
-
-        // Contraints
-        infoButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
-        infoButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -8.0).isActive = true
-        infoButton.heightAnchor.constraint(equalToConstant: 50)
-    }
-    
     private func addResetButton() {
         let resetButton = UIButton()
         view.addSubview(resetButton)
@@ -207,32 +180,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         optionsButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
         optionsButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8.0).isActive = true
         optionsButton.heightAnchor.constraint(equalToConstant: 50)
-    }
-    
-    private func addMultipartUploadSwitch() {
-        let multipartUploadSwitch = UISwitch()
-        view.addSubview(multipartUploadSwitch)
-        multipartUploadSwitch.translatesAutoresizingMaskIntoConstraints = false
-        multipartUploadSwitch.isOn = isMultipartUploadOn
-        multipartUploadSwitch.setOn(isMultipartUploadOn, animated: false)
-        multipartUploadSwitch.addTarget(self, action: #selector(switchValueDidChange(sender:)), for: .valueChanged)
-        
-        // Contraints
-        multipartUploadSwitch.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
-        multipartUploadSwitch.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8.0).isActive = true
-        multipartUploadSwitch.heightAnchor.constraint(equalToConstant: 50)
-    }
-    
-    private func addPendingImageUploadLabel() {
-        view.addSubview(pendingImageUploadLabel)
-        pendingImageUploadLabel.translatesAutoresizingMaskIntoConstraints = false
-        pendingImageUploadLabel.textAlignment = .center
-        pendingImageUploadLabel.text = "\(pendingImageUploads) pending uploads"
-
-        // Contraints
-        pendingImageUploadLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 24.0).isActive = true
-        pendingImageUploadLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0.0).isActive = true
-        pendingImageUploadLabel.heightAnchor.constraint(equalToConstant: 50)
     }
     
     private func addExportButton() {
@@ -378,7 +325,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     @IBAction func resetButtonTapped(sender: UIButton) {
         
         points = []
-        colors = []
         pointCloudFrameSizes = []
         pointCloudFrameViewpoints = []
 
@@ -425,12 +371,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         }
     }
     
-    @IBAction func infoButtonTapped(sender: UIButton) {
-        let title = "Info"
-        let message = "Detected points are shown in yellow. Tap the screen to add currently detected ponts to the captured point cloud sample. Captured points are shown in white. Press Upload to upload a text file of the captured points to the associated Google Drive account."
-        showAlert(title: title, message: message)
-    }
-    
     @IBAction func optionsButtonTapped(sender: UIButton) {
         let alert = UIAlertController(title: "Adjust Add Point Ratio", message: "1 out of every _ points will be shown.", preferredStyle: UIAlertControllerStyle.alert)
         alert.addTextField(configurationHandler: {(textField: UITextField!) in
@@ -449,14 +389,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         self.present(alert, animated: true, completion: nil)
     }
     
-    @IBAction func switchValueDidChange(sender:UISwitch!) {
-        if (sender.isOn){
-            isMultipartUploadOn = true
-        } else {
-            isMultipartUploadOn = false
-        }
-    }
-    
     internal func sign(_ signIn: GIDSignIn!, didSignInFor user: GIDGoogleUser!, withError error: Error!) {
         if let error = error {
             showAlert(title: "Authentication Error", message: error.localizedDescription)
@@ -469,49 +401,13 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         
+        // Store Points
         guard let rawFeaturePoints = sceneView.session.currentFrame?.rawFeaturePoints else {
             return
         }
         let currentPoints = rawFeaturePoints.points
-        
-        //        let pointColors = capturePointColors(currentPoints: currentPoints)
-        //        colors += pointColors // Add current colors to global list
-        
-        let camera = sceneView.session.currentFrame?.camera
-        
-        //        if isMultipartUploadOn {
-        //            uploadFolder() // Only uploads if folder hasn't been uploaded
-        //
-        //            // Create corresponding file name for different types of uploads
-        //            let dateFormatter = DateFormatter()
-        //            dateFormatter.dateFormat = "H:m:ss:SSSS"
-        //            let timeString = dateFormatter.string(from: Date())
-        //
-        //            // Upload Image
-        //            if let frame = sceneView.session.currentFrame {
-        //                let imageWithCVPixelBuffer = frame.capturedImage
-        //                let ciImage = CIImage(cvPixelBuffer: imageWithCVPixelBuffer)
-        //                let tempContext = CIContext()
-        //                let videoImage = tempContext.createCGImage(ciImage, from: CGRect(x: 0, y: 0, width: CGFloat(CVPixelBufferGetWidth(imageWithCVPixelBuffer)), height: CGFloat(CVPixelBufferGetHeight(imageWithCVPixelBuffer))))
-        //                let image = UIImage(cgImage: videoImage!, scale: 1.0, orientation: determineImageOrientation())
-        //
-        //                pendingImageUploads += 1
-        //                uploadImageFile(image: image, name: "Photo_\(timeString)")
-        //            }
-        
-        //            // Upload Points and Colors text file
-        //            uploadTextFile(input: createXyzRgbString(points: currentPoints, pointColors: pointColors), name: "Points_and_Colors_\(timeString)")
-        
-        //            // Upload 2D point positions
-        //            let point2DPositions = projectPoint2DPositions(currentPoints: currentPoints)
-        //            uploadTextFile(input: createXyzString(points: point2DPositions), name: "2D_Point_Positions_\(timeString)")
-        
-        //            // Upload camera info text file
-        //            let transform: String = "Transform: " + (camera?.transform.debugDescription)!
-        //            let eulerAngles: String = "Euler Angles: " + (camera?.eulerAngles.debugDescription)!
-        //            let intrinsics: String = "Intrinsics: " + (camera?.intrinsics.debugDescription)!
-        //            uploadTextFile(input: transform + "\n" + eulerAngles + "\n" + intrinsics, name: "6DOF_\(timeString)")
-        //        }
+        points += currentPoints
+        pointCloudFrameSizes.append(Int32(currentPoints.count))
         
         // Display points
         var i = 0
@@ -521,10 +417,9 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
             }
             i += 1
         }
-        points += currentPoints
-        pointCloudFrameSizes.append(Int32(currentPoints.count))
-        
-        // Add view point
+
+        // Add viewpoint
+        let camera = sceneView.session.currentFrame?.camera
         if let transform = camera?.transform {
             let position = SCNVector3(
                 transform.columns.3.x,
@@ -533,46 +428,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
             )
             pointCloudFrameViewpoints.append(position)
         }
-    }
-    
-    
-    // MARK: - PCL Helper Functions
-    
-    private func uploadPointNormalViewpointTextFiles(pclPointNormalCloud: PCLPointNormalCloud) {
-        
-        var currentPointsIdx = 0
-        
-        var allPointsNormalsString = "\n"
-        
-        for frameIdx in 0..<Int(pclPointNormalCloud.numFrames) {
-            
-            var framePointsNormalsString = ""
-            framePointsNormalsString.append("\(pclPointNormalCloud.viewpoints[frameIdx].x);")
-            framePointsNormalsString.append("\(pclPointNormalCloud.viewpoints[frameIdx].y);")
-            framePointsNormalsString.append("\(pclPointNormalCloud.viewpoints[frameIdx].z)\n")
-            
-            for _ in 0..<pclPointNormalCloud.pointFrameLengths[frameIdx] {
-                
-                var pointNormalLineString = ""
-                pointNormalLineString.append("\(pclPointNormalCloud.points[currentPointsIdx].x);")
-                pointNormalLineString.append("\(pclPointNormalCloud.points[currentPointsIdx].y);")
-                pointNormalLineString.append("\(pclPointNormalCloud.points[currentPointsIdx].z);")
-                pointNormalLineString.append("\(pclPointNormalCloud.normals[currentPointsIdx].x);")
-                pointNormalLineString.append("\(pclPointNormalCloud.normals[currentPointsIdx].y);")
-                pointNormalLineString.append("\(pclPointNormalCloud.normals[currentPointsIdx].z)\n")
-                
-                framePointsNormalsString.append(pointNormalLineString)
-                allPointsNormalsString.append(pointNormalLineString)
-                
-                currentPointsIdx += 1
-            }
-            do {
-                try uploadTextFile(input: framePointsNormalsString, name: "Frame_index_\(frameIdx)")
-            } catch {}
-        }
-        do {
-            try uploadTextFile(input: allPointsNormalsString, name: "All_Points_and_Normals")
-        } catch {}
     }
     
     
@@ -661,7 +516,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
                 print("An error occurred: \(String(describing: error))")
                 self.showAlert(title: "Image Upload Error", message: "Make sure that the folder has been uploaded successfully and try again.")
             }
-            self.pendingImageUploads -= 1
         })
     }
     
@@ -693,64 +547,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
                 print("An error occurred: \(String(describing: error))")
             }
         })
-    }
-    
-    
-    // MARK: - Image Metadata Helper Functions
-    
-    private func capturePointColors(currentPoints: [float3]) -> [UIColor?] {
-        
-        var pointColors: [UIColor?] = []
-        
-        if let frame = sceneView.session.currentFrame {
-            do {
-                let capturedImageSampler = try CapturedImageSampler(frame: frame)
-                
-                for point in currentPoints {
-                    let point2DPos = sceneView.projectPoint(SCNVector3(point))
-                    
-                    let pointColor = capturedImageSampler.getColor(
-                        atX: CGFloat(point2DPos.x) / sceneView.frame.maxX,
-                        y: CGFloat(point2DPos.y) / sceneView.frame.maxY)
-                        ?? nil
-                    pointColors.append(pointColor)
-                }
-                return pointColors
-            } catch {
-                print("Error")
-                return pointColors
-            }
-        }
-        return pointColors
-    }
-    
-    private func determineImageOrientation() -> UIImageOrientation {
-        switch UIApplication.shared.statusBarOrientation {
-        case .landscapeLeft:
-            return UIImageOrientation.down
-        case .landscapeRight:
-            return UIImageOrientation.up
-        case .portrait:
-            return UIImageOrientation.right
-        case .unknown:
-            return UIImageOrientation.right
-        case .portraitUpsideDown:
-            return UIImageOrientation.left
-        }
-    }
-    
-    private func projectPoint2DPositions(currentPoints: [float3]) -> [float3] {
-        var point2DPositions: [float3] = []
-        
-        for point in currentPoints {
-            var point2DPos = sceneView.projectPoint(SCNVector3(point))
-            point2DPos.x /= Float(sceneView.frame.width)
-            point2DPos.y /= Float(sceneView.frame.height)
-            point2DPos.x = (point2DPos.x * 2) - 1
-            point2DPos.y = (point2DPos.y * 2) - 1
-            point2DPositions.append(float3(point2DPos))
-        }
-        return point2DPositions
     }
     
     
