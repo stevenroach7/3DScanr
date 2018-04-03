@@ -339,6 +339,8 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
 
         pointsParentNode = SCNNode()
         surfaceParentNode = SCNNode()
+        
+        surfaceGeometry = nil
 
         sceneView.scene.rootNode.addChildNode(pointsParentNode)
         sceneView.scene.rootNode.addChildNode(surfaceParentNode)
