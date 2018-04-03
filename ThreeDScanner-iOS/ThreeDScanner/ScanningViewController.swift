@@ -19,9 +19,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     
     @IBOutlet var sceneView: ARSCNView!
     private let sessionConfiguration = ARWorldTrackingConfiguration()
-    private var points: [vector_float3] = []
-    private var pointCloudFrameSizes: [Int32] = []
-    private var pointCloudFrameViewpoints: [SCNVector3] = []
+    private var pointCloud = PointCloud()
     
     private let xyzStringFormatter = XYZStringFormatter()
     private let surfaceExporter = SurfaceExporter()
@@ -30,13 +28,12 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     private var surfaceParentNode = SCNNode()
     
     private var isTorchOn = false
-    private var addPointRatio = 3 // Show 1 / addPointRatio of the points
+    private var addPointRatio = 3 // Show 1 / addPointRatio of the points, TODO: Pick a default value and make this a constant?
     
-    private let exportExtensionString = "stl"
-    private let imageQuality = 0.85 // Value between 0 and 1
     private var pointMaterial: SCNMaterial?
     private var surfaceGeometry: SCNGeometry?
 
+    // Google Drive Properties
     // If modifying these scopes, delete your previously saved credentials by
     // resetting the iOS simulator or uninstall the app.
     private let scopes = ["https://www.googleapis.com/auth/drive"]
@@ -109,8 +106,8 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
             return
         }
         let currentPoints = rawFeaturePoints.points
-        points += currentPoints
-        pointCloudFrameSizes.append(Int32(currentPoints.count))
+        pointCloud.points += currentPoints
+        pointCloud.framePointsSizes.append(Int32(currentPoints.count))
         
         // Display points
         var i = 0
@@ -129,7 +126,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
                 transform.columns.3.y,
                 transform.columns.3.z
             )
-            pointCloudFrameViewpoints.append(position)
+            pointCloud.frameViewpoints.append(position)
         }
     }
     
@@ -271,7 +268,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
                 self.surfaceExporter.exportSurface(
                     fileNamed: fileName,
                     withGeometry: self.surfaceGeometry,
-                    withExtension: self.exportExtensionString,
+                    withExtension: ScanningConstants.exportFileExtension,
                     onSuccess: successCallback,
                     onFailure: failureCallback,
                     service: self.service
@@ -289,13 +286,13 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     
     @IBAction func reconstructButtonTapped(sender: UIButton) {
         
-        let pclPoints = points.map { PCLPoint3D(x: Double($0.x), y: Double($0.y), z: Double($0.z)) }
-        let pclViewpoints = pointCloudFrameViewpoints.map { PCLPoint3D(x: Double($0.x), y: Double($0.y), z: Double($0.z)) }
+        let pclPoints = pointCloud.points.map { PCLPoint3D(x: Double($0.x), y: Double($0.y), z: Double($0.z)) }
+        let pclViewpoints = pointCloud.frameViewpoints.map { PCLPoint3D(x: Double($0.x), y: Double($0.y), z: Double($0.z)) }
         
-        let pclPointCloud = PCLPointCloud(numPoints: Int32(points.count),
+        let pclPointCloud = PCLPointCloud(numPoints: Int32(pointCloud.points.count),
                                           points: pclPoints,
-                                          numFrames: Int32(pointCloudFrameViewpoints.count),
-                                          pointFrameLengths: pointCloudFrameSizes,
+                                          numFrames: Int32(pointCloud.frameViewpoints.count),
+                                          pointFrameLengths: pointCloud.framePointsSizes,
                                           viewpoints: pclViewpoints)
         
         let pclMesh = performSurfaceReconstruction(pclPointCloud)
@@ -331,9 +328,9 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     
     @IBAction func resetButtonTapped(sender: UIButton) {
         
-        points = []
-        pointCloudFrameSizes = []
-        pointCloudFrameViewpoints = []
+        pointCloud.points = []
+        pointCloud.framePointsSizes = []
+        pointCloud.frameViewpoints = []
 
         sceneView.scene.rootNode.enumerateChildNodes { (node, stop) in node.removeFromParentNode() }
 

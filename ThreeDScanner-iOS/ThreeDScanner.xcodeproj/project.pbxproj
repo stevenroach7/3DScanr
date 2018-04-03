@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		4C4FD6D27D0A790EA33C36DA /* Pods_ThreeDScanner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E1A3A8D013ACA949EB5C45A8 /* Pods_ThreeDScanner.framework */; };
 		B0045310207401CB00B70F84 /* SurfaceExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B004530F207401CB00B70F84 /* SurfaceExporter.swift */; };
+		B0045314207435FE00B70F84 /* ScanningConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0045313207435FE00B70F84 /* ScanningConstants.swift */; };
+		B00453162074370500B70F84 /* PointCloud.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00453152074370500B70F84 /* PointCloud.swift */; };
 		B02AC9FF1FED6F020025F835 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B02AC9FE1FED6F020025F835 /* GoogleService-Info.plist */; };
 		B03EDABD207307F200912531 /* XYZStringFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B03EDABC207307F200912531 /* XYZStringFormatter.swift */; };
 		B03EDABF2073253C00912531 /* GoogleDriveUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B03EDABE2073253C00912531 /* GoogleDriveUploader.swift */; };
@@ -68,6 +70,8 @@
 /* Begin PBXFileReference section */
 		A6001CAE9A27F8CB01B7CC37 /* Pods-ThreeDScanner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ThreeDScanner.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ThreeDScanner/Pods-ThreeDScanner.debug.xcconfig"; sourceTree = "<group>"; };
 		B004530F207401CB00B70F84 /* SurfaceExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurfaceExporter.swift; sourceTree = "<group>"; };
+		B0045313207435FE00B70F84 /* ScanningConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanningConstants.swift; sourceTree = "<group>"; };
+		B00453152074370500B70F84 /* PointCloud.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointCloud.swift; sourceTree = "<group>"; };
 		B02AC9FE1FED6F020025F835 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../../ThreeDScanner_Resources/GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B03EDABC207307F200912531 /* XYZStringFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XYZStringFormatter.swift; sourceTree = "<group>"; };
 		B03EDABE2073253C00912531 /* GoogleDriveUploader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleDriveUploader.swift; sourceTree = "<group>"; };
@@ -215,6 +219,8 @@
 				B03EDABC207307F200912531 /* XYZStringFormatter.swift */,
 				B03EDABE2073253C00912531 /* GoogleDriveUploader.swift */,
 				B004530F207401CB00B70F84 /* SurfaceExporter.swift */,
+				B0045313207435FE00B70F84 /* ScanningConstants.swift */,
+				B00453152074370500B70F84 /* PointCloud.swift */,
 			);
 			path = ThreeDScanner;
 			sourceTree = "<group>";
@@ -492,6 +498,8 @@
 			files = (
 				B0045310207401CB00B70F84 /* SurfaceExporter.swift in Sources */,
 				B063CB1A1FC744A100C20C8D /* ScanningViewController.swift in Sources */,
+				B00453162074370500B70F84 /* PointCloud.swift in Sources */,
+				B0045314207435FE00B70F84 /* ScanningConstants.swift in Sources */,
 				B063CB161FC744A100C20C8D /* AppDelegate.swift in Sources */,
 				B03EDABF2073253C00912531 /* GoogleDriveUploader.swift in Sources */,
 				B065E777202E1242003DD254 /* PCLWrapper.cpp in Sources */,
