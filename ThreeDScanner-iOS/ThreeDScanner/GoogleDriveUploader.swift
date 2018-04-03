@@ -9,12 +9,21 @@
 import Foundation
 import GoogleAPIClientForREST
 
+/**
+ Class to upload files to Google Drive.
+ */
 internal class GoogleDriveUploader {
     
-    private enum UploadError: Error {
+    /**
+     Types of errors that could happen in the upload process.
+     */
+    internal enum UploadError: Error {
         case fileUploadError
     }
     
+    /**
+     Uploads a file to the servic google drive account with the given fileData, name and extension.
+     */
     internal func uploadDataFile(service: GTLRDriveService, fileData: Data, name: String, fileExtension: String) throws {
         let metadata = GTLRDrive_File()
         metadata.name = name + ".\(fileExtension)"

@@ -33,7 +33,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     private var addPointRatio = 3 // Show 1 / addPointRatio of the points
     
     private let exportExtensionString = "stl"
-    private var fileName = "Model"
     private let imageQuality = 0.85 // Value between 0 and 1
     private var pointMaterial: SCNMaterial?
     private var surfaceGeometry: SCNGeometry?
@@ -245,41 +244,41 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     }
     
     @IBAction func exportButtonTapped(sender: UIButton) {
+        if surfaceGeometry == nil {
+            showAlert(title: "No Surface to Export", message: "Press Reconstruct Surface and then export.")
+            return
+        }
         
-        // TODO: Now working yet
-//        // Prompt user for file name
-//        let fileNameDialog = UIAlertController(
-//            title: "File Name",
-//            message: "Please provide a name for your exported file",
-//            preferredStyle: UIAlertControllerStyle.alert
-//        )
-//
-//        let enterAction = UIAlertAction(
-//            title: "Enter",
-//            style: UIAlertActionStyle.default,
-//            handler: { [weak fileNameDialog] (_) in
-//                self.fileName = fileNameDialog!.textFields![0].text!
-////                    ?? self.fileName
-//            }
-//        )
-//
-//        let cancelAction = UIAlertAction(
-//            title: "Cancel",
-//            style: UIAlertActionStyle.cancel,
-//            handler: { (_) in
-//                return
-//            }
-//        )
-//
-//        fileNameDialog.addTextField(configurationHandler: {(textField: UITextField!) in
-//            textField.text = self.fileName
-//            textField.keyboardType = UIKeyboardType.asciiCapable
-//        })
-//        fileNameDialog.addAction(enterAction)
-//        fileNameDialog.addAction(cancelAction)
-//
-//        self.present(fileNameDialog, animated: true, completion: exportSurface)
-        exportSurface()
+        var fileName = "SurfaceModel" // Provide default file name
+        
+        // Prompt user for file name
+        let fileNameDialog = UIAlertController(
+            title: "File Name",
+            message: "Please provide a name for your exported file",
+            preferredStyle: UIAlertControllerStyle.alert
+        )
+
+        fileNameDialog.addTextField(configurationHandler: {(textField: UITextField!) in
+            textField.text = fileName
+            textField.keyboardType = UIKeyboardType.asciiCapable
+        })
+        
+        fileNameDialog.addAction(UIAlertAction(
+            title: "Enter",
+            style: UIAlertActionStyle.default,
+            handler: { [weak fileNameDialog] _ in
+                fileName = fileNameDialog?.textFields?[0].text ?? fileName
+                self.exportSurface(fileNamed: fileName)
+            }
+        ))
+        
+        fileNameDialog.addAction(UIAlertAction(
+            title: "Cancel",
+            style: UIAlertActionStyle.cancel,
+            handler: { (_) in return }
+        ))
+        
+        self.present(fileNameDialog, animated: true, completion: nil)
     }
     
     @IBAction func resetButtonTapped(sender: UIButton) {
@@ -392,12 +391,10 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     }
     
     
-    // MARK: Export
+    // MARK: Export Surface Helper Functions
     
-    private func exportSurface() {
-        
+    private func exportSurface(fileNamed fileName: String) {
         guard let surfaceGeometry = surfaceGeometry else {
-            showAlert(title: "No Surface to Export", message: "Press Reconstruct Surface and then export.")
             return
         }
         
