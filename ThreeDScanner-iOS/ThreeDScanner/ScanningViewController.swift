@@ -24,7 +24,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     private var pointCloudFrameViewpoints: [SCNVector3] = []
     
     private let xyzStringFormatter = XYZStringFormatter()
-    private let googleDriveUploader = GoogleDriveUploader()
+    private let surfaceExporter = SurfaceExporter()
     
     private var pointsParentNode = SCNNode()
     private var surfaceParentNode = SCNNode()
@@ -100,6 +100,37 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         super.didReceiveMemoryWarning()
         // Release any cached data, images, etc that aren't in use.
         print("Memory Warning")
+    }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        
+        // Store Points
+        guard let rawFeaturePoints = sceneView.session.currentFrame?.rawFeaturePoints else {
+            return
+        }
+        let currentPoints = rawFeaturePoints.points
+        points += currentPoints
+        pointCloudFrameSizes.append(Int32(currentPoints.count))
+        
+        // Display points
+        var i = 0
+        for rawPoint in currentPoints {
+            if i % addPointRatio == 0 {
+                addPointToView(position: rawPoint)
+            }
+            i += 1
+        }
+        
+        // Add viewpoint
+        let camera = sceneView.session.currentFrame?.camera
+        if let transform = camera?.transform {
+            let position = SCNVector3(
+                transform.columns.3.x,
+                transform.columns.3.y,
+                transform.columns.3.z
+            )
+            pointCloudFrameViewpoints.append(position)
+        }
     }
     
     
@@ -190,21 +221,67 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         exportButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
-    
-    // Helper for showing an alert
-    private func showAlert(title : String, message: String) {
+    /**
+     Helper function to display a standard alert with a title and a message
+     */
+    private func showAlert(title: String, message: String) {
         let alert = UIAlertController(
             title: title,
             message: message,
             preferredStyle: UIAlertControllerStyle.alert
         )
-        let ok = UIAlertAction(
+        alert.addAction(UIAlertAction(
             title: "OK",
             style: UIAlertActionStyle.default,
             handler: nil
-        )
-        alert.addAction(ok)
+        ))
         present(alert, animated: true, completion: nil)
+    }
+    
+    /**
+     Creates Dialog (as an alert) to let the user specify a file name.
+     Dialog has a text field, an enter button, and a cancel button.
+     */
+    private func createExportFileNameDialog() -> UIAlertController {
+        let defaultFileName = "SurfaceModel"
+        
+        let fileNameDialog = UIAlertController(
+            title: "File Name",
+            message: "Please provide a name for your exported file",
+            preferredStyle: UIAlertControllerStyle.alert
+        )
+        
+        fileNameDialog.addTextField(configurationHandler: {(textField: UITextField!) in
+            textField.text = defaultFileName
+            textField.keyboardType = UIKeyboardType.asciiCapable
+        })
+        
+        // Callbacks for when user presses enter
+        let successCallback = { self.showAlert(title: "Upload Success", message: "") }
+        let failureCallback = { self.showAlert(title: "Upload Failure", message: "Please try again") }
+        
+        // Add Enter Action
+        fileNameDialog.addAction(UIAlertAction(
+            title: "Enter",
+            style: UIAlertActionStyle.default,
+            handler: { [weak fileNameDialog] _ in
+                let fileName = fileNameDialog?.textFields?[0].text ?? defaultFileName
+                
+                // Now that we have a file name, we can export the surface
+                self.surfaceExporter.exportSurface(
+                    fileNamed: fileName,
+                    withGeometry: self.surfaceGeometry,
+                    withExtension: self.exportExtensionString,
+                    onSuccess: successCallback,
+                    onFailure: failureCallback,
+                    service: self.service
+                )
+            }
+        ))
+        
+        // Add cancel button
+        fileNameDialog.addAction(UIAlertAction(title: "Cancel", style: UIAlertActionStyle.cancel, handler: { (_) in return }))
+        return fileNameDialog
     }
     
     
@@ -248,36 +325,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
             showAlert(title: "No Surface to Export", message: "Press Reconstruct Surface and then export.")
             return
         }
-        
-        var fileName = "SurfaceModel" // Provide default file name
-        
-        // Prompt user for file name
-        let fileNameDialog = UIAlertController(
-            title: "File Name",
-            message: "Please provide a name for your exported file",
-            preferredStyle: UIAlertControllerStyle.alert
-        )
-
-        fileNameDialog.addTextField(configurationHandler: {(textField: UITextField!) in
-            textField.text = fileName
-            textField.keyboardType = UIKeyboardType.asciiCapable
-        })
-        
-        fileNameDialog.addAction(UIAlertAction(
-            title: "Enter",
-            style: UIAlertActionStyle.default,
-            handler: { [weak fileNameDialog] _ in
-                fileName = fileNameDialog?.textFields?[0].text ?? fileName
-                self.exportSurface(fileNamed: fileName)
-            }
-        ))
-        
-        fileNameDialog.addAction(UIAlertAction(
-            title: "Cancel",
-            style: UIAlertActionStyle.cancel,
-            handler: { (_) in return }
-        ))
-        
+        let fileNameDialog = createExportFileNameDialog()
         self.present(fileNameDialog, animated: true, completion: nil)
     }
     
@@ -356,84 +404,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         } else {
             self.signInButton.isHidden = true
             self.service.authorizer = user.authentication.fetcherAuthorizer()
-        }
-    }
-    
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        
-        // Store Points
-        guard let rawFeaturePoints = sceneView.session.currentFrame?.rawFeaturePoints else {
-            return
-        }
-        let currentPoints = rawFeaturePoints.points
-        points += currentPoints
-        pointCloudFrameSizes.append(Int32(currentPoints.count))
-        
-        // Display points
-        var i = 0
-        for rawPoint in currentPoints {
-            if i % addPointRatio == 0 {
-                addPointToView(position: rawPoint)
-            }
-            i += 1
-        }
-
-        // Add viewpoint
-        let camera = sceneView.session.currentFrame?.camera
-        if let transform = camera?.transform {
-            let position = SCNVector3(
-                transform.columns.3.x,
-                transform.columns.3.y,
-                transform.columns.3.z
-            )
-            pointCloudFrameViewpoints.append(position)
-        }
-    }
-    
-    
-    // MARK: Export Surface Helper Functions
-    
-    private func exportSurface(fileNamed fileName: String) {
-        guard let surfaceGeometry = surfaceGeometry else {
-            return
-        }
-        
-        // Create MDLAsset that can be exported
-        var mdlAsset = MDLAsset()
-        let mdlMesh = MDLMesh(scnGeometry: surfaceGeometry)
-        mdlAsset = MDLAsset(bufferAllocator: mdlMesh.allocator)
-        mdlAsset.add(mdlMesh)
-        
-        // Create temporary file
-        let fileManager = FileManager.default
-        
-        var tempFileURL = URL(fileURLWithPath: fileName, relativeTo: fileManager.temporaryDirectory)
-        tempFileURL.appendPathExtension(exportExtensionString)
-        do {
-            // Export mesh to temporary file
-            try mdlAsset.export(to: tempFileURL)
-            
-            // Read from file
-            let surfaceFileContents = try Data(contentsOf: tempFileURL)
-            
-            // Upload file
-            do {
-                try googleDriveUploader.uploadDataFile(
-                    service: service,
-                    fileData: surfaceFileContents,
-                    name: fileName,
-                    fileExtension: exportExtensionString)
-            } catch {
-                showAlert(title: "Upload Error", message: "Please try again.")
-                return
-            }
-            showAlert(title: "Sucessful Upload", message: "")
-            
-            // Discard file
-            try fileManager.removeItem(at: tempFileURL)
-        } catch {
-            showAlert(title: "Error exporting to file", message: "")
-            return
         }
     }
     
