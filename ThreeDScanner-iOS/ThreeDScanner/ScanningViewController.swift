@@ -24,6 +24,8 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     private var pointCloudFrameSizes: [Int32] = []
     private var pointCloudFrameViewpoints: [SCNVector3] = []
     
+    private let xyzStringFormatter = XYZStringFormatter()
+    
     private var pointsParentNode = SCNNode()
     private var surfaceParentNode = SCNNode()
     
@@ -365,9 +367,9 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     @IBAction func uploadButtonTapped(sender: UIButton) {
         uploadFolder()
         
-        let input = createXyzRgbString(points: points, pointColors: colors)
+        let xyzString = xyzStringFormatter.createXyzString(points: points)
         do {
-            try uploadTextFile(input: input, name: "All_Points_and_Colors")
+            try uploadTextFile(input: xyzString, name: "All_Points")
         } catch {
             showAlert(title: "Upload Error", message: "Make sure that the folder has been uploaded successfully and try again.")
         }
@@ -691,51 +693,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
                 print("An error occurred: \(String(describing: error))")
             }
         })
-    }
-    
-    
-    // MARK: - Text File Formatting Helper Functions
-
-    private func createXyzString(points: [float3]) -> String {
-        var xyzString = "\n"
-        for point in points {
-            xyzString.append(point.x.description)
-            xyzString.append(";")
-            xyzString.append(point.y.description)
-            xyzString.append(";")
-            xyzString.append(point.z.description)
-            xyzString.append("\n")
-        }
-        return xyzString
-    }
-    
-    private func createXyzRgbString(points: [float3], pointColors: [UIColor?]) -> String {
-        
-        var xyzRgbString = "\n"
-        for i in 0..<points.count {
-            let point = points[i]
-            let color = pointColors[i]
-            
-            xyzRgbString.append(point.x.description)
-            xyzRgbString.append(";")
-            xyzRgbString.append(point.y.description)
-            xyzRgbString.append(";")
-            xyzRgbString.append(point.z.description)
-            xyzRgbString.append(";")
-            
-            if let pointColor = color {
-                let ciColor = CIColor(color: pointColor)
-                xyzRgbString.append((ciColor.red * 255).description)
-                xyzRgbString.append(";")
-                xyzRgbString.append((ciColor.green * 255).description)
-                xyzRgbString.append(";")
-                xyzRgbString.append((ciColor.blue * 255).description)
-            } else {
-                xyzRgbString += ";;"
-            }
-            xyzRgbString += "\n"
-        }
-        return xyzRgbString
     }
     
     
