@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  ScanningViewController.swift
 //  ThreeDScanner
 //
 //  Created by Steven Roach on 11/23/17.
@@ -35,9 +35,8 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     // Scanning Options
     private var isTorchOn = false
     private var addPointRatio = 3 // Show 1 / addPointRatio of the points, TODO: Pick a default value and make this a constant?
-    
 
-    // Google Drive Properties
+    // Google Drive
     private let service = GTLRDriveService()
     // If modifying these scopes, delete your previously saved credentials by
     // resetting the iOS simulator or uninstall the app.
@@ -224,7 +223,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     }
     
     /**
-     Helper function to display a standard alert with a title and a message.
+     Displays a standard alert with a title and a message.
      */
     private func showAlert(title: String, message: String) {
         let alert = UIAlertController(
@@ -261,7 +260,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         fileNameDialog.addAction(UIAlertAction(
             title: "Enter",
             style: UIAlertActionStyle.default,
-            handler: { [weak fileNameDialog] _ in self.exportFileAction(fileNameDialog: fileNameDialog) }
+            handler: { [weak fileNameDialog] _ in self.createExportFileAction(fileNameDialog: fileNameDialog) }
         ))
         
         // Add cancel button
@@ -320,7 +319,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
      Creates a callback function for when the user presses enter in the file name dialog.
      Exports the surface to a data file and uploads to Google Drive.
      */
-    private func exportFileAction(fileNameDialog: UIAlertController?) {
+    private func createExportFileAction(fileNameDialog: UIAlertController?) {
         guard let surfaceGeometry = surfaceGeometry else {
             return
         }
@@ -426,7 +425,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     }
     
     
-    // MARK: - Surface Helper Functions
+    // MARK: - Helper Functions
     
     /**
      Constructs an SCNNode representing the given PCL surface mesh output.
@@ -457,9 +456,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         surfaceGeometry?.firstMaterial?.lightingModel = .blinn
         return SCNNode(geometry: surfaceGeometry)
     }
-    
-    
-    // MARK: - Display Helper Functions
     
     /**
      Creates a the SCNMaterial to be used for points in the displayed Point Cloud.
