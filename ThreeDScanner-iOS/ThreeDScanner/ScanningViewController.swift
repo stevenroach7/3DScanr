@@ -16,28 +16,32 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
 
     // MARK: - Properties
     
+    // ARKit / SceneKit
     @IBOutlet var sceneView: ARSCNView!
     private let sessionConfiguration = ARWorldTrackingConfiguration()
-    private var pointCloud = PointCloud()
+    private var pointsParentNode = SCNNode()
+    private var surfaceParentNode = SCNNode()
+    private lazy var pointMaterial: SCNMaterial = createPointMaterial()
+    private var surfaceGeometry: SCNGeometry?
     
+    // Dependencies
     private let xyzStringFormatter = XYZStringFormatter()
     private let surfaceExporter = SurfaceExporter()
     private let googleDriveUploader = GoogleDriveUploader()
     
-    private var pointsParentNode = SCNNode()
-    private var surfaceParentNode = SCNNode()
+    // Struct to hold currently captured Point Cloud data
+    private var pointCloud = PointCloud()
     
+    // Scanning Options
     private var isTorchOn = false
     private var addPointRatio = 3 // Show 1 / addPointRatio of the points, TODO: Pick a default value and make this a constant?
     
-    private lazy var pointMaterial: SCNMaterial = createPointMaterial()
-    private var surfaceGeometry: SCNGeometry?
 
     // Google Drive Properties
+    private let service = GTLRDriveService()
     // If modifying these scopes, delete your previously saved credentials by
     // resetting the iOS simulator or uninstall the app.
     private let scopes = ["https://www.googleapis.com/auth/drive"]
-    private let service = GTLRDriveService()
     private let signInButton = GIDSignInButton()
     
 
@@ -58,17 +62,18 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         // Add the sign-in button.
         view.addSubview(signInButton)
         
+        // Add buttons
         addReconstructButton()
         addToggleTorchButton()
         addResetButton()
         addOptionsButton()
         addExportButton()
         
-//        createPointMaterial()
-        
+        // Add SceneKit Parent Nodes
         sceneView.scene.rootNode.addChildNode(pointsParentNode)
         sceneView.scene.rootNode.addChildNode(surfaceParentNode)
         
+        // Set SceneKit Lighting
         sceneView.autoenablesDefaultLighting = true
     }
     
@@ -269,6 +274,8 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     
     @IBAction func reconstructButtonTapped(sender: UIButton) {
         
+        // Prepare Point Cloud data structures in C struct format
+        
         let pclPoints = pointCloud.points.map { PCLPoint3D(x: Double($0.x), y: Double($0.y), z: Double($0.z)) }
         let pclViewpoints = pointCloud.frameViewpoints.map { PCLPoint3D(x: Double($0.x), y: Double($0.y), z: Double($0.z)) }
         
@@ -279,15 +286,13 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
             pointFrameLengths: pointCloud.framePointsSizes,
             viewpoints: pclViewpoints)
         
+        // Call C++ Surface Reconstruction function using C Wrapper
         let pclMesh = performSurfaceReconstruction(pclPointCloud)
         defer {
-            // The mesh points and polygons pointers were allocated in C so need to be freed here
+            // The mesh points and polygons pointers were allocated in C++ so need to be freed here
             free(pclMesh.points)
             free(pclMesh.polygons)
         }
-        
-        print("mesh num points \(pclMesh.numPoints)")
-        print("mesh num faces \(pclMesh.numFaces)")
         
         // Remove current surfaces before displaying new surface
         surfaceParentNode.enumerateChildNodes { (node, stop) in
@@ -295,6 +300,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
             node.geometry = nil
         }
         
+        // Display surface
         let surfaceNode = constructSurfaceNode(pclMesh: pclMesh)
         surfaceParentNode.addChildNode(surfaceNode)
         
@@ -421,8 +427,12 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     
     // MARK: - Surface Helper Functions
     
+    /**
+     Constructs SCNNode representing the given PCL surface mesh output.
+     */
     private func constructSurfaceNode(pclMesh: PCLMesh) -> SCNNode {
         
+        // Construct vertices array
         var vertices = [SCNVector3]()
         for i in 0..<pclMesh.numPoints {
             vertices.append(SCNVector3(x: Float(pclMesh.points[i].x),
@@ -431,12 +441,14 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         }
         let vertexSource = SCNGeometrySource(vertices: vertices)
         
+        // Construct elements array
         var elements = [SCNGeometryElement]()
         for i in 0..<pclMesh.numFaces {
             let allPrimitives: [Int32] = [pclMesh.polygons[i].v1, pclMesh.polygons[i].v2, pclMesh.polygons[i].v3]
             elements.append(SCNGeometryElement(indices: allPrimitives, primitiveType: .triangles))
         }
         
+        // Set surfaceGeometry to object from vertex and element data
         surfaceGeometry = SCNGeometry(sources: [vertexSource], elements: elements)
         surfaceGeometry?.firstMaterial?.isDoubleSided = true;
         surfaceGeometry?.firstMaterial?.diffuse.contents =
@@ -448,6 +460,9 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     
     // MARK: - Display Helper Functions
     
+    /**
+     Creates a the SCNMaterial to be used on points in the Point Cloud.
+     */
     private func createPointMaterial() -> SCNMaterial {
         let textureImage = #imageLiteral(resourceName: "WhiteBlack")
         UIGraphicsBeginImageContext(textureImage.size)
@@ -461,6 +476,9 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         return pointMaterial
     }
     
+    /**
+     Helper function to add points to the view at the given position.
+     */
     private func addPointToView(position: vector_float3) {
         let sphere = SCNSphere(radius: 0.00066)
         sphere.segmentCount = 8
