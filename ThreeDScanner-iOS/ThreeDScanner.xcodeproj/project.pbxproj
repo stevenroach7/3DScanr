@@ -211,16 +211,16 @@
 				B0BB32062030DC7C00FADAA4 /* PCLWrapper */,
 				B063CB151FC744A100C20C8D /* AppDelegate.swift */,
 				B063CB191FC744A100C20C8D /* ScanningViewController.swift */,
-				B063CB1B1FC744A100C20C8D /* Main.storyboard */,
-				B063CB171FC744A100C20C8D /* art.scnassets */,
-				B063CB1E1FC744A100C20C8D /* Assets.xcassets */,
-				B063CB201FC744A100C20C8D /* LaunchScreen.storyboard */,
-				B063CB231FC744A100C20C8D /* Info.plist */,
 				B03EDABC207307F200912531 /* XYZStringFormatter.swift */,
 				B03EDABE2073253C00912531 /* GoogleDriveUploader.swift */,
 				B004530F207401CB00B70F84 /* SurfaceExporter.swift */,
 				B0045313207435FE00B70F84 /* ScanningConstants.swift */,
 				B00453152074370500B70F84 /* PointCloud.swift */,
+				B063CB1B1FC744A100C20C8D /* Main.storyboard */,
+				B063CB171FC744A100C20C8D /* art.scnassets */,
+				B063CB1E1FC744A100C20C8D /* Assets.xcassets */,
+				B063CB201FC744A100C20C8D /* LaunchScreen.storyboard */,
+				B063CB231FC744A100C20C8D /* Info.plist */,
 			);
 			path = ThreeDScanner;
 			sourceTree = "<group>";

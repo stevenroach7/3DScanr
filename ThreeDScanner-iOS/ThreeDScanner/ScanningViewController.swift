@@ -30,7 +30,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     private var isTorchOn = false
     private var addPointRatio = 3 // Show 1 / addPointRatio of the points, TODO: Pick a default value and make this a constant?
     
-    private var pointMaterial: SCNMaterial?
+    private lazy var pointMaterial: SCNMaterial = createPointMaterial()
     private var surfaceGeometry: SCNGeometry?
 
     // Google Drive Properties
@@ -64,7 +64,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         addOptionsButton()
         addExportButton()
         
-        createPointMaterial()
+//        createPointMaterial()
         
         sceneView.scene.rootNode.addChildNode(pointsParentNode)
         sceneView.scene.rootNode.addChildNode(surfaceParentNode)
@@ -438,20 +438,17 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         }
         
         surfaceGeometry = SCNGeometry(sources: [vertexSource], elements: elements)
-        if let surfaceGeometry = surfaceGeometry {
-            surfaceGeometry.firstMaterial?.isDoubleSided = true;
-            surfaceGeometry.firstMaterial?.diffuse.contents =
-                UIColor(displayP3Red: 135/255, green: 206/255, blue: 250/255, alpha: 1)
-            surfaceGeometry.firstMaterial?.lightingModel = .blinn
-            return SCNNode(geometry: surfaceGeometry)
-        }
-        else { return SCNNode() } // FIXME: Maybe this should throw?
+        surfaceGeometry?.firstMaterial?.isDoubleSided = true;
+        surfaceGeometry?.firstMaterial?.diffuse.contents =
+            UIColor(displayP3Red: 135/255, green: 206/255, blue: 250/255, alpha: 1)
+        surfaceGeometry?.firstMaterial?.lightingModel = .blinn
+        return SCNNode(geometry: surfaceGeometry)
     }
     
     
     // MARK: - Display Helper Functions
     
-    private func createPointMaterial() {
+    private func createPointMaterial() -> SCNMaterial {
         let textureImage = #imageLiteral(resourceName: "WhiteBlack")
         UIGraphicsBeginImageContext(textureImage.size)
         let width = textureImage.size.width
@@ -459,17 +456,16 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         textureImage.draw(in: CGRect(x: 0, y: 0, width: width, height: height))
         let pointMaterialImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
-        pointMaterial = SCNMaterial()
-        pointMaterial?.diffuse.contents = pointMaterialImage
+        let pointMaterial = SCNMaterial()
+        pointMaterial.diffuse.contents = pointMaterialImage
+        return pointMaterial
     }
     
     private func addPointToView(position: vector_float3) {
         let sphere = SCNSphere(radius: 0.00066)
         sphere.segmentCount = 8
-        
-        if let pointMaterial = pointMaterial {
-            sphere.firstMaterial = pointMaterial
-        }
+        sphere.firstMaterial = pointMaterial
+
         let sphereNode = SCNNode(geometry: sphere)
         sphereNode.orientation = (sceneView.pointOfView?.orientation)!
         sphereNode.pivot = SCNMatrix4MakeRotation(-Float.pi / 2, 0, 1, 0)
