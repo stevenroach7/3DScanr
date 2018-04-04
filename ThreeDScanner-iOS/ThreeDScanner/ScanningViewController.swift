@@ -11,7 +11,6 @@ import SceneKit
 import ARKit
 import GoogleAPIClientForREST
 import GoogleSignIn
-import SceneKit.ModelIO
 
 class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDelegate, GIDSignInDelegate, GIDSignInUIDelegate {
 
@@ -23,6 +22,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     
     private let xyzStringFormatter = XYZStringFormatter()
     private let surfaceExporter = SurfaceExporter()
+    private let googleDriveUploader = GoogleDriveUploader()
     
     private var pointsParentNode = SCNNode()
     private var surfaceParentNode = SCNNode()
@@ -240,7 +240,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
      Dialog has a text field, an enter button, and a cancel button.
      */
     private func createExportFileNameDialog() -> UIAlertController {
-        let defaultFileName = "SurfaceModel"
         
         let fileNameDialog = UIAlertController(
             title: "File Name",
@@ -249,31 +248,15 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         )
         
         fileNameDialog.addTextField(configurationHandler: {(textField: UITextField!) in
-            textField.text = defaultFileName
+            textField.text = ScanningConstants.defaultFileName
             textField.keyboardType = UIKeyboardType.asciiCapable
         })
-        
-        // Callbacks for when user presses enter
-        let successCallback = { self.showAlert(title: "Upload Success", message: "") }
-        let failureCallback = { self.showAlert(title: "Upload Failure", message: "Please try again") }
         
         // Add Enter Action
         fileNameDialog.addAction(UIAlertAction(
             title: "Enter",
             style: UIAlertActionStyle.default,
-            handler: { [weak fileNameDialog] _ in
-                let fileName = fileNameDialog?.textFields?[0].text ?? defaultFileName
-                
-                // Now that we have a file name, we can export the surface
-                self.surfaceExporter.exportSurface(
-                    fileNamed: fileName,
-                    withGeometry: self.surfaceGeometry,
-                    withExtension: ScanningConstants.exportFileExtension,
-                    onSuccess: successCallback,
-                    onFailure: failureCallback,
-                    service: self.service
-                )
-            }
+            handler: { [weak fileNameDialog] _ in self.exportFileAction(fileNameDialog: fileNameDialog) }
         ))
         
         // Add cancel button
@@ -289,11 +272,12 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         let pclPoints = pointCloud.points.map { PCLPoint3D(x: Double($0.x), y: Double($0.y), z: Double($0.z)) }
         let pclViewpoints = pointCloud.frameViewpoints.map { PCLPoint3D(x: Double($0.x), y: Double($0.y), z: Double($0.z)) }
         
-        let pclPointCloud = PCLPointCloud(numPoints: Int32(pointCloud.points.count),
-                                          points: pclPoints,
-                                          numFrames: Int32(pointCloud.frameViewpoints.count),
-                                          pointFrameLengths: pointCloud.framePointsSizes,
-                                          viewpoints: pclViewpoints)
+        let pclPointCloud = PCLPointCloud(
+            numPoints: Int32(pointCloud.points.count),
+            points: pclPoints,
+            numFrames: Int32(pointCloud.frameViewpoints.count),
+            pointFrameLengths: pointCloud.framePointsSizes,
+            viewpoints: pclViewpoints)
         
         let pclMesh = performSurfaceReconstruction(pclPointCloud)
         defer {
@@ -318,12 +302,40 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     }
     
     @IBAction func exportButtonTapped(sender: UIButton) {
-        if surfaceGeometry == nil {
+       if surfaceGeometry == nil {
             showAlert(title: "No Surface to Export", message: "Press Reconstruct Surface and then export.")
             return
         }
         let fileNameDialog = createExportFileNameDialog()
         self.present(fileNameDialog, animated: true, completion: nil)
+    }
+    
+    /**
+     Creates a callback for when the user presses enter in the file name dialog.
+     */
+    private func exportFileAction(fileNameDialog: UIAlertController?) {
+        guard let surfaceGeometry = surfaceGeometry else {
+            return
+        }
+        
+        let fileName = fileNameDialog?.textFields?[0].text ?? ScanningConstants.defaultFileName
+        do {
+            // Now that we have a file name, we can export the surface to a data file
+            let surfaceData = try self.surfaceExporter.exportSurface(
+                withGeometry: surfaceGeometry,
+                fileNamed: fileName,
+                withExtension: ScanningConstants.exportFileExtension)
+            
+            // Upload Data File to Google Drive
+            try self.googleDriveUploader.uploadDataFile(
+                service: self.service,
+                fileData: surfaceData,
+                name: fileName,
+                fileExtension: ScanningConstants.exportFileExtension)
+            self.showAlert(title: "Upload Success", message: "")
+        } catch {
+            self.showAlert(title: "Upload Failure", message: "Please try again")
+        }
     }
     
     @IBAction func resetButtonTapped(sender: UIButton) {
@@ -380,7 +392,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     
     @IBAction func optionsButtonTapped(sender: UIButton) {
         let alert = UIAlertController(title: "Adjust Add Point Ratio", message: "1 out of every _ points will be shown.", preferredStyle: UIAlertControllerStyle.alert)
-        alert.addTextField(configurationHandler: {(textField: UITextField!) in
+        alert.addTextField(configurationHandler: { (textField: UITextField!) in
             textField.text = self.addPointRatio.description
             textField.keyboardType = UIKeyboardType.numberPad
         })
@@ -435,6 +447,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         }
         else { return SCNNode() } // FIXME: Maybe this should throw?
     }
+    
     
     // MARK: - Display Helper Functions
     

@@ -11,57 +11,31 @@ import SceneKit.ModelIO
 import GoogleAPIClientForREST
 
 /**
- Exports an SCNGeometry object to a user's Google Drive account as a file.
+ Exports an SCNGeometry object to a Data file.
  */
 internal class SurfaceExporter {
     
-    private let googleDriveUploader = GoogleDriveUploader() // TODO: Remove GDrive dependency in this class
+    /**
+     Types of errors that could happen in the export process.
+     */
+    internal enum ExportError: Error {
+        case fileExportError
+    }
     
     /**
-     Exports the given SCNGeometry object to a user's Google Drive account as a file with the given name and file extension.
-     Takes a success callback function to be called if the export succeeds and a failure callback for if the export fails.
+     Exports the given SCNGeometry object to a Data object and returns it.
+     Creates a temporary file from the MDLAsset, reads from it, deletes, and returns the Data.
      */
-    internal func exportSurface(fileNamed fileName: String,
-                                withGeometry surfaceGeometry: SCNGeometry?,
-                                withExtension fileExtension: String,
-                                onSuccess successCallback: () -> (),
-                                onFailure failureCallback: () -> (),
-                                service: GTLRDriveService
-                                ) {
-        
-        guard let surfaceGeometry = surfaceGeometry else {
-            return
-        }
-        
+    internal func exportSurface(withGeometry surfaceGeometry: SCNGeometry,
+                                fileNamed fileName: String,
+                                withExtension fileExtension: String
+                                ) throws -> Data {
+    
         // Create MDLAsset that can be exported
         var mdlAsset = MDLAsset()
         let mdlMesh = MDLMesh(scnGeometry: surfaceGeometry)
         mdlAsset = MDLAsset(bufferAllocator: mdlMesh.allocator)
         mdlAsset.add(mdlMesh)
-        
-        do {
-            try uploadAsset(mdlAsset: mdlAsset, withFileName: fileName, withExtension: fileExtension, withService: service)
-            successCallback()
-        } catch {
-            failureCallback()
-        }
-    }
-    
-    /**
-     Types of errors that could happen in the export process.
-     */
-    private enum ExportError: Error {
-        case fileExportError
-    }
-
-    /**
-     Creates a temporary file from an MDLAsset, uploads to google drive, and deletes the temporary file.
-     */
-    private func uploadAsset(mdlAsset: MDLAsset,
-                            withFileName fileName: String,
-                            withExtension fileExtension: String,
-                            withService service: GTLRDriveService
-        ) throws {
         
         // Create temporary file
         let fileManager = FileManager.default
@@ -75,16 +49,10 @@ internal class SurfaceExporter {
             // Read from file
             let surfaceFileContents = try Data(contentsOf: tempFileURL)
             
-            // Upload file
-            try googleDriveUploader.uploadDataFile(
-                service: service,
-                fileData: surfaceFileContents,
-                name: fileName,
-                fileExtension: fileExtension
-            )
-            
             // Discard file
             try fileManager.removeItem(at: tempFileURL)
+            
+            return surfaceFileContents
         } catch {
             throw ExportError.fileExportError
         }

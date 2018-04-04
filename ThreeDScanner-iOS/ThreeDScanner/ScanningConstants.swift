@@ -10,4 +10,5 @@ import Foundation
 
 internal struct ScanningConstants {
     internal static let exportFileExtension = "stl"
+    internal static let defaultFileName = "SurfaceModel"
 }
