@@ -224,7 +224,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     }
     
     /**
-     Helper function to display a standard alert with a title and a message
+     Helper function to display a standard alert with a title and a message.
      */
     private func showAlert(title: String, message: String) {
         let alert = UIAlertController(
@@ -241,7 +241,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     }
     
     /**
-     Creates Dialog (as an alert) to let the user specify a file name.
+     Creates dialog (as an alert) to let the user specify a file name.
      Dialog has a text field, an enter button, and a cancel button.
      */
     private func createExportFileNameDialog() -> UIAlertController {
@@ -317,7 +317,8 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     }
     
     /**
-     Creates a callback for when the user presses enter in the file name dialog.
+     Creates a callback function for when the user presses enter in the file name dialog.
+     Exports the surface to a data file and uploads to Google Drive.
      */
     private func exportFileAction(fileNameDialog: UIAlertController?) {
         guard let surfaceGeometry = surfaceGeometry else {
@@ -428,7 +429,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     // MARK: - Surface Helper Functions
     
     /**
-     Constructs SCNNode representing the given PCL surface mesh output.
+     Constructs an SCNNode representing the given PCL surface mesh output.
      */
     private func constructSurfaceNode(pclMesh: PCLMesh) -> SCNNode {
         
@@ -461,7 +462,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     // MARK: - Display Helper Functions
     
     /**
-     Creates a the SCNMaterial to be used on points in the Point Cloud.
+     Creates a the SCNMaterial to be used for points in the displayed Point Cloud.
      */
     private func createPointMaterial() -> SCNMaterial {
         let textureImage = #imageLiteral(resourceName: "WhiteBlack")
