@@ -22,7 +22,15 @@ internal class GoogleDriveUploader {
     }
     
     /**
-     Uploads a file to the servic google drive account with the given fileData, name and extension.
+     Uploads a text file the service google drive account from the given String, name, and extension.
+     */
+    internal func uploadTextFile(input: String, name: String, fileExtension: String = "txt") throws {
+        let fileData = input.data(using: .utf8)!
+        try uploadDataFile(fileData: fileData, name: name, fileExtension: fileExtension)
+    }
+    
+    /**
+     Uploads a file to the service google drive account with the given fileData, name, and extension.
      */
     internal func uploadDataFile(fileData: Data, name: String, fileExtension: String) throws {
         let metadata = GTLRDrive_File()

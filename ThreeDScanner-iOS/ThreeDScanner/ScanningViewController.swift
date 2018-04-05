@@ -40,6 +40,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     private let signInButton = GIDSignInButton()
     private let signOutButton = UIButton()
     private let exportButton = UIButton()
+    private let uploadPointsButton = UIButton()
     
     // Google Sign In
     private var isUserSignedOn = false {
@@ -47,6 +48,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
             signOutButton.isHidden = !isUserSignedOn
             signInButton.isHidden = isUserSignedOn
             exportButton.isHidden = !isUserSignedOn
+            uploadPointsButton.isHidden = !isUserSignedOn
         }
     }
     
@@ -73,6 +75,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         addExportButton()
         addSignInButton()
         addSignOutButton()
+        addUploadPointsButton()
         
         // Add SceneKit Parent Nodes
         sceneView.scene.rootNode.addChildNode(pointsParentNode)
@@ -227,8 +230,24 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         
         // Contraints
         exportButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
-        exportButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 90.0).isActive = true
+        exportButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 140.0).isActive = true
         exportButton.heightAnchor.constraint(equalToConstant: 50)
+    }
+    
+    private func addUploadPointsButton() {
+        view.addSubview(uploadPointsButton)
+        uploadPointsButton.translatesAutoresizingMaskIntoConstraints = false
+        uploadPointsButton.setTitle("Upload Points", for: .normal)
+        uploadPointsButton.setTitleColor(UIColor.red, for: .normal)
+        uploadPointsButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
+        uploadPointsButton.layer.cornerRadius = 4
+        uploadPointsButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
+        uploadPointsButton.addTarget(self, action: #selector(uploadPointsButtonTapped(sender:)) , for: .touchUpInside)
+        
+        // Contraints
+        uploadPointsButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
+        uploadPointsButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8.0).isActive = true
+        uploadPointsButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
     private func addSignInButton() {
@@ -277,8 +296,11 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     /**
      Creates dialog (as an alert) to let the user specify a file name.
      Dialog has a text field, an enter button, and a cancel button.
+     
+     Takes a default file name to display and a closure to be called when the enter button is pressed.
      */
-    private func createExportFileNameDialog() -> UIAlertController {
+    private func createExportFileNameDialog(onEnterExportAction: @escaping (_ fileName: String) throws -> Void,
+                                            defaultFileName: String) -> UIAlertController {
         
         let fileNameDialog = UIAlertController(
             title: "File Name",
@@ -287,7 +309,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         )
         
         fileNameDialog.addTextField(configurationHandler: {(textField: UITextField!) in
-            textField.text = ScanningConstants.defaultFileName
+            textField.text = defaultFileName
             textField.keyboardType = UIKeyboardType.asciiCapable
         })
         
@@ -295,7 +317,15 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         fileNameDialog.addAction(UIAlertAction(
             title: "Enter",
             style: UIAlertActionStyle.default,
-            handler: { [weak fileNameDialog] _ in self.createExportFileAction(fileNameDialog: fileNameDialog) }
+            handler: { [weak fileNameDialog] _ in
+                do {
+                    let fileName = fileNameDialog?.textFields?[0].text ?? defaultFileName
+                    try onEnterExportAction(fileName)
+                    self.showAlert(title: "Upload Success", message: "")
+                } catch {
+                    self.showAlert(title: "Upload Failure", message: "Please try again")
+                }
+            }
         ))
         
         // Add cancel button
@@ -346,36 +376,15 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
             showAlert(title: "No Surface to Export", message: "Press Reconstruct Surface and then export.")
             return
         }
-        let fileNameDialog = createExportFileNameDialog()
+        let fileNameDialog = createExportFileNameDialog(onEnterExportAction: exportSurfaceAction,
+                                                        defaultFileName: ScanningConstants.defaultSurfaceExportFileName)
         self.present(fileNameDialog, animated: true, completion: nil)
     }
     
-    /**
-     Creates a callback function for when the user presses enter in the file name dialog.
-     Exports the surface to a data file and uploads to Google Drive.
-     */
-    private func createExportFileAction(fileNameDialog: UIAlertController?) {
-        guard let surfaceGeometry = surfaceGeometry else {
-            return
-        }
-        
-        let fileName = fileNameDialog?.textFields?[0].text ?? ScanningConstants.defaultFileName
-        do {
-            // Now that we have a file name, we can export the surface to a data file
-            let surfaceData = try self.surfaceExporter.exportSurface(
-                withGeometry: surfaceGeometry,
-                fileNamed: fileName,
-                withExtension: ScanningConstants.exportFileExtension)
-            
-            // Upload Data File to Google Drive
-            try self.googleDriveUploader.uploadDataFile(
-                fileData: surfaceData,
-                name: fileName,
-                fileExtension: ScanningConstants.exportFileExtension)
-            self.showAlert(title: "Upload Success", message: "")
-        } catch {
-            self.showAlert(title: "Upload Failure", message: "Please try again")
-        }
+    @IBAction func uploadPointsButtonTapped(sender: UIButton) {
+        let fileNameDialog = createExportFileNameDialog(onEnterExportAction: exportPointsAction,
+                                                        defaultFileName: ScanningConstants.defaultPointsExportFileName)
+        self.present(fileNameDialog, animated: true, completion: nil)
     }
     
     @IBAction func resetButtonTapped(sender: UIButton) {
@@ -471,6 +480,38 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
             GoogleDriveLogin.sharedInstance.service.authorizer = user.authentication.fetcherAuthorizer()
             isUserSignedOn = true
         }
+    }
+    
+    /**
+     Creates a String from the pointCloud points and uploads a text file to Google Drive.
+     Function to be called when user presses enter after clicking upload points.
+     */
+    private func exportPointsAction(fileName: String) throws {
+        let pointsString = xyzStringFormatter.createXyzString(points: pointCloud.points)
+        try googleDriveUploader.uploadTextFile(input: pointsString, name: fileName)
+    }
+    
+    /**
+     Exports the surface to a Data file and uploads to Google Drive.
+     Function to be called when user presses enter after clicking upload points.
+     */
+    private func exportSurfaceAction(fileName: String) throws {
+        guard let surfaceGeometry = surfaceGeometry else {
+            return
+        }
+        
+        // Now that we have a file name, we can export the surface to a data file
+        let surfaceData = try self.surfaceExporter.exportSurface(
+            withGeometry: surfaceGeometry,
+            fileNamed: fileName,
+            withExtension: ScanningConstants.surfaceExportFileExtension)
+        
+        // Upload Data File to Google Drive
+        try self.googleDriveUploader.uploadDataFile(
+            fileData: surfaceData,
+            name: fileName,
+            fileExtension: ScanningConstants.surfaceExportFileExtension)
+        self.showAlert(title: "Upload Success", message: "")
     }
     
     

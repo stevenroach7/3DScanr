@@ -9,6 +9,7 @@
 import Foundation
 
 internal struct ScanningConstants {
-    internal static let exportFileExtension = "stl"
-    internal static let defaultFileName = "SurfaceModel"
+    internal static let surfaceExportFileExtension = "stl"
+    internal static let defaultSurfaceExportFileName = "SurfaceModel"
+    internal static let defaultPointsExportFileName = "Points"
 }
