@@ -36,12 +36,19 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     private var isTorchOn = false
     private var addPointRatio = 3 // Show 1 / addPointRatio of the points, TODO: Pick a default value and make this a constant?
 
-    // Google Drive
-    private let service = GTLRDriveService()
-    // If modifying these scopes, delete your previously saved credentials by
-    // resetting the iOS simulator or uninstall the app.
-    private let scopes = ["https://www.googleapis.com/auth/drive"]
+    // UI
     private let signInButton = GIDSignInButton()
+    private let signOutButton = UIButton()
+    private let exportButton = UIButton()
+    
+    // Google Sign In
+    private var isUserSignedOn = false {
+        didSet {
+            signOutButton.isHidden = !isUserSignedOn
+            signInButton.isHidden = isUserSignedOn
+            exportButton.isHidden = !isUserSignedOn
+        }
+    }
     
 
     // MARK: - UIViewController
@@ -55,11 +62,8 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         // Configure Google Sign-in.
         GIDSignIn.sharedInstance().delegate = self
         GIDSignIn.sharedInstance().uiDelegate = self
-        GIDSignIn.sharedInstance().scopes = scopes
+        GIDSignIn.sharedInstance().scopes = ["https://www.googleapis.com/auth/drive"]
         GIDSignIn.sharedInstance().signInSilently()
-        
-        // Add the sign-in button.
-        view.addSubview(signInButton)
         
         // Add buttons
         addReconstructButton()
@@ -67,6 +71,8 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         addResetButton()
         addOptionsButton()
         addExportButton()
+        addSignInButton()
+        addSignOutButton()
         
         // Add SceneKit Parent Nodes
         sceneView.scene.rootNode.addChildNode(pointsParentNode)
@@ -103,6 +109,10 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         print("Memory Warning")
     }
     
+    /**
+     When the user taps the screen, currently captured feature points are displayed
+     and stored in the pointCloud instance variable.
+     */
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         
         // Store Points
@@ -206,7 +216,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     }
     
     private func addExportButton() {
-        let exportButton = UIButton()
         view.addSubview(exportButton)
         exportButton.translatesAutoresizingMaskIntoConstraints = false
         exportButton.setTitle("Export", for: .normal)
@@ -220,6 +229,32 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         exportButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
         exportButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 90.0).isActive = true
         exportButton.heightAnchor.constraint(equalToConstant: 50)
+    }
+    
+    private func addSignInButton() {
+        view.addSubview(signInButton)
+        signInButton.addTarget(self, action: #selector(signInButtonTapped(sender:)) , for: .touchUpInside)
+        
+        // Contraints
+        signInButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
+        signInButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8.0).isActive = true
+        signInButton.heightAnchor.constraint(equalToConstant: 50)
+    }
+    
+    private func addSignOutButton() {
+        view.addSubview(signOutButton)
+        signOutButton.translatesAutoresizingMaskIntoConstraints = false
+        signOutButton.setTitle("Sign Out", for: .normal)
+        signOutButton.setTitleColor(UIColor.red, for: .normal)
+        signOutButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
+        signOutButton.layer.cornerRadius = 4
+        signOutButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
+        signOutButton.addTarget(self, action: #selector(signOutButtonTapped(sender:)) , for: .touchUpInside)
+        
+        // Contraints
+        signOutButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
+        signOutButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -8.0).isActive = true
+        signOutButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
     /**
@@ -334,7 +369,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
             
             // Upload Data File to Google Drive
             try self.googleDriveUploader.uploadDataFile(
-                service: self.service,
                 fileData: surfaceData,
                 name: fileName,
                 fileExtension: ScanningConstants.exportFileExtension)
@@ -414,13 +448,28 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         self.present(alert, animated: true, completion: nil)
     }
     
+    @IBAction func signInButtonTapped(sender: UIButton) {
+        GIDSignIn.sharedInstance().signIn()
+        isUserSignedOn = true
+    }
+    
+    @IBAction func signOutButtonTapped(sender: UIButton) {
+        GIDSignIn.sharedInstance().signOut()
+        GoogleDriveLogin.sharedInstance.service.authorizer = nil
+        isUserSignedOn = false
+    }
+    
+    /**
+     Called as part of GIDSignInDelegate.
+     */
     internal func sign(_ signIn: GIDSignIn!, didSignInFor user: GIDGoogleUser!, withError error: Error!) {
         if let error = error {
             showAlert(title: "Authentication Error", message: error.localizedDescription)
-            self.service.authorizer = nil
+            GoogleDriveLogin.sharedInstance.service.authorizer = nil
+            isUserSignedOn = false
         } else {
-            self.signInButton.isHidden = true
-            self.service.authorizer = user.authentication.fetcherAuthorizer()
+            GoogleDriveLogin.sharedInstance.service.authorizer = user.authentication.fetcherAuthorizer()
+            isUserSignedOn = true
         }
     }
     
