@@ -37,13 +37,14 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     private var addPointRatio = 3 // Show 1 / addPointRatio of the points, TODO: Pick a default value and make this a constant?
 
     // UI
-    private let signInButton = GIDSignInButton()
+    private let signInButton = UIButton()
     private let signOutButton = UIButton()
     private let exportButton = UIButton()
     private let uploadPointsButton = UIButton()
     
     // Google Sign In
-    private var isUserSignedOn = false {
+    private var isUserSignedOn = false
+    {
         didSet {
             signOutButton.isHidden = !isUserSignedOn
             signInButton.isHidden = isUserSignedOn
@@ -252,6 +253,12 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     
     private func addSignInButton() {
         view.addSubview(signInButton)
+        signInButton.translatesAutoresizingMaskIntoConstraints = false
+        signInButton.setTitle("Sign In", for: .normal)
+        signInButton.setTitleColor(UIColor.red, for: .normal)
+        signInButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
+        signInButton.layer.cornerRadius = 4
+        signInButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
         signInButton.addTarget(self, action: #selector(signInButtonTapped(sender:)) , for: .touchUpInside)
         
         // Contraints
@@ -259,6 +266,8 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         signInButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8.0).isActive = true
         signInButton.heightAnchor.constraint(equalToConstant: 50)
     }
+    
+    
     
     private func addSignOutButton() {
         view.addSubview(signOutButton)
@@ -459,7 +468,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     
     @IBAction func signInButtonTapped(sender: UIButton) {
         GIDSignIn.sharedInstance().signIn()
-        isUserSignedOn = true
     }
     
     @IBAction func signOutButtonTapped(sender: UIButton) {
