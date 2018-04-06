@@ -35,6 +35,11 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     // Scanning Options
     private var isTorchOn = false
     private var addPointRatio = 3 // Show 1 / addPointRatio of the points, TODO: Pick a default value and make this a constant?
+    private var isSurfaceDisplayOn = true {
+        didSet {
+            surfaceParentNode.isHidden = !isSurfaceDisplayOn
+        }
+    }
 
     // UI
     private let signInButton = UIButton()
@@ -73,6 +78,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         addToggleTorchButton()
         addResetButton()
         addOptionsButton()
+        addDisplaySurfaceSwitch()
         addExportButton()
         addSignInButton()
         addSignOutButton()
@@ -198,7 +204,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         
         // Contraints
         resetButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
-        resetButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -90.0).isActive = true
+        resetButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -95.0).isActive = true
         resetButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
@@ -219,6 +225,20 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         optionsButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
+    private func addDisplaySurfaceSwitch() {
+        let displaySurfaceSwitch = UISwitch()
+        view.addSubview(displaySurfaceSwitch)
+        displaySurfaceSwitch.translatesAutoresizingMaskIntoConstraints = false
+        displaySurfaceSwitch.isOn = isSurfaceDisplayOn
+        displaySurfaceSwitch.setOn(isSurfaceDisplayOn, animated: false)
+        displaySurfaceSwitch.addTarget(self, action: #selector(displaySurfaceSwitchValueDidChange(sender:)), for: .valueChanged)
+        
+        // Contraints
+        displaySurfaceSwitch.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
+        displaySurfaceSwitch.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 90.0).isActive = true
+        displaySurfaceSwitch.heightAnchor.constraint(equalToConstant: 50)
+    }
+    
     private func addExportButton() {
         view.addSubview(exportButton)
         exportButton.translatesAutoresizingMaskIntoConstraints = false
@@ -231,14 +251,14 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         
         // Contraints
         exportButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
-        exportButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 140.0).isActive = true
+        exportButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 150.0).isActive = true
         exportButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
     private func addUploadPointsButton() {
         view.addSubview(uploadPointsButton)
         uploadPointsButton.translatesAutoresizingMaskIntoConstraints = false
-        uploadPointsButton.setTitle("Upload Points", for: .normal)
+        uploadPointsButton.setTitle("Upload", for: .normal)
         uploadPointsButton.setTitleColor(UIColor.red, for: .normal)
         uploadPointsButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
         uploadPointsButton.layer.cornerRadius = 4
@@ -266,8 +286,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         signInButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8.0).isActive = true
         signInButton.heightAnchor.constraint(equalToConstant: 50)
     }
-    
-    
     
     private func addSignOutButton() {
         view.addSubview(signOutButton)
@@ -378,6 +396,10 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         surfaceParentNode.addChildNode(surfaceNode)
         
         showAlert(title: "Surface Reconstructed", message: "\(pclMesh.numFaces) faces")
+    }
+    
+    @IBAction func displaySurfaceSwitchValueDidChange(sender: UISwitch!) {
+        isSurfaceDisplayOn = sender.isOn
     }
     
     @IBAction func exportButtonTapped(sender: UIButton) {
