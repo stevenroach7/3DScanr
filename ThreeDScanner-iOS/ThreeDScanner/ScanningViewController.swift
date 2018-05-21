@@ -34,12 +34,14 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     
     // Scanning Options
     private var isTorchOn = false
-    private var addPointRatio = 3 // Show 1 / addPointRatio of the points, TODO: Pick a default value and make this a constant?
+    private var addPointRatio = 3 // Show 1 / [addPointRatio] of the points, TODO: Pick a default value and make this a constant?
+    private var scanningInterval = 0.5 // Capture points every [scanningInterval] seconds when user is touching screen
     private var isSurfaceDisplayOn = true {
         didSet {
             surfaceParentNode.isHidden = !isSurfaceDisplayOn
         }
     }
+    private var isUserTouchingScreen = false
 
     // UI
     private let signInButton = UIButton()
@@ -104,6 +106,8 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         // Show feature points and world origin
         sceneView.debugOptions.insert(ARSCNDebugOptions.showFeaturePoints)
         sceneView.debugOptions.insert(ARSCNDebugOptions.showWorldOrigin)
+        
+        scheduledTimerWithTimeInterval()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -124,36 +128,29 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
      and stored in the pointCloud instance variable.
      */
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        
-        // Store Points
-        guard let rawFeaturePoints = sceneView.session.currentFrame?.rawFeaturePoints else {
-            return
-        }
-        let currentPoints = rawFeaturePoints.points
-        pointCloud.points += currentPoints
-        pointCloud.framePointsSizes.append(Int32(currentPoints.count))
-        
-        // Display points
-        var i = 0
-        for rawPoint in currentPoints {
-            if i % addPointRatio == 0 {
-                addPointToView(position: rawPoint)
-            }
-            i += 1
-        }
-        
-        // Add viewpoint
-        let camera = sceneView.session.currentFrame?.camera
-        if let transform = camera?.transform {
-            let position = SCNVector3(
-                transform.columns.3.x,
-                transform.columns.3.y,
-                transform.columns.3.z
-            )
-            pointCloud.frameViewpoints.append(position)
-        }
+        isUserTouchingScreen = true
     }
     
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        isUserTouchingScreen = false
+    }
+    
+    
+    // Timer
+    
+    var timer = Timer()
+    
+    func scheduledTimerWithTimeInterval() {
+        // Scheduling timer to call the function "updateCounting" every [scanningInteval] seconds
+        timer = Timer.scheduledTimer(timeInterval: scanningInterval, target: self, selector: #selector(updateCounting), userInfo: nil, repeats: true)
+    }
+    
+    @objc func updateCounting() {
+        if isUserTouchingScreen {
+            capturePoints()
+        }
+    }
+
     
     // MARK: - UI
     
@@ -170,7 +167,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         
         // Contraints
         reconstructButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
-        reconstructButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0.0).isActive = true
+        reconstructButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: -16.0).isActive = true
         reconstructButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
@@ -234,8 +231,8 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         displaySurfaceSwitch.addTarget(self, action: #selector(displaySurfaceSwitchValueDidChange(sender:)), for: .valueChanged)
         
         // Contraints
-        displaySurfaceSwitch.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
-        displaySurfaceSwitch.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 90.0).isActive = true
+        displaySurfaceSwitch.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
+        displaySurfaceSwitch.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -70.0).isActive = true
         displaySurfaceSwitch.heightAnchor.constraint(equalToConstant: 50)
     }
     
@@ -251,7 +248,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         
         // Contraints
         exportButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
-        exportButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 150.0).isActive = true
+        exportButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 90.0).isActive = true
         exportButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
@@ -471,17 +468,30 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     }
     
     @IBAction func optionsButtonTapped(sender: UIButton) {
-        let alert = UIAlertController(title: "Adjust Add Point Ratio", message: "1 out of every _ points will be shown.", preferredStyle: UIAlertControllerStyle.alert)
+        let alert = UIAlertController(title: "Options", message: "1 out of every _ points shown. Points will be captured every _ seconds", preferredStyle: UIAlertControllerStyle.alert)
+        
         alert.addTextField(configurationHandler: { (textField: UITextField!) in
             textField.text = self.addPointRatio.description
             textField.keyboardType = UIKeyboardType.numberPad
         })
         
+        alert.addTextField(configurationHandler: { (textField: UITextField!) in
+            textField.text = self.scanningInterval.description
+            textField.keyboardType = UIKeyboardType.decimalPad
+        })
+        
         alert.addAction(UIAlertAction(title: "Enter", style: UIAlertActionStyle.default, handler: { [weak alert] (_) in
-            let textField = alert?.textFields![0] // Force unwrapping because we know the text field exists (we just added it).
-            if let text = textField!.text {
-                if let newRatio = Int(text) {
+            let addPointRatioTextField = alert?.textFields![0] // Force unwrapping because we know the text field exists (we just added it).
+            let addScanningIntervalTextField = alert?.textFields![1] // Force unwrapping because we know the text field exists (we just added it).
+            
+            if let ratioText = addPointRatioTextField!.text {
+                if let newRatio = Int(ratioText) {
                     self.addPointRatio = newRatio
+                }
+            }
+            if let intervalText = addScanningIntervalTextField!.text {
+                if let newInterval = Double(intervalText) {
+                    self.scanningInterval = newInterval
                 }
             }
         }))
@@ -546,6 +556,37 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     
     
     // MARK: - Helper Functions
+    
+    private func capturePoints() {
+        
+        // Store Points
+        guard let rawFeaturePoints = sceneView.session.currentFrame?.rawFeaturePoints else {
+            return
+        }
+        let currentPoints = rawFeaturePoints.points
+        pointCloud.points += currentPoints
+        pointCloud.framePointsSizes.append(Int32(currentPoints.count))
+        
+        // Display points
+        var i = 0
+        for rawPoint in currentPoints {
+            if i % addPointRatio == 0 {
+                addPointToView(position: rawPoint)
+            }
+            i += 1
+        }
+        
+        // Add viewpoint
+        let camera = sceneView.session.currentFrame?.camera
+        if let transform = camera?.transform {
+            let position = SCNVector3(
+                transform.columns.3.x,
+                transform.columns.3.y,
+                transform.columns.3.z
+            )
+            pointCloud.frameViewpoints.append(position)
+        }
+    }
     
     /**
      Constructs an SCNNode representing the given PCL surface mesh output.
