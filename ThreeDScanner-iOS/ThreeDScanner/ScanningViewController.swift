@@ -34,8 +34,8 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     
     // Scanning Options
     private var isTorchOn = false
-    private var addPointRatio = 3 // Show 1 / [addPointRatio] of the points, TODO: Pick a default value and make this a constant?
-    private var scanningInterval = 0.5 // Capture points every [scanningInterval] seconds when user is touching screen
+    private let addPointRatio = 3 // Show 1 / [addPointRatio] of the points
+    private let scanningInterval = 0.5 // Capture points every [scanningInterval] seconds when user is touching screen
     private var isSurfaceDisplayOn = true {
         didSet {
             surfaceParentNode.isHidden = !isSurfaceDisplayOn
@@ -79,12 +79,10 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         addReconstructButton()
         addToggleTorchButton()
         addResetButton()
-        addOptionsButton()
         addDisplaySurfaceSwitch()
         addExportButton()
         addSignInButton()
         addSignOutButton()
-        addUploadPointsButton()
         
         // Add SceneKit Parent Nodes
         sceneView.scene.rootNode.addChildNode(pointsParentNode)
@@ -205,23 +203,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         resetButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
-    private func addOptionsButton() {
-        let optionsButton = UIButton()
-        view.addSubview(optionsButton)
-        optionsButton.translatesAutoresizingMaskIntoConstraints = false
-        optionsButton.setTitle("Options", for: .normal)
-        optionsButton.setTitleColor(UIColor.red, for: .normal)
-        optionsButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
-        optionsButton.layer.cornerRadius = 4
-        optionsButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
-        optionsButton.addTarget(self, action: #selector(optionsButtonTapped(sender:)) , for: .touchUpInside)
-        
-        // Contraints
-        optionsButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
-        optionsButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8.0).isActive = true
-        optionsButton.heightAnchor.constraint(equalToConstant: 50)
-    }
-    
     private func addDisplaySurfaceSwitch() {
         let displaySurfaceSwitch = UISwitch()
         view.addSubview(displaySurfaceSwitch)
@@ -250,22 +231,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         exportButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
         exportButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 90.0).isActive = true
         exportButton.heightAnchor.constraint(equalToConstant: 50)
-    }
-    
-    private func addUploadPointsButton() {
-        view.addSubview(uploadPointsButton)
-        uploadPointsButton.translatesAutoresizingMaskIntoConstraints = false
-        uploadPointsButton.setTitle("Upload", for: .normal)
-        uploadPointsButton.setTitleColor(UIColor.red, for: .normal)
-        uploadPointsButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
-        uploadPointsButton.layer.cornerRadius = 4
-        uploadPointsButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
-        uploadPointsButton.addTarget(self, action: #selector(uploadPointsButtonTapped(sender:)) , for: .touchUpInside)
-        
-        // Contraints
-        uploadPointsButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
-        uploadPointsButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8.0).isActive = true
-        uploadPointsButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
     private func addSignInButton() {
@@ -409,12 +374,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         self.present(fileNameDialog, animated: true, completion: nil)
     }
     
-    @IBAction func uploadPointsButtonTapped(sender: UIButton) {
-        let fileNameDialog = createExportFileNameDialog(onEnterExportAction: exportPointsAction,
-                                                        defaultFileName: ScanningConstants.defaultPointsExportFileName)
-        self.present(fileNameDialog, animated: true, completion: nil)
-    }
-    
     @IBAction func resetButtonTapped(sender: UIButton) {
         
         pointCloud.points = []
@@ -466,38 +425,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
             print("Torch is not available")
         }
     }
-    
-    @IBAction func optionsButtonTapped(sender: UIButton) {
-        let alert = UIAlertController(title: "Options", message: "1 out of every _ points shown. Points will be captured every _ seconds", preferredStyle: UIAlertControllerStyle.alert)
         
-        alert.addTextField(configurationHandler: { (textField: UITextField!) in
-            textField.text = self.addPointRatio.description
-            textField.keyboardType = UIKeyboardType.numberPad
-        })
-        
-        alert.addTextField(configurationHandler: { (textField: UITextField!) in
-            textField.text = self.scanningInterval.description
-            textField.keyboardType = UIKeyboardType.decimalPad
-        })
-        
-        alert.addAction(UIAlertAction(title: "Enter", style: UIAlertActionStyle.default, handler: { [weak alert] (_) in
-            let addPointRatioTextField = alert?.textFields![0] // Force unwrapping because we know the text field exists (we just added it).
-            let addScanningIntervalTextField = alert?.textFields![1] // Force unwrapping because we know the text field exists (we just added it).
-            
-            if let ratioText = addPointRatioTextField!.text {
-                if let newRatio = Int(ratioText) {
-                    self.addPointRatio = newRatio
-                }
-            }
-            if let intervalText = addScanningIntervalTextField!.text {
-                if let newInterval = Double(intervalText) {
-                    self.scanningInterval = newInterval
-                }
-            }
-        }))
-        self.present(alert, animated: true, completion: nil)
-    }
-    
     @IBAction func signInButtonTapped(sender: UIButton) {
         GIDSignIn.sharedInstance().signIn()
     }
@@ -520,15 +448,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
             GoogleDriveLogin.sharedInstance.service.authorizer = user.authentication.fetcherAuthorizer()
             isUserSignedOn = true
         }
-    }
-    
-    /**
-     Creates a String from the pointCloud points and uploads a text file to Google Drive.
-     Function to be called when user presses enter after clicking upload points.
-     */
-    private func exportPointsAction(fileName: String) throws {
-        let pointsString = xyzStringFormatter.createXyzString(points: pointCloud.points)
-        try googleDriveUploader.uploadTextFile(input: pointsString, name: fileName)
     }
     
     /**
