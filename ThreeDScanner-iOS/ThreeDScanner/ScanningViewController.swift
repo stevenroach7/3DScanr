@@ -36,7 +36,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     private var isTorchOn = false
     private let addPointRatio = 3 // Show 1 / [addPointRatio] of the points
     private let scanningInterval = 0.5 // Capture points every [scanningInterval] seconds when user is touching screen
-    private var isSurfaceDisplayOn = true {
+    private var isSurfaceDisplayOn = false {
         didSet {
             surfaceParentNode.isHidden = !isSurfaceDisplayOn
         }
@@ -55,6 +55,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     private let uploadPointsButton = UIButton()
     private let capturePointsButton = UIButton()
     private let pauseCapturePointsButton = UIButton()
+    private let displaySurfaceSwitch = UISwitch()
     
     // Google Sign In
     private var isUserSignedOn = false
@@ -134,9 +135,9 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     
     // MARK: - Timer
     
-    var timer = Timer()
+    private var timer = Timer()
     
-    func scheduledTimerWithTimeInterval() {
+    private func scheduledTimerWithTimeInterval() {
         // Scheduling timer to call the function "updateCounting" every [scanningInteval] seconds
         timer = Timer.scheduledTimer(timeInterval: scanningInterval, target: self, selector: #selector(updateCounting), userInfo: nil, repeats: true)
     }
@@ -232,7 +233,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         let resetButton = UIButton()
         view.addSubview(resetButton)
         resetButton.translatesAutoresizingMaskIntoConstraints = false
-        resetButton.setTitle("Reset Scan", for: .normal)
+        resetButton.setTitle("Reset", for: .normal)
         resetButton.setTitleColor(UIColor.red, for: .normal)
         resetButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
         resetButton.layer.cornerRadius = 4
@@ -246,7 +247,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     }
     
     private func addDisplaySurfaceSwitch() {
-        let displaySurfaceSwitch = UISwitch()
         view.addSubview(displaySurfaceSwitch)
         displaySurfaceSwitch.translatesAutoresizingMaskIntoConstraints = false
         displaySurfaceSwitch.isOn = isSurfaceDisplayOn
@@ -414,6 +414,8 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         }
         
         // Display surface
+        displaySurfaceSwitch.isOn = true
+        isSurfaceDisplayOn = true
         let surfaceNode = constructSurfaceNode(pclMesh: pclMesh)
         surfaceParentNode.addChildNode(surfaceNode)
         
