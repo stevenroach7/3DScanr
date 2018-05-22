@@ -41,13 +41,20 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
             surfaceParentNode.isHidden = !isSurfaceDisplayOn
         }
     }
-    private var isUserTouchingScreen = false
+    private var isCapturingPoints = false {
+        didSet {
+            capturePointsButton.isHidden = isCapturingPoints
+            pauseCapturePointsButton.isHidden = !isCapturingPoints
+        }
+    }
 
     // UI
     private let signInButton = UIButton()
     private let signOutButton = UIButton()
     private let exportButton = UIButton()
     private let uploadPointsButton = UIButton()
+    private let capturePointsButton = UIButton()
+    private let pauseCapturePointsButton = UIButton()
     
     // Google Sign In
     private var isUserSignedOn = false
@@ -76,6 +83,8 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         GIDSignIn.sharedInstance().signInSilently()
         
         // Add buttons
+        addCapturePointsButton()
+        addPauseCapturePointsButton()
         addReconstructButton()
         addTorchSwitch()
         addTorchLabel()
@@ -105,7 +114,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         
         // Show feature points and world origin
         sceneView.debugOptions.insert(ARSCNDebugOptions.showFeaturePoints)
-        sceneView.debugOptions.insert(ARSCNDebugOptions.showWorldOrigin)
         
         scheduledTimerWithTimeInterval()
     }
@@ -123,20 +131,8 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         print("Memory Warning")
     }
     
-    /**
-     When the user taps the screen, currently captured feature points are displayed
-     and stored in the pointCloud instance variable.
-     */
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        isUserTouchingScreen = true
-    }
     
-    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        isUserTouchingScreen = false
-    }
-    
-    
-    // Timer
+    // MARK: - Timer
     
     var timer = Timer()
     
@@ -146,13 +142,46 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     }
     
     @objc func updateCounting() {
-        if isUserTouchingScreen {
+        if isCapturingPoints {
             capturePoints()
         }
     }
 
     
     // MARK: - UI
+    
+    private func addCapturePointsButton() {
+        view.addSubview(capturePointsButton)
+        capturePointsButton.translatesAutoresizingMaskIntoConstraints = false
+        capturePointsButton.setTitle("Scan", for: .normal)
+        capturePointsButton.setTitleColor(UIColor.red, for: .normal)
+        capturePointsButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
+        capturePointsButton.layer.cornerRadius = 4
+        capturePointsButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
+        capturePointsButton.addTarget(self, action: #selector(toggleIsCapturingPoints(sender:)) , for: .touchUpInside)
+        
+        // Contraints
+        capturePointsButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -50.0).isActive = true
+        capturePointsButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0).isActive = true
+        capturePointsButton.heightAnchor.constraint(equalToConstant: 50)
+    }
+    
+    private func addPauseCapturePointsButton() {
+        pauseCapturePointsButton.isHidden = true
+        view.addSubview(pauseCapturePointsButton)
+        pauseCapturePointsButton.translatesAutoresizingMaskIntoConstraints = false
+        pauseCapturePointsButton.setTitle("Pause Scanning", for: .normal)
+        pauseCapturePointsButton.setTitleColor(UIColor.red, for: .normal)
+        pauseCapturePointsButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
+        pauseCapturePointsButton.layer.cornerRadius = 4
+        pauseCapturePointsButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
+        pauseCapturePointsButton.addTarget(self, action: #selector(toggleIsCapturingPoints(sender:)) , for: .touchUpInside)
+        
+        // Contraints
+        pauseCapturePointsButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -50.0).isActive = true
+        pauseCapturePointsButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0).isActive = true
+        pauseCapturePointsButton.heightAnchor.constraint(equalToConstant: 50)
+    }
     
     private func addReconstructButton() {
         let reconstructButton = UIButton()
@@ -337,9 +366,9 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
                 do {
                     let fileName = fileNameDialog?.textFields?[0].text ?? defaultFileName
                     try onEnterExportAction(fileName)
-                    self.showAlert(title: "Upload Success", message: "")
+                    self.showAlert(title: "Export Success", message: "")
                 } catch {
-                    self.showAlert(title: "Upload Failure", message: "Please try again")
+                    self.showAlert(title: "Export Failure", message: "Please try again")
                 }
             }
         ))
@@ -351,6 +380,10 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     
     
     // MARK: - UI Actions
+    
+    @IBAction func toggleIsCapturingPoints(sender: UIButton) {
+        isCapturingPoints = !isCapturingPoints
+    }
     
     @IBAction func reconstructButtonTapped(sender: UIButton) {
         
