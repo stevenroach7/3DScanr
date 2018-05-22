@@ -530,7 +530,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
             fileData: surfaceData,
             name: fileName,
             fileExtension: ScanningConstants.surfaceExportFileExtension)
-        self.showAlert(title: "Upload Success", message: "")
+        self.showAlert(title: "Export Success", message: "")
     }
     
     
