@@ -77,9 +77,11 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         
         // Add buttons
         addReconstructButton()
-        addToggleTorchButton()
+        addTorchSwitch()
+        addTorchLabel()
         addResetButton()
         addDisplaySurfaceSwitch()
+        addIsSurfaceDisplayedLabel()
         addExportButton()
         addSignInButton()
         addSignOutButton()
@@ -165,32 +167,43 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         
         // Contraints
         reconstructButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
-        reconstructButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: -16.0).isActive = true
+        reconstructButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0).isActive = true
         reconstructButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
-    private func addToggleTorchButton() {
-        let toggleTorchButton = UIButton()
-        view.addSubview(toggleTorchButton)
-        toggleTorchButton.translatesAutoresizingMaskIntoConstraints = false
-        toggleTorchButton.setTitle("Torch", for: .normal)
-        toggleTorchButton.setTitleColor(UIColor.red, for: .normal)
-        toggleTorchButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
-        toggleTorchButton.layer.cornerRadius = 4
-        toggleTorchButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
-        toggleTorchButton.addTarget(self, action: #selector(toggleButtonTapped(sender:)) , for: .touchUpInside)
+    private func addTorchSwitch() {
+        let torchSwitch = UISwitch()
+        view.addSubview(torchSwitch)
+        torchSwitch.translatesAutoresizingMaskIntoConstraints = false
+        torchSwitch.isOn = isTorchOn
+        torchSwitch.setOn(isTorchOn, animated: false)
+        torchSwitch.addTarget(self, action: #selector(torchSwitchValueDidChange(sender:)), for: .valueChanged)
         
         // Contraints
-        toggleTorchButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
-        toggleTorchButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -8.0).isActive = true
-        toggleTorchButton.heightAnchor.constraint(equalToConstant: 50)
+        torchSwitch.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
+        torchSwitch.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -14.0).isActive = true
+        torchSwitch.heightAnchor.constraint(equalToConstant: 50)
+    }
+    
+    private func addTorchLabel() {
+        let torchLabel = UILabel(frame: CGRect(x: 0, y: 0, width: 200, height: 21))
+        view.addSubview(torchLabel)
+        torchLabel.translatesAutoresizingMaskIntoConstraints = false
+        torchLabel.textAlignment = .center
+        torchLabel.text = "Flashlight"
+        torchLabel.font = UIFont.systemFont(ofSize: 10.0)
+        
+        // Contraints
+        torchLabel.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -40.0).isActive = true
+        torchLabel.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -14.0).isActive = true
+        torchLabel.heightAnchor.constraint(equalToConstant: 50)
     }
     
     private func addResetButton() {
         let resetButton = UIButton()
         view.addSubview(resetButton)
         resetButton.translatesAutoresizingMaskIntoConstraints = false
-        resetButton.setTitle("Reset", for: .normal)
+        resetButton.setTitle("Reset Scan", for: .normal)
         resetButton.setTitleColor(UIColor.red, for: .normal)
         resetButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
         resetButton.layer.cornerRadius = 4
@@ -199,7 +212,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         
         // Contraints
         resetButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
-        resetButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -95.0).isActive = true
+        resetButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0.0).isActive = true
         resetButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
@@ -213,8 +226,22 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         
         // Contraints
         displaySurfaceSwitch.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
-        displaySurfaceSwitch.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -70.0).isActive = true
+        displaySurfaceSwitch.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 14.0).isActive = true
         displaySurfaceSwitch.heightAnchor.constraint(equalToConstant: 50)
+    }
+    
+    private func addIsSurfaceDisplayedLabel() {
+        let isSurfaceDisplayedLabel = UILabel(frame: CGRect(x: 0, y: 0, width: 200, height: 21))
+        view.addSubview(isSurfaceDisplayedLabel)
+        isSurfaceDisplayedLabel.translatesAutoresizingMaskIntoConstraints = false
+        isSurfaceDisplayedLabel.textAlignment = .center
+        isSurfaceDisplayedLabel.text = "Display Surface"
+        isSurfaceDisplayedLabel.font = UIFont.systemFont(ofSize: 10.0)
+        
+        // Contraints
+        isSurfaceDisplayedLabel.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -40.0).isActive = true
+        isSurfaceDisplayedLabel.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 4.0).isActive = true
+        isSurfaceDisplayedLabel.heightAnchor.constraint(equalToConstant: 50)
     }
     
     private func addExportButton() {
@@ -229,7 +256,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         
         // Contraints
         exportButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
-        exportButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 90.0).isActive = true
+        exportButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8.0).isActive = true
         exportButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
@@ -245,7 +272,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         
         // Contraints
         signInButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
-        signInButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8.0).isActive = true
+        signInButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -8.0).isActive = true
         signInButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
@@ -400,7 +427,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         sceneView.debugOptions.insert(ARSCNDebugOptions.showWorldOrigin)
     }
     
-    @IBAction func toggleButtonTapped(sender: UIButton) {
+    @IBAction func torchSwitchValueDidChange(sender: UIButton) {
         guard let device = AVCaptureDevice.default(for: AVMediaType.video) else {
             return
         }
