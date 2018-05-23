@@ -43,8 +43,12 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     }
     private var isCapturingPoints = false {
         didSet {
-            capturePointsButton.isHidden = isCapturingPoints
-            pauseCapturePointsButton.isHidden = !isCapturingPoints
+            updateState()
+        }
+    }
+    private var inFinishedState = false {
+        didSet {
+            updateState()
         }
     }
 
@@ -52,10 +56,12 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     private let signInButton = UIButton()
     private let signOutButton = UIButton()
     private let exportButton = UIButton()
-    private let uploadPointsButton = UIButton()
+    private let reconstructButton = UIButton()
     private let capturePointsButton = UIButton()
     private let pauseCapturePointsButton = UIButton()
+    private let isSurfaceDisplayedLabel = UILabel(frame: CGRect(x: 0, y: 0, width: 200, height: 21))
     private let displaySurfaceSwitch = UISwitch()
+    private let resumeScanningButton = UIButton()
     
     // Google Sign In
     private var isUserSignedOn = false
@@ -63,9 +69,17 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         didSet {
             signOutButton.isHidden = !isUserSignedOn
             signInButton.isHidden = isUserSignedOn
-            exportButton.isHidden = !isUserSignedOn
-            uploadPointsButton.isHidden = !isUserSignedOn
         }
+    }
+    
+    private func updateState() {
+        capturePointsButton.isHidden = isCapturingPoints || inFinishedState
+        pauseCapturePointsButton.isHidden = !isCapturingPoints || inFinishedState
+        reconstructButton.isHidden = !isCapturingPoints || inFinishedState
+        exportButton.isHidden = !inFinishedState
+        resumeScanningButton.isHidden = !inFinishedState
+        isSurfaceDisplayedLabel.isHidden = (surfaceGeometry == nil)
+        displaySurfaceSwitch.isHidden = (surfaceGeometry == nil)
     }
     
 
@@ -85,6 +99,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         
         // Add buttons
         addCapturePointsButton()
+        addResumeScanningButton()
         addPauseCapturePointsButton()
         addReconstructButton()
         addTorchSwitch()
@@ -159,36 +174,53 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         capturePointsButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
         capturePointsButton.layer.cornerRadius = 4
         capturePointsButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
-        capturePointsButton.addTarget(self, action: #selector(toggleIsCapturingPoints(sender:)) , for: .touchUpInside)
+        capturePointsButton.addTarget(self, action: #selector(capturePoints(sender:)) , for: .touchUpInside)
         
         // Contraints
-        capturePointsButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -50.0).isActive = true
+        capturePointsButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
         capturePointsButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0).isActive = true
         capturePointsButton.heightAnchor.constraint(equalToConstant: 50)
+    }
+    
+    private func addResumeScanningButton() {
+        resumeScanningButton.isHidden = true
+        view.addSubview(resumeScanningButton)
+        resumeScanningButton.translatesAutoresizingMaskIntoConstraints = false
+        resumeScanningButton.setTitle("Resume", for: .normal)
+        resumeScanningButton.setTitleColor(UIColor.red, for: .normal)
+        resumeScanningButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
+        resumeScanningButton.layer.cornerRadius = 4
+        resumeScanningButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
+        resumeScanningButton.addTarget(self, action: #selector(capturePoints(sender:)) , for: .touchUpInside)
+        
+        // Contraints
+        resumeScanningButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
+        resumeScanningButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 40).isActive = true
+        resumeScanningButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
     private func addPauseCapturePointsButton() {
         pauseCapturePointsButton.isHidden = true
         view.addSubview(pauseCapturePointsButton)
         pauseCapturePointsButton.translatesAutoresizingMaskIntoConstraints = false
-        pauseCapturePointsButton.setTitle("Pause Scanning", for: .normal)
+        pauseCapturePointsButton.setTitle("Pause", for: .normal)
         pauseCapturePointsButton.setTitleColor(UIColor.red, for: .normal)
         pauseCapturePointsButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
         pauseCapturePointsButton.layer.cornerRadius = 4
         pauseCapturePointsButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
-        pauseCapturePointsButton.addTarget(self, action: #selector(toggleIsCapturingPoints(sender:)) , for: .touchUpInside)
+        pauseCapturePointsButton.addTarget(self, action: #selector(pauseCapturePoints(sender:)) , for: .touchUpInside)
         
         // Contraints
-        pauseCapturePointsButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -50.0).isActive = true
-        pauseCapturePointsButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0).isActive = true
+        pauseCapturePointsButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
+        pauseCapturePointsButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: -40.0).isActive = true
         pauseCapturePointsButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
     private func addReconstructButton() {
-        let reconstructButton = UIButton()
+        reconstructButton.isHidden = true
         view.addSubview(reconstructButton)
         reconstructButton.translatesAutoresizingMaskIntoConstraints = false
-        reconstructButton.setTitle("Reconstruct", for: .normal)
+        reconstructButton.setTitle("Finish", for: .normal)
         reconstructButton.setTitleColor(UIColor.red, for: .normal)
         reconstructButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
         reconstructButton.layer.cornerRadius = 4
@@ -197,7 +229,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         
         // Contraints
         reconstructButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
-        reconstructButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0).isActive = true
+        reconstructButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 40.0).isActive = true
         reconstructButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
@@ -242,11 +274,12 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         
         // Contraints
         resetButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
-        resetButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0.0).isActive = true
+        resetButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8.0).isActive = true
         resetButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
     private func addDisplaySurfaceSwitch() {
+        displaySurfaceSwitch.isHidden = true
         view.addSubview(displaySurfaceSwitch)
         displaySurfaceSwitch.translatesAutoresizingMaskIntoConstraints = false
         displaySurfaceSwitch.isOn = isSurfaceDisplayOn
@@ -260,7 +293,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     }
     
     private func addIsSurfaceDisplayedLabel() {
-        let isSurfaceDisplayedLabel = UILabel(frame: CGRect(x: 0, y: 0, width: 200, height: 21))
+        isSurfaceDisplayedLabel.isHidden = true
         view.addSubview(isSurfaceDisplayedLabel)
         isSurfaceDisplayedLabel.translatesAutoresizingMaskIntoConstraints = false
         isSurfaceDisplayedLabel.textAlignment = .center
@@ -274,6 +307,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     }
     
     private func addExportButton() {
+        exportButton.isHidden = true
         view.addSubview(exportButton)
         exportButton.translatesAutoresizingMaskIntoConstraints = false
         exportButton.setTitle("Export", for: .normal)
@@ -284,8 +318,8 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         exportButton.addTarget(self, action: #selector(exportButtonTapped(sender:)) , for: .touchUpInside)
         
         // Contraints
-        exportButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
-        exportButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8.0).isActive = true
+        exportButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
+        exportButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: -40.0).isActive = true
         exportButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
@@ -381,9 +415,15 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     
     // MARK: - UI Actions
     
-    @IBAction func toggleIsCapturingPoints(sender: UIButton) {
-        isCapturingPoints = !isCapturingPoints
+    @IBAction func capturePoints(sender: UIButton) {
+        inFinishedState = false
+        isCapturingPoints = true
     }
+    
+    @IBAction func pauseCapturePoints(sender: UIButton) {
+        isCapturingPoints = false
+    }
+
     
     @IBAction func reconstructButtonTapped(sender: UIButton) {
         
@@ -419,6 +459,8 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         let surfaceNode = constructSurfaceNode(pclMesh: pclMesh)
         surfaceParentNode.addChildNode(surfaceNode)
         
+        isCapturingPoints = false
+        inFinishedState = true
         showAlert(title: "Surface Reconstructed", message: "\(pclMesh.numFaces) faces")
     }
     
@@ -427,8 +469,8 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     }
     
     @IBAction func exportButtonTapped(sender: UIButton) {
-       if surfaceGeometry == nil {
-            showAlert(title: "No Surface to Export", message: "Press Reconstruct Surface and then export.")
+        if !isUserSignedOn {
+            showAlert(title: "Not Signed In", message: "You must sign in to your Google Drive account in order to export.")
             return
         }
         let fileNameDialog = createExportFileNameDialog(onEnterExportAction: exportSurfaceAction,
@@ -448,18 +490,18 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         surfaceParentNode = SCNNode()
         
         surfaceGeometry = nil
+        inFinishedState = false
+        isCapturingPoints = false
 
         sceneView.scene.rootNode.addChildNode(pointsParentNode)
         sceneView.scene.rootNode.addChildNode(surfaceParentNode)
 
         sceneView.debugOptions.remove(ARSCNDebugOptions.showFeaturePoints)
-        sceneView.debugOptions.remove(ARSCNDebugOptions.showWorldOrigin)
         
         // Run the view's session
         sceneView.session.run(sessionConfiguration, options: [ARSession.RunOptions.resetTracking, ARSession.RunOptions.removeExistingAnchors])
         
         sceneView.debugOptions.insert(ARSCNDebugOptions.showFeaturePoints)
-        sceneView.debugOptions.insert(ARSCNDebugOptions.showWorldOrigin)
     }
     
     @IBAction func torchSwitchValueDidChange(sender: UIButton) {
@@ -532,7 +574,8 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
             fileData: surfaceData,
             name: fileName,
             fileExtension: ScanningConstants.surfaceExportFileExtension)
-        self.showAlert(title: "Export Success", message: "")
+        self.showAlert(title: "Export Success",
+                       message: "An file named \(fileName).\(ScanningConstants.surfaceExportFileExtension) has been uploaded to your Google Drive account.")
     }
     
     
