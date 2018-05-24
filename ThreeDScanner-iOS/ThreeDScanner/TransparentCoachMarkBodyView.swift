@@ -72,7 +72,7 @@ internal class TransparentCoachMarkBodyView : UIControl, CoachMarkBodyView {
         self.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|[hintLabel]|", options: NSLayoutFormatOptions(rawValue: 0),
                                                            metrics: nil, views: ["hintLabel": hintLabel]))
         
-        self.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|[hintLabel]|", options: NSLayoutFormatOptions(rawValue: 0),
+        self.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|[hintLabel(<=250)]|", options: NSLayoutFormatOptions(rawValue: 0),
                                                            metrics: nil, views: ["hintLabel": hintLabel]))
         
         tapToContinueLabel.text = "Tap anywhere to continue"

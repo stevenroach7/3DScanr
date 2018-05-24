@@ -22,16 +22,28 @@
 import UIKit
 import Instructions
 
+internal enum ArrowOrientation {
+    case bottomLeft
+    case bottomRight
+    case topLeft
+    case topRight
+}
+
 // Transparent coach mark (text without background, cool arrow)
 internal class TransparentCoachMarkArrowView : UIImageView, CoachMarkArrowView {
     // MARK: - Initialization
-    init(orientation: CoachMarkArrowOrientation) {
-        if orientation == .top {
-            super.init(image: UIImage(named: "arrow-top"))
-        } else {
-            super.init(image: UIImage(named: "arrow-bottom"))
+    init(orientation: ArrowOrientation) {
+        switch orientation {
+        case .bottomLeft:
+            super.init(image: UIImage(named: "arrow-bottom-left"))
+        case .bottomRight:
+            super.init(image: UIImage(named: "arrow-bottom-right"))
+        case .topLeft:
+            super.init(image: UIImage(named: "arrow-top-left"))
+        case .topRight:
+            super.init(image: UIImage(named: "arrow-top-right"))
         }
-        
+    
         self.translatesAutoresizingMaskIntoConstraints = false
         
         self.addConstraint(NSLayoutConstraint(item: self, attribute: .width, relatedBy: .equal,

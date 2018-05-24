@@ -87,10 +87,10 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     let coachMarksController = CoachMarksController()
     
     let text1 = "Sign In to upload surface models to your Google Drive account."
-    let text2 = "Point camera at object of interest and press Scan. Move camera around object to capture object from all angles."
+    let text2 = "Point camera at object of interest and press Scan. Move camera around object to capture object from all angles. Scanning works best on objects with texture."
     let text3 = "Pausing is useful for repositioning the camera without capturing unwanted surfaces."
     let text4 = "Press finish to view the scanned surface model. Don't worry, you can always keep scanning after viewing the model."
-    let text5 = "Press export to upload an STL file of your surface to your Google Drive account."
+    let text5 = "Press export to upload an STL file of your surface to your Google Drive account. This file can be used for 3D printing!"
     let text6 = "Press resume to continue refining the displayed surface model."
     let text7 = "Happy Scanning!"
     
@@ -99,8 +99,8 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     }
     
     func coachMarksController(_ coachMarksController: CoachMarksController, coachMarkAt index: Int) -> CoachMark {
-        
         var coachMark = coachMarksController.helper.makeCoachMark()
+        
         switch(index) {
         case 0:
             coachMark = coachMarksController.helper.makeCoachMark(for: self.signInButton)
@@ -156,25 +156,29 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
 
         let coachMarkBodyView = TransparentCoachMarkBodyView()
         var coachMarkArrowView: CoachMarkArrowView? = nil
-        if let arrowOrientation = coachMark.arrowOrientation {
-            coachMarkArrowView = TransparentCoachMarkArrowView(orientation: arrowOrientation)
-        }
-    
+
         switch(index) {
         case 0:
            coachMarkBodyView.hintLabel.text = self.text1
+           coachMarkArrowView = TransparentCoachMarkArrowView(orientation: .topRight)
         case 1:
             coachMarkBodyView.hintLabel.text = self.text2
+            coachMarkArrowView = TransparentCoachMarkArrowView(orientation: .bottomRight)
         case 2:
             coachMarkBodyView.hintLabel.text = self.text3
+            coachMarkArrowView = TransparentCoachMarkArrowView(orientation: .bottomRight)
         case 3:
             coachMarkBodyView.hintLabel.text = self.text4
+            coachMarkArrowView = TransparentCoachMarkArrowView(orientation: .bottomRight)
         case 4:
             coachMarkBodyView.hintLabel.text = self.text5
+            coachMarkArrowView = TransparentCoachMarkArrowView(orientation: .bottomRight)
         case 5:
             coachMarkBodyView.hintLabel.text = self.text6
+            coachMarkArrowView = TransparentCoachMarkArrowView(orientation: .bottomRight)
         case 6:
             coachMarkBodyView.hintLabel.text = self.text7
+            coachMarkArrowView = TransparentCoachMarkArrowView(orientation: .bottomRight)
         default: break
         }
         return (bodyView: coachMarkBodyView, arrowView: coachMarkArrowView)
@@ -190,7 +194,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
 //    }
     
 //    func coachMarksController(_ coachMarksController: CoachMarksController, constraintsForSkipView skipView: UIView, inParent parentView: UIView) -> [NSLayoutConstraint]? {
-//        
+//
 //        // TODO: Fix broken constraints
 //        var constraints: [NSLayoutConstraint] = []
 //        constraints.append(contentsOf: NSLayoutConstraint.constraints(withVisualFormat: "H:|-10-[skipView(==180)]|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: ["skipView": skipView]))
