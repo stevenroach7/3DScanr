@@ -9,11 +9,12 @@
 import UIKit
 import SceneKit
 import ARKit
+import Instructions
 import GoogleAPIClientForREST
 import GoogleSignIn
 
-class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDelegate, GIDSignInDelegate, GIDSignInUIDelegate {
-
+class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDelegate, CoachMarksControllerDataSource, CoachMarksControllerDelegate, GIDSignInDelegate, GIDSignInUIDelegate {
+    
     // MARK: - Properties
     
     // ARKit / SceneKit
@@ -82,6 +83,121 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         displaySurfaceSwitch.isHidden = (surfaceGeometry == nil)
     }
     
+    // CoachMarks
+    let coachMarksController = CoachMarksController()
+    
+    let text1 = "Sign In to upload surface models to your Google Drive account."
+    let text2 = "Point camera at object of interest and press Scan. Move camera around object to capture object from all angles."
+    let text3 = "Pausing is useful for repositioning the camera without capturing unwanted surfaces."
+    let text4 = "Press finish to view the scanned surface model. Don't worry, you can always keep scanning after viewing the model."
+    let text5 = "Press export to upload an STL file of your surface to your Google Drive account."
+    let text6 = "Press resume to continue refining the displayed surface model."
+    let text7 = "Happy Scanning!"
+    
+    func numberOfCoachMarks(for coachMarksController: CoachMarksController) -> Int {
+        return 7
+    }
+    
+    func coachMarksController(_ coachMarksController: CoachMarksController, coachMarkAt index: Int) -> CoachMark {
+        
+        var coachMark = coachMarksController.helper.makeCoachMark()
+        switch(index) {
+        case 0:
+            coachMark = coachMarksController.helper.makeCoachMark(for: self.signInButton)
+            coachMark.arrowOrientation = .top
+            signInButton.isHidden = false
+            signOutButton.isHidden = true
+            capturePointsButton.isHidden = false
+            pauseCapturePointsButton.isHidden = true
+            reconstructButton.isHidden = true
+            exportButton.isHidden = true
+            resumeScanningButton.isHidden = true
+        case 1:
+            coachMark = coachMarksController.helper.makeCoachMark(for: self.capturePointsButton)
+            coachMark.arrowOrientation = .bottom
+            signInButton.isHidden = true
+            signOutButton.isHidden = false
+        case 2:
+            coachMark = coachMarksController.helper.makeCoachMark(for: self.pauseCapturePointsButton)
+            coachMark.arrowOrientation = .bottom
+            capturePointsButton.isHidden = true
+            pauseCapturePointsButton.isHidden = false
+            reconstructButton.isHidden = false
+        case 3:
+            coachMark = coachMarksController.helper.makeCoachMark(for: self.reconstructButton)
+            coachMark.arrowOrientation = .bottom
+        case 4:
+            coachMark = coachMarksController.helper.makeCoachMark(for: self.exportButton)
+            coachMark.arrowOrientation = .bottom
+            pauseCapturePointsButton.isHidden = true
+            reconstructButton.isHidden = true
+            exportButton.isHidden = false
+            resumeScanningButton.isHidden = false
+        case 5:
+            coachMark = coachMarksController.helper.makeCoachMark(for: self.resumeScanningButton)
+            coachMark.arrowOrientation = .bottom
+        case 6:
+            coachMark = coachMarksController.helper.makeCoachMark(for: self.capturePointsButton)
+            coachMark.arrowOrientation = .bottom
+            signOutButton.isHidden = !isUserSignedOn
+            signInButton.isHidden = isUserSignedOn
+            capturePointsButton.isHidden = false
+            pauseCapturePointsButton.isHidden = true
+            reconstructButton.isHidden = true
+            exportButton.isHidden = true
+            resumeScanningButton.isHidden = true
+        default:
+            return coachMark
+        }
+        return coachMark
+    }
+    
+    func coachMarksController(_ coachMarksController: CoachMarksController, coachMarkViewsAt index: Int, madeFrom coachMark: CoachMark) -> (bodyView: CoachMarkBodyView, arrowView: CoachMarkArrowView?) {
+
+        let coachMarkBodyView = TransparentCoachMarkBodyView()
+        var coachMarkArrowView: CoachMarkArrowView? = nil
+        if let arrowOrientation = coachMark.arrowOrientation {
+            coachMarkArrowView = TransparentCoachMarkArrowView(orientation: arrowOrientation)
+        }
+    
+        switch(index) {
+        case 0:
+           coachMarkBodyView.hintLabel.text = self.text1
+        case 1:
+            coachMarkBodyView.hintLabel.text = self.text2
+        case 2:
+            coachMarkBodyView.hintLabel.text = self.text3
+        case 3:
+            coachMarkBodyView.hintLabel.text = self.text4
+        case 4:
+            coachMarkBodyView.hintLabel.text = self.text5
+        case 5:
+            coachMarkBodyView.hintLabel.text = self.text6
+        case 6:
+            coachMarkBodyView.hintLabel.text = self.text7
+        default: break
+        }
+        return (bodyView: coachMarkBodyView, arrowView: coachMarkArrowView)
+    }
+    
+    // TODO: Figure out why this isn't getting called
+//    func coachMarksController(_ coachMarksController: CoachMarksController, didEndShowingBySkipping skipped: Bool) {
+//        print("Did End CoachMarks")
+//
+//        signOutButton.isHidden = !isUserSignedOn
+//        signInButton.isHidden = isUserSignedOn
+//        resetButtonTapped(sender: UIButton())
+//    }
+    
+//    func coachMarksController(_ coachMarksController: CoachMarksController, constraintsForSkipView skipView: UIView, inParent parentView: UIView) -> [NSLayoutConstraint]? {
+//        
+//        // TODO: Fix broken constraints
+//        var constraints: [NSLayoutConstraint] = []
+//        constraints.append(contentsOf: NSLayoutConstraint.constraints(withVisualFormat: "H:|-10-[skipView(==180)]|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: ["skipView": skipView]))
+//
+//        constraints.append(contentsOf: NSLayoutConstraint.constraints(withVisualFormat: "V:|-40-[skipView(==44)]", options: NSLayoutFormatOptions(rawValue: 0), metrics: [:], views: ["skipView": skipView]))
+//        return constraints
+//    }
 
     // MARK: - UIViewController
     
@@ -105,6 +221,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         addTorchSwitch()
         addTorchLabel()
         addResetButton()
+        addInstructionsButton()
         addDisplaySurfaceSwitch()
         addIsSurfaceDisplayedLabel()
         addExportButton()
@@ -117,6 +234,18 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         
         // Set SceneKit Lighting
         sceneView.autoenablesDefaultLighting = true
+        
+        // CoachMarks
+        self.coachMarksController.dataSource = self
+        
+        // TODO: Fix broken Skip functionality
+//        let skipView = CoachMarkSkipDefaultView()
+//        skipView.setTitle("or Skip Instructions", for: .normal)
+//
+//        self.coachMarksController.skipView = skipView
+        self.coachMarksController.overlay.allowTap = true
+        self.coachMarksController.overlay.color = UIColor(displayP3Red: 0.0, green: 0.0, blue: 0.0, alpha: 0.7)
+        
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -139,6 +268,12 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         
         // Pause the view's session
         sceneView.session.pause()
+        
+        self.coachMarksController.stop(immediately: true)
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
     }
     
     override func didReceiveMemoryWarning() {
@@ -276,6 +411,23 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         resetButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
         resetButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8.0).isActive = true
         resetButton.heightAnchor.constraint(equalToConstant: 50)
+    }
+    
+    private func addInstructionsButton() {
+        let instructionsButton = UIButton()
+        view.addSubview(instructionsButton)
+        instructionsButton.translatesAutoresizingMaskIntoConstraints = false
+        instructionsButton.setTitle("Instructions", for: .normal)
+        instructionsButton.setTitleColor(UIColor.red, for: .normal)
+        instructionsButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
+        instructionsButton.layer.cornerRadius = 4
+        instructionsButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
+        instructionsButton.addTarget(self, action: #selector(instructionsButtonTapped(sender:)) , for: .touchUpInside)
+        
+        // Contraints
+        instructionsButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
+        instructionsButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0.0).isActive = true
+        instructionsButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
     private func addDisplaySurfaceSwitch() {
@@ -502,6 +654,10 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         sceneView.session.run(sessionConfiguration, options: [ARSession.RunOptions.resetTracking, ARSession.RunOptions.removeExistingAnchors])
         
         sceneView.debugOptions.insert(ARSCNDebugOptions.showFeaturePoints)
+    }
+    
+    @IBAction func instructionsButtonTapped(sender: UIButton) {
+        self.coachMarksController.start(on: self)
     }
     
     @IBAction func torchSwitchValueDidChange(sender: UIButton) {
