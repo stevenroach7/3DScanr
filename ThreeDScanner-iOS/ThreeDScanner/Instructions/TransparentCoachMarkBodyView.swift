@@ -58,7 +58,7 @@ internal class TransparentCoachMarkBodyView : UIControl, CoachMarkBodyView {
         
         hintLabel.backgroundColor = UIColor.clear
         hintLabel.textColor = UIColor.white
-        hintLabel.font = UIFont(name: "Noteworthy-Light", size: 17)
+        hintLabel.font = UIFont(name: "Noteworthy-Light", size: 22)
         hintLabel.isScrollEnabled = false
         hintLabel.textAlignment = .justified
         hintLabel.layoutManager.hyphenationFactor = 1.0
@@ -72,16 +72,16 @@ internal class TransparentCoachMarkBodyView : UIControl, CoachMarkBodyView {
         self.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|[hintLabel]|", options: NSLayoutFormatOptions(rawValue: 0),
                                                            metrics: nil, views: ["hintLabel": hintLabel]))
         
-        self.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|[hintLabel(<=250)]|", options: NSLayoutFormatOptions(rawValue: 0),
+        self.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|[hintLabel(<=280)]|", options: NSLayoutFormatOptions(rawValue: 0),
                                                            metrics: nil, views: ["hintLabel": hintLabel]))
         
         tapToContinueLabel.text = "Tap anywhere to continue"
         tapToContinueLabel.backgroundColor = UIColor.clear
         tapToContinueLabel.textColor = UIColor.white
-        tapToContinueLabel.font = UIFont(name: "Noteworthy-Light", size: 17)
+        tapToContinueLabel.font = UIFont(name: "Noteworthy-Light", size: 22)
         tapToContinueLabel.isScrollEnabled = false
         tapToContinueLabel.textAlignment = .justified
-        tapToContinueLabel.layoutManager.hyphenationFactor = 1.0
+        tapToContinueLabel.layoutManager.hyphenationFactor = 0.0
         tapToContinueLabel.isEditable = false
         tapToContinueLabel.translatesAutoresizingMaskIntoConstraints = false
         tapToContinueLabel.isUserInteractionEnabled = false

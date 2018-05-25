@@ -100,7 +100,7 @@ extension ScanningViewController: CoachMarksControllerDataSource, CoachMarksCont
     func coachMarksController(_ coachMarksController: CoachMarksController, constraintsForSkipView skipView: UIView, inParent parentView: UIView) -> [NSLayoutConstraint]? {
         
         var constraints: [NSLayoutConstraint] = []
-        constraints.append(contentsOf: NSLayoutConstraint.constraints(withVisualFormat: "V:|-40-[skipView(==44)]", options: NSLayoutFormatOptions(rawValue: 0), metrics: [:], views: ["skipView": skipView]))
+        constraints.append(contentsOf: NSLayoutConstraint.constraints(withVisualFormat: "V:|-50-[skipView(==44)]", options: NSLayoutFormatOptions(rawValue: 0), metrics: [:], views: ["skipView": skipView]))
         return constraints
     }
     
