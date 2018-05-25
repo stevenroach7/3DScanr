@@ -147,6 +147,17 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         scheduledTimerWithTimeInterval()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        // Show Instructions on first launch
+        let launchedBefore = UserDefaults.standard.bool(forKey: "launchedBefore")
+        if !launchedBefore  {
+            UserDefaults.standard.set(true, forKey: "launchedBefore")
+            coachMarksController.start(on: self)
+        }
+    }
+    
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         coachMarksController.stop(immediately: true)
@@ -536,7 +547,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     }
     
     @IBAction func instructionsButtonTapped(sender: UIButton) {
-        self.coachMarksController.start(on: self)
+        coachMarksController.start(on: self)
     }
     
     @IBAction func torchSwitchValueDidChange(sender: UIButton) {
