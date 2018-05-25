@@ -53,6 +53,7 @@
 		B0BB32032030D66B00FADAA4 /* libpcl_common.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B0BB31F52030D66B00FADAA4 /* libpcl_common.a */; };
 		B0FBDF7620B78C3100BF7EAA /* InstructionsText.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0FBDF7520B78C3100BF7EAA /* InstructionsText.swift */; };
 		B0FBDF7820B78CE800BF7EAA /* ScanningViewController+Instructions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0FBDF7720B78CE800BF7EAA /* ScanningViewController+Instructions.swift */; };
+		B0FBDF7B20B7DD9300BF7EAA /* CustomCoachMarkSkipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0FBDF7A20B7DD9300BF7EAA /* CustomCoachMarkSkipView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -127,6 +128,7 @@
 		B0BB31F52030D66B00FADAA4 /* libpcl_common.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpcl_common.a; path = PCL/lib/libpcl_common.a; sourceTree = "<group>"; };
 		B0FBDF7520B78C3100BF7EAA /* InstructionsText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstructionsText.swift; sourceTree = "<group>"; };
 		B0FBDF7720B78CE800BF7EAA /* ScanningViewController+Instructions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ScanningViewController+Instructions.swift"; sourceTree = "<group>"; };
+		B0FBDF7A20B7DD9300BF7EAA /* CustomCoachMarkSkipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomCoachMarkSkipView.swift; sourceTree = "<group>"; };
 		D29A5A475B9F7E7A2D2107F5 /* Pods-ThreeDScanner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ThreeDScanner.release.xcconfig"; path = "Pods/Target Support Files/Pods-ThreeDScanner/Pods-ThreeDScanner.release.xcconfig"; sourceTree = "<group>"; };
 		E1A3A8D013ACA949EB5C45A8 /* Pods_ThreeDScanner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ThreeDScanner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -304,6 +306,7 @@
 				B0387AE020B73180001B556C /* TransparentCoachMarkBodyView.swift */,
 				B0387AE220B73204001B556C /* TransparentCoachMarkArrowView.swift */,
 				B0FBDF7520B78C3100BF7EAA /* InstructionsText.swift */,
+				B0FBDF7A20B7DD9300BF7EAA /* CustomCoachMarkSkipView.swift */,
 			);
 			path = Instructions;
 			sourceTree = "<group>";
@@ -525,6 +528,7 @@
 				B06EB54120755E700053C4AC /* GoogleDriveLogin.swift in Sources */,
 				B0FBDF7820B78CE800BF7EAA /* ScanningViewController+Instructions.swift in Sources */,
 				B0045310207401CB00B70F84 /* SurfaceExporter.swift in Sources */,
+				B0FBDF7B20B7DD9300BF7EAA /* CustomCoachMarkSkipView.swift in Sources */,
 				B063CB1A1FC744A100C20C8D /* ScanningViewController.swift in Sources */,
 				B00453162074370500B70F84 /* PointCloud.swift in Sources */,
 				B0387AE120B73180001B556C /* TransparentCoachMarkBodyView.swift in Sources */,

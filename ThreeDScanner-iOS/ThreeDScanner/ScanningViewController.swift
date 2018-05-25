@@ -117,9 +117,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         coachMarksController.overlay.allowTap = true
         coachMarksController.overlay.color = UIColor(displayP3Red: 0.0, green: 0.0, blue: 0.0, alpha: 0.7)
         
-        let skipView = CoachMarkSkipDefaultView()
-        skipView.setTitle("or Skip", for: .normal)
-        coachMarksController.skipView = skipView
+        coachMarksController.skipView = CustomCoachMarkSkipView()
     }
     
     override func viewWillAppear(_ animated: Bool) {
