@@ -45,43 +45,33 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     }
     private var isCapturingPoints = false {
         didSet {
-            updateState()
+            updateScanningViewState()
         }
     }
     private var inFinishedState = false {
         didSet {
-            updateState()
+            updateScanningViewState()
         }
     }
 
     // UI
-    internal let signInButton = UIButton()
-    internal let signOutButton = UIButton()
     internal let exportButton = UIButton()
     internal let reconstructButton = UIButton()
     internal let capturePointsButton = UIButton()
     internal let pauseCapturePointsButton = UIButton()
     internal let resumeScanningButton = UIButton()
+    private let signInButton = UIButton()
+    private let signOutButton = UIButton()
     private let isSurfaceDisplayedLabel = UILabel(frame: CGRect(x: 0, y: 0, width: 200, height: 21))
     private let displaySurfaceSwitch = UISwitch()
     
     // Google Sign In
-    internal var isUserSignedOn = false
+    private var isUserSignedOn = false
     {
         didSet {
             signOutButton.isHidden = !isUserSignedOn
             signInButton.isHidden = isUserSignedOn
         }
-    }
-    
-    private func updateState() {
-        capturePointsButton.isHidden = isCapturingPoints || inFinishedState
-        pauseCapturePointsButton.isHidden = !isCapturingPoints || inFinishedState
-        reconstructButton.isHidden = !isCapturingPoints || inFinishedState
-        exportButton.isHidden = !inFinishedState
-        resumeScanningButton.isHidden = !inFinishedState
-        isSurfaceDisplayedLabel.isHidden = (surfaceGeometry == nil)
-        displaySurfaceSwitch.isHidden = (surfaceGeometry == nil)
     }
     
 
@@ -626,6 +616,19 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     
     
     // MARK: - Helper Functions
+    
+    /**
+     Updates the state of the view based on scanning properties.
+     */
+    private func updateScanningViewState() {
+        capturePointsButton.isHidden = isCapturingPoints || inFinishedState
+        pauseCapturePointsButton.isHidden = !isCapturingPoints || inFinishedState
+        reconstructButton.isHidden = !isCapturingPoints || inFinishedState
+        exportButton.isHidden = !inFinishedState
+        resumeScanningButton.isHidden = !inFinishedState
+        isSurfaceDisplayedLabel.isHidden = (surfaceGeometry == nil)
+        displaySurfaceSwitch.isHidden = (surfaceGeometry == nil)
+    }
     
     private func capturePoints() {
         
