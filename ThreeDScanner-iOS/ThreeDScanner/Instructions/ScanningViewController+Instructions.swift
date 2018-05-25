@@ -9,19 +9,8 @@
 import Foundation
 import Instructions
 
-extension ScanningViewController: CoachMarksControllerDelegate {
+extension ScanningViewController: CoachMarksControllerDataSource, CoachMarksControllerDelegate {
     
-    // TODO: Figure out why this isn't getting called
-    func coachMarksController(_ coachMarksController: CoachMarksController, didEndShowingBySkipping skipped: Bool) {
-        print("Did End CoachMarks")
-        
-        signOutButton.isHidden = !isUserSignedOn
-        signInButton.isHidden = isUserSignedOn
-        resetButtonTapped(sender: UIButton())
-    }
-}
-
-extension ScanningViewController: CoachMarksControllerDataSource {
     func numberOfCoachMarks(for coachMarksController: CoachMarksController) -> Int {
         return 7
     }
@@ -67,11 +56,7 @@ extension ScanningViewController: CoachMarksControllerDataSource {
         case 6:
             coachMark = coachMarksController.helper.makeCoachMark(for: self.capturePointsButton)
             coachMark.arrowOrientation = .bottom
-            signOutButton.isHidden = !isUserSignedOn
-            signInButton.isHidden = isUserSignedOn
             capturePointsButton.isHidden = false
-            pauseCapturePointsButton.isHidden = true
-            reconstructButton.isHidden = true
             exportButton.isHidden = true
             resumeScanningButton.isHidden = true
         default:
@@ -117,5 +102,17 @@ extension ScanningViewController: CoachMarksControllerDataSource {
         var constraints: [NSLayoutConstraint] = []
         constraints.append(contentsOf: NSLayoutConstraint.constraints(withVisualFormat: "V:|-40-[skipView(==44)]", options: NSLayoutFormatOptions(rawValue: 0), metrics: [:], views: ["skipView": skipView]))
         return constraints
+    }
+    
+    func coachMarksController(_ coachMarksController: CoachMarksController, didEndShowingBySkipping skipped: Bool) {
+        signOutButton.isHidden = !isUserSignedOn
+        signInButton.isHidden = isUserSignedOn
+        signOutButton.isHidden = !isUserSignedOn
+        signInButton.isHidden = isUserSignedOn
+        capturePointsButton.isHidden = false
+        pauseCapturePointsButton.isHidden = true
+        reconstructButton.isHidden = true
+        exportButton.isHidden = true
+        resumeScanningButton.isHidden = true
     }
 }
