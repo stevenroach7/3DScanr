@@ -58,7 +58,7 @@ internal class TransparentCoachMarkBodyView : UIControl, CoachMarkBodyView {
         
         hintLabel.backgroundColor = UIColor.clear
         hintLabel.textColor = UIColor.white
-        hintLabel.font = UIFont(name: "Noteworthy-Light", size: 22)
+        hintLabel.font = UIFont(name: InstructionsText.fontString, size: 22)
         hintLabel.isScrollEnabled = false
         hintLabel.textAlignment = .justified
         hintLabel.layoutManager.hyphenationFactor = 0.1
@@ -78,7 +78,7 @@ internal class TransparentCoachMarkBodyView : UIControl, CoachMarkBodyView {
         tapToContinueLabel.text = "Tap anywhere to continue"
         tapToContinueLabel.backgroundColor = UIColor.clear
         tapToContinueLabel.textColor = UIColor.white
-        tapToContinueLabel.font = UIFont(name: "Noteworthy-Light", size: 22)
+        tapToContinueLabel.font = UIFont(name: InstructionsText.fontString, size: 22)
         tapToContinueLabel.isScrollEnabled = false
         tapToContinueLabel.textAlignment = .justified
         tapToContinueLabel.layoutManager.hyphenationFactor = 0.0

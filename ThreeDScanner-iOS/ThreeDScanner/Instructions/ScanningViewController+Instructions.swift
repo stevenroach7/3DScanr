@@ -8,6 +8,7 @@
 
 import Foundation
 import Instructions
+import ARKit
 
 extension ScanningViewController: CoachMarksControllerDataSource, CoachMarksControllerDelegate {
     
@@ -27,6 +28,7 @@ extension ScanningViewController: CoachMarksControllerDataSource, CoachMarksCont
             reconstructButton.isHidden = true
             exportButton.isHidden = true
             resumeScanningButton.isHidden = true
+            sceneView.debugOptions.remove(ARSCNDebugOptions.showFeaturePoints)
         case 1:
             coachMark = coachMarksController.helper.makeCoachMark(for: self.pauseCapturePointsButton)
             coachMark.arrowOrientation = .bottom
@@ -104,5 +106,6 @@ extension ScanningViewController: CoachMarksControllerDataSource, CoachMarksCont
         reconstructButton.isHidden = true
         exportButton.isHidden = true
         resumeScanningButton.isHidden = true
+        sceneView.debugOptions.insert(ARSCNDebugOptions.showFeaturePoints)
     }
 }

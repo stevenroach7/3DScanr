@@ -39,7 +39,7 @@ public class CustomCoachMarkSkipView: UIButton, CoachMarkSkipView {
         self.init(frame: CGRect.zero)
         
         let attributes : [NSAttributedStringKey: Any] = [
-            NSAttributedStringKey.font: UIFont(name: "Noteworthy-Light", size: 22) ?? UIFont.systemFont(ofSize: 22),
+            NSAttributedStringKey.font: UIFont(name: InstructionsText.fontString, size: 22) ?? UIFont.systemFont(ofSize: 22),
             NSAttributedStringKey.foregroundColor: UIColor.green,
             NSAttributedStringKey.underlineStyle: NSUnderlineStyle.styleSingle.rawValue
         ]

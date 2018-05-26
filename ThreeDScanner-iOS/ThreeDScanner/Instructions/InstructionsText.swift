@@ -15,4 +15,5 @@ internal struct InstructionsText {
     internal static let text4 = "Export the surface to Google Drive! This file can be used for 3D printing!"
     internal static let text5 = "Or press resume to continue refining the displayed surface model."
     internal static let text6 = "Happy Scanning!"
+    internal static let fontString = "Noteworthy-Light"
 }
