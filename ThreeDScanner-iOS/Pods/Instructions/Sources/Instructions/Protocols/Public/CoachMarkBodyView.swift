@@ -23,7 +23,7 @@
 import UIKit
 
 /// A protocol to which all the "body views" of a coach mark must conform.
-public protocol CoachMarkBodyView : class {
+public protocol CoachMarkBodyView: class {
     /// The control that will trigger the change between the current coach mark
     /// and the next one.
     var nextControl: UIControl? { get }
@@ -34,5 +34,5 @@ public protocol CoachMarkBodyView : class {
     /// The `CoachMarkView`, of which the current view must be
     /// part, will automatically set itself as the delegate and will take care
     /// of fowarding the state to the arrow view.
-    weak var highlightArrowDelegate: CoachMarkBodyHighlightArrowDelegate? { get set }
+    var highlightArrowDelegate: CoachMarkBodyHighlightArrowDelegate? { get set }
 }

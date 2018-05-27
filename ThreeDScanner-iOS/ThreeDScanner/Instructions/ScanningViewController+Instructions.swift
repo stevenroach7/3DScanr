@@ -96,8 +96,29 @@ extension ScanningViewController: CoachMarksControllerDataSource, CoachMarksCont
                               inParent parentView: UIView) -> [NSLayoutConstraint]? {
         
         var constraints: [NSLayoutConstraint] = []
-        constraints.append(contentsOf: NSLayoutConstraint.constraints(withVisualFormat: "V:|-50-[skipView(==44)]", options: NSLayoutFormatOptions(rawValue: 0), metrics: [:], views: ["skipView": skipView]))
+        constraints.append(skipView.centerYAnchor.constraint(equalTo: parentView.centerYAnchor, constant: -20.0))
+        constraints.append(skipView.centerXAnchor.constraint(equalTo: parentView.centerXAnchor, constant: 0.0))
         return constraints
+    }
+    
+    func coachMarksController(_ coachMarksController: CoachMarksController,
+                              configureOrnamentsOfOverlay overlay: UIView) {
+        
+        let tapToContinueLabel = UITextView()
+        overlay.addSubview(tapToContinueLabel)
+        tapToContinueLabel.text = "Tap anywhere to continue"
+        tapToContinueLabel.backgroundColor = UIColor.clear
+        tapToContinueLabel.textColor = UIColor.white
+        tapToContinueLabel.font = UIFont(name: InstructionsText.fontString, size: 22)
+        tapToContinueLabel.isScrollEnabled = false
+        tapToContinueLabel.textAlignment = .justified
+        tapToContinueLabel.layoutManager.hyphenationFactor = 0.0
+        tapToContinueLabel.isEditable = false
+        tapToContinueLabel.translatesAutoresizingMaskIntoConstraints = false
+        tapToContinueLabel.isUserInteractionEnabled = false
+        
+        tapToContinueLabel.centerYAnchor.constraint(equalTo: overlay.centerYAnchor, constant: -50.0).isActive = true
+        tapToContinueLabel.centerXAnchor.constraint(equalTo: overlay.centerXAnchor, constant: 0.0).isActive = true
     }
     
     func coachMarksController(_ coachMarksController: CoachMarksController, didEndShowingBySkipping skipped: Bool) {

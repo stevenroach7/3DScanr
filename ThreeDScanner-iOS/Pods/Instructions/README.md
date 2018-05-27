@@ -40,8 +40,8 @@ Add customizable coach marks into your iOS project. Available for both iPhone an
 - [ ] Multiple coach marks support
 
 ## Requirements
-- Xcode 8 or 9 / Swift 3 or 4
-- iOS 9.0+
+- Xcode 9 / Swift 4+
+- iOS 10.0+
 
 ## Asking Questions / Contributing
 
@@ -82,7 +82,7 @@ $ pod install
 Add Instructions to your Cartfile:
 
 ```
-github "ephread/Instructions" ~> "1.0.0"
+github "ephread/Instructions" ~> 1.0.0
 ```
 
 You can then update, build and drag the generated framework into your project:
@@ -124,7 +124,7 @@ class DefaultViewController: UIViewController, CoachMarksControllerDataSource, C
 The first one asks for the number of coach marks to display. Let's pretend that you want to display only one coach mark. Note that the `CoachMarksController` requesting the information is supplied, allowing you to supply data for multiple `CoachMarksController`, within a single dataSource.
 
 ```swift
-func numberOfCoachMarks(for coachMarksController: CoachMarksController) -> Int
+func numberOfCoachMarks(for coachMarksController: CoachMarksController) -> Int {
     return 1
 }
 ```
@@ -136,7 +136,7 @@ let pointOfInterest = UIView()
 
 func coachMarksController(_ coachMarksController: CoachMarksController,
                               coachMarkAt index: Int) -> CoachMark {
-    return coachMarksController.helper.makeCoachMark(for: self.reputationLabel)
+    return coachMarksController.helper.makeCoachMark(for: pointOfInterest)
 }
 ```
 
@@ -190,7 +190,7 @@ You can also make the overlay blur the content sitting behind it. Setting this p
 
 - `overlay.blurEffectStyle: UIBlurEffectStyle?`
 
-The overlay can sit above the status bar or below, the property defaults to `true`:
+The overlay can sit over the status bar or under, the property defaults to `true`:
 
 - `overlay.isShownAboveStatusBar: Bool`
 
@@ -293,7 +293,7 @@ As usual, Instructions provides a default implementation of `CoachMarkSkipView` 
 To define how the view will position itself, you can use a method from the `CoachMarkControllerDataSource` protocol. This method is optional.
 
 ```swift
-func coachMarksController(_ coachMarksController: CoachMarksController, constraintsForSkipView skipView: UIView, inParentView parentView: UIView) -> [NSLayoutConstraint]?
+func coachMarksController(_ coachMarksController: CoachMarksController, constraintsForSkipView skipView: UIView, inParent parentView: UIView) -> [NSLayoutConstraint]?
 ```
 
 This method will be called by the `CoachMarksController` before starting the tour and whenever there is a size change. It gives you the _skip button_ and the view in which it will be positioned and expects an array of `NSLayoutConstraints` in return. These constraints will define how the _skip button_ will be positioned in its parent. You should not add the constraints yourself, just return them.
@@ -314,7 +314,7 @@ You can specify a number of coach marks to skip (effectively jumping to a furthe
 Take a look at `TransitionFromCodeViewController`, in the `Example/` directory, to get an idea of how you can leverage this method, in order to ask the user to perform certain actions.
 
 #### Using a delegate
-The `CoachMarkController` will notify the delegate on three occasions. All those methods are optionals.
+The `CoachMarkController` will notify the delegate on multiple occasions. All those methods are optionals.
 
 First, when a coach mark will show. You might want to change something about the view. For that reason, the `CoachMark` metadata structure is passed as an `inout` object, so you can update it with new parameters.
 
@@ -333,6 +333,18 @@ Third, when all coach marks have been displayed. `didEndShowingBySkipping` speci
 ```swift    
 func coachMarksController(_ coachMarksController: CoachMarksController, didEndShowingBySkipping skipped: Bool)
 ```
+
+##### React when the user tap the overlay #####
+
+Whenever the user will tap the overlay, you will get notified through:
+
+```swift    
+func shouldHandleOverlayTap(in coachMarksController: CoachMarksController, at index: Int) -> Bool
+```
+
+Returning `true` will let Instructions continue the flow normally, while returning `false` will interrupt it. If you choose to interrupt the flow, you're responsible for either stopping or pausing it or manually show the next coach marks (see [Piloting the flow from the code](#piloting-the-flow-from-the-code)).
+
+`index` is the index of the coach mark currently displayed.
 
 ##### Performing animations before showing coach marks #####
 You can perform animation on views, before or after showing a given coach mark.
@@ -365,6 +377,8 @@ func coachMarksController(_ coachMarksController: CoachMarksController, willShow
 you should make sure that animations targeting your own view don't occur while a coach mark
 is appearing or disappearing. Otherwise, the animation won't be visible.
 
+You may also want to customize the properties defining the of for the classic transparency overlay, as Instructions will fall back to using the classic type if `UIAccessibilityIsReduceTransparencyEnabled()` returns true.
+
 ##### Skipping a coach mark
 
 You can skip a given coach mark by implementing the following method defined in `CoachMarksControllerDelegate`:
@@ -374,6 +388,17 @@ func coachMarksController(_ coachMarksController: CoachMarksController, coachMar
 ```
 
 `coachMarkWillLoadAt:` is called right before a given coach mark will show. To prevent a CoachMark from showing, you can return `false` from this method.
+
+##### Customizing ornaments of the overlay
+
+It's possible to add custom views which will be displayed over the overlay by implementing the following method of `CoachMarksControllerDelegate`:
+
+```swift
+func coachMarksController(_ coachMarksController: CoachMarksController,
+                          configureOrnamentsOfOverlay overlay: UIView)
+```
+
+Just add the ornaments to the provided view (`overlay`) and Instructions should take care of the rest. Please note, however, that these ornaments will be displayed over the cutout, but under the coach marks.
 
 #### Dealing with frame changes
 

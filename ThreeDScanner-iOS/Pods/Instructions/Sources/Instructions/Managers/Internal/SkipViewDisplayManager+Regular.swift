@@ -1,6 +1,6 @@
-// CoachMarkSkipView.swift
+// SkipViewDisplayManager.swift
 //
-// Copyright (c) 2015, 2016 Frédéric Maquin <fred@ephread.com>
+// Copyright (c) 2018 Frédéric Maquin <fred@ephread.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,21 +22,15 @@
 
 import UIKit
 
-/// A protocol to which all the "skip views" must conform.
-public protocol CoachMarkSkipView: class {
-    /// The control that will trigger the stop, in the display flow.
-    var skipControl: UIControl? { get }
-    var asView: UIView? { get }
-}
+extension SkipViewDisplayManager {
+    func updateTopConstant(from original: CGFloat) -> CGFloat {
+        if #available(iOS 11.0, *) {
+            let window = UIApplication.shared.keyWindow
+            return window?.safeAreaInsets.top ?? original
+        } else if !UIApplication.shared.isStatusBarHidden {
+            return UIApplication.shared.statusBarFrame.size.height
+        }
 
-public extension CoachMarkSkipView {
-    public var skipControl: UIControl? {
-        return nil
-    }
-}
-
-public extension CoachMarkSkipView where Self: UIView {
-    public var asView: UIView? {
-        return self
+        return original
     }
 }

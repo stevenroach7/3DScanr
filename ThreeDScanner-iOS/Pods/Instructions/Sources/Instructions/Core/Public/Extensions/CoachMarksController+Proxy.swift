@@ -47,6 +47,10 @@ extension CoachMarksController: CoachMarksControllerProxyDataSource {
 }
 
 extension CoachMarksController: CoachMarksControllerProxyDelegate {
+    func configureOrnaments(ofOverlay overlay: UIView) {
+        delegate?.coachMarksController(self, configureOrnamentsOfOverlay: overlay)
+    }
+
     func willLoadCoachMark(at index: Int) -> Bool {
         guard let delegate = delegate else { return true }
 
@@ -73,5 +77,9 @@ extension CoachMarksController: CoachMarksControllerProxyDelegate {
 
     func didEndShowingBySkipping(_ skipped: Bool) {
         delegate?.coachMarksController(self, didEndShowingBySkipping: skipped)
+    }
+
+    func shouldHandleOverlayTap(at index: Int) -> Bool {
+        return delegate?.shouldHandleOverlayTap(in: self, at: index) ?? true
     }
 }

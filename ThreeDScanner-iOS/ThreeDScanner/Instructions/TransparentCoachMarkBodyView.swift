@@ -34,7 +34,6 @@ internal class TransparentCoachMarkBodyView : UIControl, CoachMarkBodyView {
     
     weak var highlightArrowDelegate: CoachMarkBodyHighlightArrowDelegate? = nil
     
-    var tapToContinueLabel = UITextView()
     var hintLabel = UITextView()
     
     // MARK: - Initialization
@@ -74,18 +73,5 @@ internal class TransparentCoachMarkBodyView : UIControl, CoachMarkBodyView {
         
         self.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|[hintLabel(<=280)]|", options: NSLayoutFormatOptions(rawValue: 0),
                                                            metrics: nil, views: ["hintLabel": hintLabel]))
-        
-        tapToContinueLabel.text = "Tap anywhere to continue"
-        tapToContinueLabel.backgroundColor = UIColor.clear
-        tapToContinueLabel.textColor = UIColor.white
-        tapToContinueLabel.font = UIFont(name: InstructionsText.fontString, size: 22)
-        tapToContinueLabel.isScrollEnabled = false
-        tapToContinueLabel.textAlignment = .justified
-        tapToContinueLabel.layoutManager.hyphenationFactor = 0.0
-        tapToContinueLabel.isEditable = false
-        tapToContinueLabel.translatesAutoresizingMaskIntoConstraints = false
-        tapToContinueLabel.isUserInteractionEnabled = false
-        
-        self.addSubview(tapToContinueLabel)
     }
 }

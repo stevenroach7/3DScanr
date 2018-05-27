@@ -40,7 +40,7 @@ public class CoachMarksController {
     /// Hide the UI.
     fileprivate(set) public lazy var overlay: OverlayManager = {
         let overlay = OverlayManager()
-        overlay.delegate = self
+        overlay.overlayDelegate = self
 
         return overlay
     }()
@@ -120,8 +120,12 @@ public extension CoachMarksController {
         controllerWindow = parentViewController.view.window
         coachMarksWindow = coachMarksWindow ?? InstructionsWindow(frame: UIScreen.main.bounds)
 
-        coachMarksViewController.attach(to: coachMarksWindow!)
+        coachMarksViewController.attach(to: coachMarksWindow!, of: parentViewController)
 #endif
+
+        delegate?.coachMarksController(self,
+                                       configureOrnamentsOfOverlay: overlay.overlayView.ornaments)
+
         flow.startFlow(withNumberOfCoachMarks: numberOfCoachMarks)
     }
 
@@ -171,7 +175,9 @@ extension CoachMarksController: Snapshottable {
 
 extension CoachMarksController: OverlayManagerDelegate {
     func didReceivedSingleTap() {
-        flow.showNextCoachMark()
+        if delegate?.shouldHandleOverlayTap(in: self, at: flow.currentIndex) ?? true {
+            flow.showNextCoachMark()
+        }
     }
 }
 

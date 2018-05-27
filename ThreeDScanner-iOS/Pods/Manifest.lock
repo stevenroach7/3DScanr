@@ -39,12 +39,12 @@ PODS:
   - GTMSessionFetcher/Core (1.1.12)
   - GTMSessionFetcher/Full (1.1.12):
     - GTMSessionFetcher/Core (= 1.1.12)
-  - Instructions (1.0.0)
+  - Instructions (1.1.0)
 
 DEPENDENCIES:
   - Google/SignIn (~> 3.0.3)
   - GoogleAPIClientForREST/Drive (~> 1.2.1)
-  - Instructions (~> 1.0.0)
+  - Instructions (from `https://github.com/ephread/Instructions`, branch `master`)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
@@ -57,7 +57,16 @@ SPEC REPOS:
     - GoogleToolboxForMac
     - GTMOAuth2
     - GTMSessionFetcher
-    - Instructions
+
+EXTERNAL SOURCES:
+  Instructions:
+    :branch: master
+    :git: https://github.com/ephread/Instructions
+
+CHECKOUT OPTIONS:
+  Instructions:
+    :commit: 5a3b10197d2b3d99e93c9263287db3d4a01f0f32
+    :git: https://github.com/ephread/Instructions
 
 SPEC CHECKSUMS:
   FirebaseAnalytics: e5fe8486efc01bec33f6bf82e2fa9fce4b124052
@@ -69,8 +78,8 @@ SPEC CHECKSUMS:
   GoogleToolboxForMac: 2501e2ad72a52eb3dfe7bd9aee7dad11b858bd20
   GTMOAuth2: c77fe325e4acd453837e72d91e3b5f13116857b2
   GTMSessionFetcher: ebaa1f79a5366922c1735f1566901f50beba23b7
-  Instructions: 11b6744e572b8cab6f61e9445403cb95fcde68f1
+  Instructions: 9ae6a1a6f298500d14c477823edb190ddc683911
 
-PODFILE CHECKSUM: 602939bac230add01724a84173772681877fd845
+PODFILE CHECKSUM: 1920eb3e36b6f3abac7aaafe44be3059033204ee
 
 COCOAPODS: 1.5.2
