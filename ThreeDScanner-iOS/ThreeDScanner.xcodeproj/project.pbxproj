@@ -8,7 +8,14 @@
 
 /* Begin PBXBuildFile section */
 		4C4FD6D27D0A790EA33C36DA /* Pods_ThreeDScanner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E1A3A8D013ACA949EB5C45A8 /* Pods_ThreeDScanner.framework */; };
+		B0045310207401CB00B70F84 /* SurfaceExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B004530F207401CB00B70F84 /* SurfaceExporter.swift */; };
+		B0045314207435FE00B70F84 /* ScanningConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0045313207435FE00B70F84 /* ScanningConstants.swift */; };
+		B00453162074370500B70F84 /* PointCloud.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00453152074370500B70F84 /* PointCloud.swift */; };
 		B02AC9FF1FED6F020025F835 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B02AC9FE1FED6F020025F835 /* GoogleService-Info.plist */; };
+		B0387AE120B73180001B556C /* TransparentCoachMarkBodyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0387AE020B73180001B556C /* TransparentCoachMarkBodyView.swift */; };
+		B0387AE320B73204001B556C /* TransparentCoachMarkArrowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0387AE220B73204001B556C /* TransparentCoachMarkArrowView.swift */; };
+		B03EDABD207307F200912531 /* XYZStringFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B03EDABC207307F200912531 /* XYZStringFormatter.swift */; };
+		B03EDABF2073253C00912531 /* GoogleDriveUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B03EDABE2073253C00912531 /* GoogleDriveUploader.swift */; };
 		B063CB161FC744A100C20C8D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B063CB151FC744A100C20C8D /* AppDelegate.swift */; };
 		B063CB181FC744A100C20C8D /* art.scnassets in Resources */ = {isa = PBXBuildFile; fileRef = B063CB171FC744A100C20C8D /* art.scnassets */; };
 		B063CB1A1FC744A100C20C8D /* ScanningViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B063CB191FC744A100C20C8D /* ScanningViewController.swift */; };
@@ -20,8 +27,8 @@
 		B065E76F202E0A05003DD254 /* libpcl_surface.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B065E76D202E0A04003DD254 /* libpcl_surface.a */; };
 		B065E770202E0A05003DD254 /* libpcl_features.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B065E76E202E0A05003DD254 /* libpcl_features.a */; };
 		B065E777202E1242003DD254 /* PCLWrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B065E775202E1242003DD254 /* PCLWrapper.cpp */; };
+		B06EB54120755E700053C4AC /* GoogleDriveLogin.swift in Sources */ = {isa = PBXBuildFile; fileRef = B06EB54020755E700053C4AC /* GoogleDriveLogin.swift */; };
 		B06EC47820334E2500508DCB /* libflann_cpp_s.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B06EC47720334E2500508DCB /* libflann_cpp_s.a */; };
-		B090726D200420430072BDC3 /* CapturedImageSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B090726C200420430072BDC3 /* CapturedImageSampler.swift */; };
 		B0BB31E02030D56700FADAA4 /* libboost_date_time.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B0BB31D82030D56600FADAA4 /* libboost_date_time.a */; };
 		B0BB31E12030D56700FADAA4 /* libboost_program_options.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B0BB31D92030D56600FADAA4 /* libboost_program_options.a */; };
 		B0BB31E22030D56700FADAA4 /* libboost_signals.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B0BB31DA2030D56600FADAA4 /* libboost_signals.a */; };
@@ -44,6 +51,9 @@
 		B0BB32012030D66B00FADAA4 /* libpcl_sample_consensus.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B0BB31F32030D66B00FADAA4 /* libpcl_sample_consensus.a */; };
 		B0BB32022030D66B00FADAA4 /* libpcl_ml.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B0BB31F42030D66B00FADAA4 /* libpcl_ml.a */; };
 		B0BB32032030D66B00FADAA4 /* libpcl_common.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B0BB31F52030D66B00FADAA4 /* libpcl_common.a */; };
+		B0FBDF7620B78C3100BF7EAA /* InstructionsText.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0FBDF7520B78C3100BF7EAA /* InstructionsText.swift */; };
+		B0FBDF7820B78CE800BF7EAA /* ScanningViewController+Instructions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0FBDF7720B78CE800BF7EAA /* ScanningViewController+Instructions.swift */; };
+		B0FBDF7B20B7DD9300BF7EAA /* CustomCoachMarkSkipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0FBDF7A20B7DD9300BF7EAA /* CustomCoachMarkSkipView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,7 +75,14 @@
 
 /* Begin PBXFileReference section */
 		A6001CAE9A27F8CB01B7CC37 /* Pods-ThreeDScanner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ThreeDScanner.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ThreeDScanner/Pods-ThreeDScanner.debug.xcconfig"; sourceTree = "<group>"; };
+		B004530F207401CB00B70F84 /* SurfaceExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurfaceExporter.swift; sourceTree = "<group>"; };
+		B0045313207435FE00B70F84 /* ScanningConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanningConstants.swift; sourceTree = "<group>"; };
+		B00453152074370500B70F84 /* PointCloud.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointCloud.swift; sourceTree = "<group>"; };
 		B02AC9FE1FED6F020025F835 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../../ThreeDScanner_Resources/GoogleService-Info.plist"; sourceTree = "<group>"; };
+		B0387AE020B73180001B556C /* TransparentCoachMarkBodyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransparentCoachMarkBodyView.swift; sourceTree = "<group>"; };
+		B0387AE220B73204001B556C /* TransparentCoachMarkArrowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransparentCoachMarkArrowView.swift; sourceTree = "<group>"; };
+		B03EDABC207307F200912531 /* XYZStringFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XYZStringFormatter.swift; sourceTree = "<group>"; };
+		B03EDABE2073253C00912531 /* GoogleDriveUploader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleDriveUploader.swift; sourceTree = "<group>"; };
 		B063CB121FC744A100C20C8D /* ThreeDScanner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ThreeDScanner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B063CB151FC744A100C20C8D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B063CB171FC744A100C20C8D /* art.scnassets */ = {isa = PBXFileReference; lastKnownFileType = wrapper.scnassets; path = art.scnassets; sourceTree = "<group>"; };
@@ -85,8 +102,8 @@
 		B065E774202E1241003DD254 /* ThreeDScanner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ThreeDScanner-Bridging-Header.h"; sourceTree = "<group>"; };
 		B065E775202E1242003DD254 /* PCLWrapper.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = PCLWrapper.cpp; sourceTree = "<group>"; };
 		B065E776202E1242003DD254 /* PCLWrapper.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = PCLWrapper.hpp; sourceTree = "<group>"; };
+		B06EB54020755E700053C4AC /* GoogleDriveLogin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleDriveLogin.swift; sourceTree = "<group>"; };
 		B06EC47720334E2500508DCB /* libflann_cpp_s.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libflann_cpp_s.a; path = "flann-ios-device/lib/libflann_cpp_s.a"; sourceTree = "<group>"; };
-		B090726C200420430072BDC3 /* CapturedImageSampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturedImageSampler.swift; sourceTree = "<group>"; };
 		B0BB31D82030D56600FADAA4 /* libboost_date_time.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_date_time.a; path = "boost-ios-device/lib/libboost_date_time.a"; sourceTree = "<group>"; };
 		B0BB31D92030D56600FADAA4 /* libboost_program_options.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_program_options.a; path = "boost-ios-device/lib/libboost_program_options.a"; sourceTree = "<group>"; };
 		B0BB31DA2030D56600FADAA4 /* libboost_signals.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_signals.a; path = "boost-ios-device/lib/libboost_signals.a"; sourceTree = "<group>"; };
@@ -109,6 +126,9 @@
 		B0BB31F32030D66B00FADAA4 /* libpcl_sample_consensus.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpcl_sample_consensus.a; path = PCL/lib/libpcl_sample_consensus.a; sourceTree = "<group>"; };
 		B0BB31F42030D66B00FADAA4 /* libpcl_ml.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpcl_ml.a; path = PCL/lib/libpcl_ml.a; sourceTree = "<group>"; };
 		B0BB31F52030D66B00FADAA4 /* libpcl_common.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpcl_common.a; path = PCL/lib/libpcl_common.a; sourceTree = "<group>"; };
+		B0FBDF7520B78C3100BF7EAA /* InstructionsText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstructionsText.swift; sourceTree = "<group>"; };
+		B0FBDF7720B78CE800BF7EAA /* ScanningViewController+Instructions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ScanningViewController+Instructions.swift"; sourceTree = "<group>"; };
+		B0FBDF7A20B7DD9300BF7EAA /* CustomCoachMarkSkipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomCoachMarkSkipView.swift; sourceTree = "<group>"; };
 		D29A5A475B9F7E7A2D2107F5 /* Pods-ThreeDScanner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ThreeDScanner.release.xcconfig"; path = "Pods/Target Support Files/Pods-ThreeDScanner/Pods-ThreeDScanner.release.xcconfig"; sourceTree = "<group>"; };
 		E1A3A8D013ACA949EB5C45A8 /* Pods_ThreeDScanner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ThreeDScanner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -200,15 +220,21 @@
 		B063CB141FC744A100C20C8D /* ThreeDScanner */ = {
 			isa = PBXGroup;
 			children = (
-				B0BB32062030DC7C00FADAA4 /* PCLWrapper */,
 				B063CB151FC744A100C20C8D /* AppDelegate.swift */,
 				B063CB191FC744A100C20C8D /* ScanningViewController.swift */,
+				B06EB54020755E700053C4AC /* GoogleDriveLogin.swift */,
+				B03EDABC207307F200912531 /* XYZStringFormatter.swift */,
+				B03EDABE2073253C00912531 /* GoogleDriveUploader.swift */,
+				B004530F207401CB00B70F84 /* SurfaceExporter.swift */,
+				B0045313207435FE00B70F84 /* ScanningConstants.swift */,
+				B00453152074370500B70F84 /* PointCloud.swift */,
+				B0FBDF7920B78D5700BF7EAA /* Instructions */,
+				B0BB32062030DC7C00FADAA4 /* PCLWrapper */,
 				B063CB1B1FC744A100C20C8D /* Main.storyboard */,
 				B063CB171FC744A100C20C8D /* art.scnassets */,
 				B063CB1E1FC744A100C20C8D /* Assets.xcassets */,
 				B063CB201FC744A100C20C8D /* LaunchScreen.storyboard */,
 				B063CB231FC744A100C20C8D /* Info.plist */,
-				B090726C200420430072BDC3 /* CapturedImageSampler.swift */,
 			);
 			path = ThreeDScanner;
 			sourceTree = "<group>";
@@ -271,6 +297,18 @@
 				B065E776202E1242003DD254 /* PCLWrapper.hpp */,
 			);
 			path = PCLWrapper;
+			sourceTree = "<group>";
+		};
+		B0FBDF7920B78D5700BF7EAA /* Instructions */ = {
+			isa = PBXGroup;
+			children = (
+				B0FBDF7720B78CE800BF7EAA /* ScanningViewController+Instructions.swift */,
+				B0387AE020B73180001B556C /* TransparentCoachMarkBodyView.swift */,
+				B0387AE220B73204001B556C /* TransparentCoachMarkArrowView.swift */,
+				B0FBDF7520B78C3100BF7EAA /* InstructionsText.swift */,
+				B0FBDF7A20B7DD9300BF7EAA /* CustomCoachMarkSkipView.swift */,
+			);
+			path = Instructions;
 			sourceTree = "<group>";
 		};
 		E7177D540E77869D6BD5AB70 /* Frameworks */ = {
@@ -347,7 +385,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0910;
-				LastUpgradeCheck = 0910;
+				LastUpgradeCheck = 0930;
 				ORGANIZATIONNAME = "Steven Roach";
 				TargetAttributes = {
 					B063CB111FC744A100C20C8D = {
@@ -428,6 +466,7 @@
 				"${BUILT_PRODUCTS_DIR}/GTMSessionFetcher/GTMSessionFetcher.framework",
 				"${BUILT_PRODUCTS_DIR}/GoogleAPIClientForREST/GoogleAPIClientForREST.framework",
 				"${BUILT_PRODUCTS_DIR}/GoogleToolboxForMac/GoogleToolboxForMac.framework",
+				"${BUILT_PRODUCTS_DIR}/Instructions/Instructions.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
@@ -435,6 +474,7 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GTMSessionFetcher.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleAPIClientForREST.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleToolboxForMac.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Instructions.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -470,7 +510,7 @@
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleSignIn.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -484,10 +524,20 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B0387AE320B73204001B556C /* TransparentCoachMarkArrowView.swift in Sources */,
+				B06EB54120755E700053C4AC /* GoogleDriveLogin.swift in Sources */,
+				B0FBDF7820B78CE800BF7EAA /* ScanningViewController+Instructions.swift in Sources */,
+				B0045310207401CB00B70F84 /* SurfaceExporter.swift in Sources */,
+				B0FBDF7B20B7DD9300BF7EAA /* CustomCoachMarkSkipView.swift in Sources */,
 				B063CB1A1FC744A100C20C8D /* ScanningViewController.swift in Sources */,
-				B090726D200420430072BDC3 /* CapturedImageSampler.swift in Sources */,
+				B00453162074370500B70F84 /* PointCloud.swift in Sources */,
+				B0387AE120B73180001B556C /* TransparentCoachMarkBodyView.swift in Sources */,
+				B0045314207435FE00B70F84 /* ScanningConstants.swift in Sources */,
 				B063CB161FC744A100C20C8D /* AppDelegate.swift in Sources */,
+				B03EDABF2073253C00912531 /* GoogleDriveUploader.swift in Sources */,
 				B065E777202E1242003DD254 /* PCLWrapper.cpp in Sources */,
+				B03EDABD207307F200912531 /* XYZStringFormatter.swift in Sources */,
+				B0FBDF7620B78C3100BF7EAA /* InstructionsText.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -556,6 +606,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -563,6 +614,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -613,6 +665,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -620,6 +673,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0700"
+   LastUpgradeVersion = "0930"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -13,11 +13,11 @@
             buildForProfiling = "YES"
             buildForArchiving = "YES">
             <BuildableReference
-               BuildableIdentifier = 'primary'
-               BlueprintIdentifier = 'E0F7D77396D218B9A370B128FD3A89C0'
-               BlueprintName = 'GoogleAPIClientForREST'
-               ReferencedContainer = 'container:Pods.xcodeproj'
-               BuildableName = 'GoogleAPIClientForREST.framework'>
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "E0F7D77396D218B9A370B128FD3A89C0"
+               BlueprintName = "GoogleAPIClientForREST"
+               ReferencedContainer = "container:Pods.xcodeproj"
+               BuildableName = "GoogleAPIClientForREST.framework">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>

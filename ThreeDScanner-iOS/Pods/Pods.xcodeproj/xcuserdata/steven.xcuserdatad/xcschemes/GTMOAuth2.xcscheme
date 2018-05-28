@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0700"
+   LastUpgradeVersion = "0930"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -13,11 +13,11 @@
             buildForProfiling = "YES"
             buildForArchiving = "YES">
             <BuildableReference
-               BuildableIdentifier = 'primary'
-               BlueprintIdentifier = 'B1C4AAFAF49036C7007633DAA3C806AD'
-               BlueprintName = 'GTMOAuth2'
-               ReferencedContainer = 'container:Pods.xcodeproj'
-               BuildableName = 'GTMOAuth2.framework'>
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "B1C4AAFAF49036C7007633DAA3C806AD"
+               BlueprintName = "GTMOAuth2"
+               ReferencedContainer = "container:Pods.xcodeproj"
+               BuildableName = "GTMOAuth2.framework">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
