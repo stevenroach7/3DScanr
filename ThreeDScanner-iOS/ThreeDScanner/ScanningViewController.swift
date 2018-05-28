@@ -181,11 +181,12 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     }
     
     private func addReconstructButton() {
-        reconstructButton.isHidden = true
+        reconstructButton.isEnabled = false
         view.addSubview(reconstructButton)
         reconstructButton.translatesAutoresizingMaskIntoConstraints = false
         reconstructButton.setTitle("View", for: .normal)
         reconstructButton.setTitleColor(UIColor.red, for: .normal)
+        reconstructButton.setTitleColor(UIColor.gray, for: .disabled)
         reconstructButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
         reconstructButton.layer.cornerRadius = 4
         reconstructButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
@@ -195,6 +196,24 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         reconstructButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
         reconstructButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 70.0).isActive = true
         reconstructButton.heightAnchor.constraint(equalToConstant: 50)
+    }
+    
+    private func addExportButton() {
+        exportButton.isEnabled = false
+        view.addSubview(exportButton)
+        exportButton.translatesAutoresizingMaskIntoConstraints = false
+        exportButton.setTitle("Export", for: .normal)
+        exportButton.setTitleColor(UIColor.red, for: .normal)
+        exportButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
+        exportButton.setTitleColor(UIColor.gray, for: .disabled)
+        exportButton.layer.cornerRadius = 4
+        exportButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
+        exportButton.addTarget(self, action: #selector(exportButtonTapped(sender:)) , for: .touchUpInside)
+        
+        // Contraints
+        exportButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
+        exportButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: -70.0).isActive = true
+        exportButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
     private func addTorchSwitch() {
@@ -285,23 +304,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         isSurfaceDisplayedLabel.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -40.0).isActive = true
         isSurfaceDisplayedLabel.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 4.0).isActive = true
         isSurfaceDisplayedLabel.heightAnchor.constraint(equalToConstant: 50)
-    }
-    
-    private func addExportButton() {
-        exportButton.isHidden = true
-        view.addSubview(exportButton)
-        exportButton.translatesAutoresizingMaskIntoConstraints = false
-        exportButton.setTitle("Export", for: .normal)
-        exportButton.setTitleColor(UIColor.red, for: .normal)
-        exportButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
-        exportButton.layer.cornerRadius = 4
-        exportButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
-        exportButton.addTarget(self, action: #selector(exportButtonTapped(sender:)) , for: .touchUpInside)
-        
-        // Contraints
-        exportButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
-        exportButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: -70.0).isActive = true
-        exportButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
     private func addSignInButton() {
@@ -563,8 +565,8 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
      */
     internal func updateScanningViewState() {
         capturePointsButton.isSelected = isCapturingPoints
-        reconstructButton.isHidden = isCapturingPoints
-        exportButton.isHidden = isCapturingPoints || (surfaceGeometry == nil)
+        reconstructButton.isEnabled = !isCapturingPoints
+        exportButton.isEnabled = !(isCapturingPoints || (surfaceGeometry == nil))
         isSurfaceDisplayedLabel.isHidden = (surfaceGeometry == nil)
         displaySurfaceSwitch.isHidden = (surfaceGeometry == nil)
     }

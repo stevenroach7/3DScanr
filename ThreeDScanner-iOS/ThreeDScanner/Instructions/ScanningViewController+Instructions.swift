@@ -25,14 +25,14 @@ extension ScanningViewController: CoachMarksControllerDataSource, CoachMarksCont
             coachMark.arrowOrientation = .bottom
             isCapturingPoints = false
             capturePointsButton.isSelected = false
-            reconstructButton.isHidden = true
-            exportButton.isHidden = true
+            reconstructButton.isEnabled = false
+            exportButton.isEnabled = false
             sceneView.debugOptions.remove(ARSCNDebugOptions.showFeaturePoints)
         case 1:
             coachMark = coachMarksController.helper.makeCoachMark(for: self.capturePointsButton)
             coachMark.arrowOrientation = .bottom
             capturePointsButton.isSelected = true
-            reconstructButton.isHidden = false
+            reconstructButton.isEnabled = true
         case 2:
             coachMark = coachMarksController.helper.makeCoachMark(for: self.reconstructButton)
             coachMark.arrowOrientation = .bottom
@@ -40,7 +40,7 @@ extension ScanningViewController: CoachMarksControllerDataSource, CoachMarksCont
         case 3:
             coachMark = coachMarksController.helper.makeCoachMark(for: self.exportButton)
             coachMark.arrowOrientation = .bottom
-            exportButton.isHidden = false
+            exportButton.isEnabled = true
         case 4:
             coachMark = coachMarksController.helper.makeCoachMark(for: self.capturePointsButton)
             coachMark.arrowOrientation = .bottom
