@@ -383,7 +383,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
                 do {
                     let fileName = fileNameDialog?.textFields?[0].text ?? defaultFileName
                     try onEnterExportAction(fileName)
-                    self.showAlert(title: "Export Success", message: "")
                 } catch {
                     self.showAlert(title: "Export Failure", message: "Please try again")
                 }
