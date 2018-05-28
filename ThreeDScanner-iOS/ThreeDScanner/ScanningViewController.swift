@@ -43,12 +43,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
             surfaceParentNode.isHidden = !isSurfaceDisplayOn
         }
     }
-    private var isCapturingPoints = false {
-        didSet {
-            updateScanningViewState()
-        }
-    }
-    private var inFinishedState = false {
+    internal var isCapturingPoints = false {
         didSet {
             updateScanningViewState()
         }
@@ -57,9 +52,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     // UI
     internal let exportButton = UIButton()
     internal let reconstructButton = UIButton()
-    internal let capturePointsButton = UIButton()
-    internal let pauseCapturePointsButton = UIButton()
-    internal let resumeScanningButton = UIButton()
+    internal let capturePointsButton = CameraButton()
     private let signInButton = UIButton()
     private let signOutButton = UIButton()
     private let isSurfaceDisplayedLabel = UILabel(frame: CGRect(x: 0, y: 0, width: 200, height: 21))
@@ -91,8 +84,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         
         // Add buttons
         addCapturePointsButton()
-        addResumeScanningButton()
-        addPauseCapturePointsButton()
         addReconstructButton()
         addTorchSwitch()
         addTorchLabel()
@@ -182,58 +173,18 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     private func addCapturePointsButton() {
         view.addSubview(capturePointsButton)
         capturePointsButton.translatesAutoresizingMaskIntoConstraints = false
-        capturePointsButton.setTitle("Scan", for: .normal)
-        capturePointsButton.setTitleColor(UIColor.red, for: .normal)
-        capturePointsButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
-        capturePointsButton.layer.cornerRadius = 4
-        capturePointsButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
-        capturePointsButton.addTarget(self, action: #selector(capturePoints(sender:)) , for: .touchUpInside)
+        capturePointsButton.addTarget(self, action: #selector(toggleCapturingPoints(sender:)) , for: .touchUpInside)
         
         // Contraints
         capturePointsButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
-        capturePointsButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0).isActive = true
-        capturePointsButton.heightAnchor.constraint(equalToConstant: 50)
-    }
-    
-    private func addResumeScanningButton() {
-        resumeScanningButton.isHidden = true
-        view.addSubview(resumeScanningButton)
-        resumeScanningButton.translatesAutoresizingMaskIntoConstraints = false
-        resumeScanningButton.setTitle("Resume", for: .normal)
-        resumeScanningButton.setTitleColor(UIColor.red, for: .normal)
-        resumeScanningButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
-        resumeScanningButton.layer.cornerRadius = 4
-        resumeScanningButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
-        resumeScanningButton.addTarget(self, action: #selector(capturePoints(sender:)) , for: .touchUpInside)
-        
-        // Contraints
-        resumeScanningButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
-        resumeScanningButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 40).isActive = true
-        resumeScanningButton.heightAnchor.constraint(equalToConstant: 50)
-    }
-    
-    private func addPauseCapturePointsButton() {
-        pauseCapturePointsButton.isHidden = true
-        view.addSubview(pauseCapturePointsButton)
-        pauseCapturePointsButton.translatesAutoresizingMaskIntoConstraints = false
-        pauseCapturePointsButton.setTitle("Pause", for: .normal)
-        pauseCapturePointsButton.setTitleColor(UIColor.red, for: .normal)
-        pauseCapturePointsButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
-        pauseCapturePointsButton.layer.cornerRadius = 4
-        pauseCapturePointsButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
-        pauseCapturePointsButton.addTarget(self, action: #selector(pauseCapturePoints(sender:)) , for: .touchUpInside)
-        
-        // Contraints
-        pauseCapturePointsButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
-        pauseCapturePointsButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: -40.0).isActive = true
-        pauseCapturePointsButton.heightAnchor.constraint(equalToConstant: 50)
+        capturePointsButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0.0).isActive = true
     }
     
     private func addReconstructButton() {
         reconstructButton.isHidden = true
         view.addSubview(reconstructButton)
         reconstructButton.translatesAutoresizingMaskIntoConstraints = false
-        reconstructButton.setTitle("Finish", for: .normal)
+        reconstructButton.setTitle("View", for: .normal)
         reconstructButton.setTitleColor(UIColor.red, for: .normal)
         reconstructButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
         reconstructButton.layer.cornerRadius = 4
@@ -242,7 +193,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         
         // Contraints
         reconstructButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
-        reconstructButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 40.0).isActive = true
+        reconstructButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 70.0).isActive = true
         reconstructButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
@@ -349,7 +300,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         
         // Contraints
         exportButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
-        exportButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: -40.0).isActive = true
+        exportButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: -70.0).isActive = true
         exportButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
@@ -445,15 +396,9 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     
     // MARK: - UI Actions
     
-    @IBAction func capturePoints(sender: UIButton) {
-        inFinishedState = false
-        isCapturingPoints = true
+    @IBAction func toggleCapturingPoints(sender: UIButton) {
+        isCapturingPoints = !isCapturingPoints
     }
-    
-    @IBAction func pauseCapturePoints(sender: UIButton) {
-        isCapturingPoints = false
-    }
-
     
     @IBAction func reconstructButtonTapped(sender: UIButton) {
         
@@ -490,7 +435,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         surfaceParentNode.addChildNode(surfaceNode)
         
         isCapturingPoints = false
-        inFinishedState = true
         showAlert(title: "Surface Reconstructed", message: "\(pclMesh.numFaces) faces")
     }
     
@@ -520,7 +464,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         surfaceParentNode = SCNNode()
         
         surfaceGeometry = nil
-        inFinishedState = false
         isCapturingPoints = false
 
         sceneView.scene.rootNode.addChildNode(pointsParentNode)
@@ -618,12 +561,10 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     /**
      Updates the state of the view based on scanning properties.
      */
-    private func updateScanningViewState() {
-        capturePointsButton.isHidden = isCapturingPoints || inFinishedState
-        pauseCapturePointsButton.isHidden = !isCapturingPoints || inFinishedState
-        reconstructButton.isHidden = !isCapturingPoints || inFinishedState
-        exportButton.isHidden = !inFinishedState
-        resumeScanningButton.isHidden = !inFinishedState
+    internal func updateScanningViewState() {
+        capturePointsButton.isSelected = isCapturingPoints
+        reconstructButton.isHidden = isCapturingPoints
+        exportButton.isHidden = isCapturingPoints || (surfaceGeometry == nil)
         isSurfaceDisplayedLabel.isHidden = (surfaceGeometry == nil)
         displaySurfaceSwitch.isHidden = (surfaceGeometry == nil)
     }

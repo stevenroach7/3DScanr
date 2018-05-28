@@ -23,37 +23,30 @@ extension ScanningViewController: CoachMarksControllerDataSource, CoachMarksCont
         case 0:
             coachMark = coachMarksController.helper.makeCoachMark(for: self.capturePointsButton)
             coachMark.arrowOrientation = .bottom
-            capturePointsButton.isHidden = false
-            pauseCapturePointsButton.isHidden = true
+            isCapturingPoints = false
+            capturePointsButton.isSelected = false
             reconstructButton.isHidden = true
             exportButton.isHidden = true
-            resumeScanningButton.isHidden = true
             sceneView.debugOptions.remove(ARSCNDebugOptions.showFeaturePoints)
         case 1:
-            coachMark = coachMarksController.helper.makeCoachMark(for: self.pauseCapturePointsButton)
+            coachMark = coachMarksController.helper.makeCoachMark(for: self.capturePointsButton)
             coachMark.arrowOrientation = .bottom
-            capturePointsButton.isHidden = true
-            pauseCapturePointsButton.isHidden = false
+            capturePointsButton.isSelected = true
             reconstructButton.isHidden = false
         case 2:
             coachMark = coachMarksController.helper.makeCoachMark(for: self.reconstructButton)
             coachMark.arrowOrientation = .bottom
+            capturePointsButton.isSelected = false
         case 3:
             coachMark = coachMarksController.helper.makeCoachMark(for: self.exportButton)
             coachMark.arrowOrientation = .bottom
-            pauseCapturePointsButton.isHidden = true
-            reconstructButton.isHidden = true
             exportButton.isHidden = false
-            resumeScanningButton.isHidden = false
         case 4:
-            coachMark = coachMarksController.helper.makeCoachMark(for: self.resumeScanningButton)
+            coachMark = coachMarksController.helper.makeCoachMark(for: self.capturePointsButton)
             coachMark.arrowOrientation = .bottom
         case 5:
             coachMark = coachMarksController.helper.makeCoachMark(for: self.capturePointsButton)
             coachMark.arrowOrientation = .bottom
-            capturePointsButton.isHidden = false
-            exportButton.isHidden = true
-            resumeScanningButton.isHidden = true
         default:
             return coachMark
         }
@@ -122,11 +115,7 @@ extension ScanningViewController: CoachMarksControllerDataSource, CoachMarksCont
     }
     
     func coachMarksController(_ coachMarksController: CoachMarksController, didEndShowingBySkipping skipped: Bool) {
-        capturePointsButton.isHidden = false
-        pauseCapturePointsButton.isHidden = true
-        reconstructButton.isHidden = true
-        exportButton.isHidden = true
-        resumeScanningButton.isHidden = true
+        updateScanningViewState()
         sceneView.debugOptions.insert(ARSCNDebugOptions.showFeaturePoints)
     }
 }
