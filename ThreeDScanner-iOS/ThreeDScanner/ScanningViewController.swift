@@ -194,7 +194,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         
         // Contraints
         reconstructButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
-        reconstructButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 70.0).isActive = true
+        reconstructButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 65.0).isActive = true
         reconstructButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
@@ -212,7 +212,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         
         // Contraints
         exportButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8.0).isActive = true
-        exportButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: -70.0).isActive = true
+        exportButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: -72.0).isActive = true
         exportButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
