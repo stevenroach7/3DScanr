@@ -564,7 +564,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
      */
     internal func updateScanningViewState() {
         capturePointsButton.isSelected = isCapturingPoints
-        reconstructButton.isEnabled = !isCapturingPoints
+        reconstructButton.isEnabled = !isCapturingPoints && pointCloud.points.count > 0
         exportButton.isEnabled = !(isCapturingPoints || (surfaceGeometry == nil))
         isSurfaceDisplayedLabel.isHidden = (surfaceGeometry == nil)
         displaySurfaceSwitch.isHidden = (surfaceGeometry == nil)
