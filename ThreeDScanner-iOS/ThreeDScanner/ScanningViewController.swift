@@ -46,6 +46,11 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     internal var isCapturingPoints = false {
         didSet {
             updateScanningViewState()
+            if isCapturingPoints {
+                sceneView.debugOptions.insert(ARSCNDebugOptions.showFeaturePoints)
+            } else {
+                sceneView.debugOptions.remove(ARSCNDebugOptions.showFeaturePoints)
+            }
         }
     }
 
@@ -119,9 +124,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         
         // Run the view's session
         sceneView.session.run(sessionConfiguration)
-        
-        // Show feature points and world origin
-        sceneView.debugOptions.insert(ARSCNDebugOptions.showFeaturePoints)
         
         scheduledTimerWithTimeInterval()
     }

@@ -27,7 +27,6 @@ extension ScanningViewController: CoachMarksControllerDataSource, CoachMarksCont
             capturePointsButton.isSelected = false
             reconstructButton.isEnabled = false
             exportButton.isEnabled = false
-            sceneView.debugOptions.remove(ARSCNDebugOptions.showFeaturePoints)
         case 1:
             coachMark = coachMarksController.helper.makeCoachMark(for: self.capturePointsButton)
             coachMark.arrowOrientation = .bottom
@@ -116,6 +115,5 @@ extension ScanningViewController: CoachMarksControllerDataSource, CoachMarksCont
     
     func coachMarksController(_ coachMarksController: CoachMarksController, didEndShowingBySkipping skipped: Bool) {
         updateScanningViewState()
-        sceneView.debugOptions.insert(ARSCNDebugOptions.showFeaturePoints)
     }
 }
