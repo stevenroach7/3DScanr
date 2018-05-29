@@ -476,8 +476,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         
         // Run the view's session
         sceneView.session.run(sessionConfiguration, options: [ARSession.RunOptions.resetTracking, ARSession.RunOptions.removeExistingAnchors])
-        
-        sceneView.debugOptions.insert(ARSCNDebugOptions.showFeaturePoints)
     }
     
     @IBAction func instructionsButtonTapped(sender: UIButton) {
