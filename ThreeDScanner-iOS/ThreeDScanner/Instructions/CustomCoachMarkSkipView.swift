@@ -41,7 +41,6 @@ public class CustomCoachMarkSkipView: UIButton, CoachMarkSkipView {
         let attributes : [NSAttributedStringKey: Any] = [
             NSAttributedStringKey.font: UIFont(name: InstructionsText.fontString, size: 22) ?? UIFont.systemFont(ofSize: 22),
             NSAttributedStringKey.foregroundColor: UIColor.green,
-            NSAttributedStringKey.underlineStyle: NSUnderlineStyle.styleSingle.rawValue
         ]
         let attributeString = NSMutableAttributedString(string: "or Skip", attributes: attributes)
         setAttributedTitle(attributeString, for: .normal)

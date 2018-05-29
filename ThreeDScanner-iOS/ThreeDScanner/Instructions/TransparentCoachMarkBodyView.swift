@@ -57,7 +57,7 @@ internal class TransparentCoachMarkBodyView : UIControl, CoachMarkBodyView {
         
         hintLabel.backgroundColor = UIColor.clear
         hintLabel.textColor = UIColor.white
-        hintLabel.font = UIFont(name: InstructionsText.fontString, size: 22)
+        hintLabel.font = UIFont(name: InstructionsText.fontString, size: 20)
         hintLabel.isScrollEnabled = false
         hintLabel.textAlignment = .justified
         hintLabel.layoutManager.hyphenationFactor = 0.1

@@ -102,7 +102,7 @@ extension ScanningViewController: CoachMarksControllerDataSource, CoachMarksCont
         tapToContinueLabel.text = "Tap anywhere to continue"
         tapToContinueLabel.backgroundColor = UIColor.clear
         tapToContinueLabel.textColor = UIColor.white
-        tapToContinueLabel.font = UIFont(name: InstructionsText.fontString, size: 22)
+        tapToContinueLabel.font = UIFont(name: InstructionsText.fontString, size: 23)
         tapToContinueLabel.isScrollEnabled = false
         tapToContinueLabel.textAlignment = .justified
         tapToContinueLabel.layoutManager.hyphenationFactor = 0.0
