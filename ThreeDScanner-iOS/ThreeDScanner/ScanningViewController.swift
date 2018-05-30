@@ -190,6 +190,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         reconstructButton.setTitleColor(UIColor.red, for: .normal)
         reconstructButton.setTitleColor(UIColor.gray, for: .disabled)
         reconstructButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
+        reconstructButton.showsTouchWhenHighlighted = true
         reconstructButton.layer.cornerRadius = 4
         reconstructButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
         reconstructButton.addTarget(self, action: #selector(reconstructButtonTapped(sender:)) , for: .touchUpInside)
@@ -207,6 +208,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         exportButton.setTitle("Export", for: .normal)
         exportButton.setTitleColor(UIColor.red, for: .normal)
         exportButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
+        exportButton.showsTouchWhenHighlighted = true
         exportButton.setTitleColor(UIColor.gray, for: .disabled)
         exportButton.layer.cornerRadius = 4
         exportButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
@@ -253,6 +255,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         resetButton.setTitle("Reset", for: .normal)
         resetButton.setTitleColor(UIColor.red, for: .normal)
         resetButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
+        resetButton.showsTouchWhenHighlighted = true
         resetButton.layer.cornerRadius = 4
         resetButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
         resetButton.addTarget(self, action: #selector(resetButtonTapped(sender:)) , for: .touchUpInside)
@@ -270,6 +273,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         instructionsButton.setTitle("Instructions", for: .normal)
         instructionsButton.setTitleColor(UIColor.red, for: .normal)
         instructionsButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
+        instructionsButton.showsTouchWhenHighlighted = true
         instructionsButton.layer.cornerRadius = 4
         instructionsButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
         instructionsButton.addTarget(self, action: #selector(instructionsButtonTapped(sender:)) , for: .touchUpInside)
@@ -314,6 +318,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         signInButton.setTitle("Sign In", for: .normal)
         signInButton.setTitleColor(UIColor.red, for: .normal)
         signInButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
+        signInButton.showsTouchWhenHighlighted = true
         signInButton.layer.cornerRadius = 4
         signInButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
         signInButton.addTarget(self, action: #selector(signInButtonTapped(sender:)) , for: .touchUpInside)
@@ -330,6 +335,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         signOutButton.setTitle("Sign Out", for: .normal)
         signOutButton.setTitleColor(UIColor.red, for: .normal)
         signOutButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
+        signOutButton.showsTouchWhenHighlighted = true
         signOutButton.layer.cornerRadius = 4
         signOutButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
         signOutButton.addTarget(self, action: #selector(signOutButtonTapped(sender:)) , for: .touchUpInside)

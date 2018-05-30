@@ -44,6 +44,7 @@ public class CustomCoachMarkSkipView: UIButton, CoachMarkSkipView {
         ]
         let attributeString = NSMutableAttributedString(string: "or Skip", attributes: attributes)
         setAttributedTitle(attributeString, for: .normal)
+        showsTouchWhenHighlighted = true
         
         contentEdgeInsets = UIEdgeInsets(top: 10.0, left: 15.0, bottom: 10.0, right: 15.0)
         sizeToFit()
