@@ -47,8 +47,10 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         didSet {
             updateScanningViewState()
             if isCapturingPoints {
+                capturePointsButton.accessibilityLabel = "Stop Scan"
                 sceneView.debugOptions.insert(ARSCNDebugOptions.showFeaturePoints)
             } else {
+                capturePointsButton.accessibilityLabel = "Start Scan"
                 sceneView.debugOptions.remove(ARSCNDebugOptions.showFeaturePoints)
             }
         }
@@ -175,6 +177,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     private func addCapturePointsButton() {
         view.addSubview(capturePointsButton)
         capturePointsButton.translatesAutoresizingMaskIntoConstraints = false
+        capturePointsButton.accessibilityLabel = "Start Scan"
         capturePointsButton.addTarget(self, action: #selector(toggleCapturingPoints(sender:)) , for: .touchUpInside)
         
         // Contraints
