@@ -2,9 +2,9 @@
 
 [![GitHub license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/3DScanr/LICENSE)
 
-This project uses ARKit to detect feature points on surfaces. These points are then be used to reconstruct a 3D surface. 
+3D Scan, view, and export in seconds with just your iPhone or iPad!
 
-
+This project uses [ARKit](https://developer.apple.com/arkit/) to detect feature points on surfaces. These points are then be used to reconstruct a 3D surface using the [Point Cloud Library](http://pointclouds.org/). This surface can be viewed with ARKit and exported to a user's Google Drive account.  
 
 To try it out, [download 3DScanR from the App Store](https://itunes.apple.com/us/app/3dscanr/id1328996034?mt=8).  
 
