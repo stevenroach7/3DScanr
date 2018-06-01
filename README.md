@@ -10,6 +10,6 @@ To try it out, [download 3DScanR from the App Store](https://itunes.apple.com/us
 
 OR 
 
-Clone the repository and open the iOS project in XCode. Building the PCL libraries needed to run surface reconstruction on the device was a huge pain. Luckily, I've included the static library files in the PCL_Build_Artifacts directory. Just drag these files into the Linked Frameworks and Libraries list which is in the General tab of the ThreeDScanner target. If you run into problems, please open an issue.
+Clone the repository and open the iOS project in XCode. Building the PCL libraries needed to run surface reconstruction on the device was a huge pain. Luckily, I've included the static library files in the PCL_Build_Artifacts directory. Just drag these files into the Linked Frameworks and Libraries list, which is in the General tab of the ThreeDScanner target. If you run into problems, please open an issue.
 
 Then run the app on an ARKit compatible device. Happy Scanning!
