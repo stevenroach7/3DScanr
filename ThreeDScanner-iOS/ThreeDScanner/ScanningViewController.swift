@@ -36,8 +36,9 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     
     // Scanning Options
     private var isTorchOn = false
-    private var addPointRatio = 3 // Show 1 / [addPointRatio] of the points
+    private let addPointRatio = 3 // Show 1 / [addPointRatio] of the points
     private var scanningInterval = 0.5 // Capture points every [scanningInterval] seconds when user is touching screen
+    private var surfaceDepth = 5
     private var isSurfaceDisplayOn = false {
         didSet {
             surfaceParentNode.isHidden = !isSurfaceDisplayOn
@@ -411,7 +412,7 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
             viewpoints: pclViewpoints)
         
         // Call C++ Surface Reconstruction function using C Wrapper
-        let pclMesh = performSurfaceReconstruction(pclPointCloud)
+        let pclMesh = performSurfaceReconstruction(pclPointCloud, Int32(surfaceDepth))
         defer {
             // The mesh points and polygons pointers were allocated in C++ so need to be freed here
             free(pclMesh.points)
@@ -498,10 +499,10 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     }
     
     @IBAction func optionsButtonTapped(sender: UIButton) {
-        let alert = UIAlertController(title: "Options", message: "1 out of every _ points shown. Points will be captured every _ seconds", preferredStyle: UIAlertControllerStyle.alert)
+        let alert = UIAlertController(title: "Options", message: "Surface Depth is set to _. Points will be captured every _ seconds", preferredStyle: UIAlertControllerStyle.alert)
         
         alert.addTextField(configurationHandler: { (textField: UITextField!) in
-            textField.text = self.addPointRatio.description
+            textField.text = self.surfaceDepth.description
             textField.keyboardType = UIKeyboardType.numberPad
         })
         
@@ -511,12 +512,12 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         })
         
         alert.addAction(UIAlertAction(title: "Enter", style: UIAlertActionStyle.default, handler: { [weak alert] (_) in
-            let addPointRatioTextField = alert?.textFields![0] // Force unwrapping because we know the text field exists (we just added it).
+            let surfaceDepthTextField = alert?.textFields![0] // Force unwrapping because we know the text field exists (we just added it).
             let addScanningIntervalTextField = alert?.textFields![1] // Force unwrapping because we know the text field exists (we just added it).
             
-            if let ratioText = addPointRatioTextField!.text {
-                if let newRatio = Int(ratioText) {
-                    self.addPointRatio = newRatio
+            if let surfaceDepthText = surfaceDepthTextField!.text {
+                if let newSurfaceDepth = Int(surfaceDepthText) {
+                    self.surfaceDepth = newSurfaceDepth
                 }
             }
             if let intervalText = addScanningIntervalTextField!.text {

@@ -52,7 +52,7 @@ extern "C" {
     
     // Header declarations
     
-    PCLMesh performSurfaceReconstruction(PCLPointCloud pointCloud);
+    PCLMesh performSurfaceReconstruction(PCLPointCloud pointCloud, int surfaceDepth);
     PCLPointNormalCloud constructPointCloudWithNormalsForTesting(PCLPointCloud inputPCLPointCloud);
     
 #ifdef __cplusplus
