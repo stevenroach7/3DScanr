@@ -29,15 +29,15 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     private let xyzStringFormatter = XYZStringFormatter()
     private let surfaceExporter = SurfaceExporter()
     private let googleDriveUploader = GoogleDriveUploader()
-    private let coachMarksController = CoachMarksController()
+//    private let coachMarksController = CoachMarksController()
     
     // Struct to hold currently captured Point Cloud data
     private var pointCloud = PointCloud()
     
     // Scanning Options
     private var isTorchOn = false
-    private let addPointRatio = 3 // Show 1 / [addPointRatio] of the points
-    private let scanningInterval = 0.5 // Capture points every [scanningInterval] seconds when user is touching screen
+    private var addPointRatio = 3 // Show 1 / [addPointRatio] of the points
+    private var scanningInterval = 0.5 // Capture points every [scanningInterval] seconds when user is touching screen
     private var isSurfaceDisplayOn = false {
         didSet {
             surfaceParentNode.isHidden = !isSurfaceDisplayOn
@@ -95,12 +95,12 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         addTorchSwitch()
         addTorchLabel()
         addResetButton()
-        addInstructionsButton()
         addDisplaySurfaceSwitch()
         addIsSurfaceDisplayedLabel()
         addExportButton()
         addSignInButton()
         addSignOutButton()
+        addOptionsButton()
         
         // Add SceneKit Parent Nodes
         sceneView.scene.rootNode.addChildNode(pointsParentNode)
@@ -108,14 +108,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         
         // Set SceneKit Lighting
         sceneView.autoenablesDefaultLighting = true
-        
-        // CoachMarks Instructions
-        coachMarksController.dataSource = self
-        coachMarksController.delegate = self
-        coachMarksController.overlay.allowTap = true
-        coachMarksController.overlay.color = UIColor(displayP3Red: 0.0, green: 0.0, blue: 0.0, alpha: 0.7)
-        
-        coachMarksController.skipView = CustomCoachMarkSkipView()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -132,18 +124,10 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
-        // Show Instructions on first launch
-        let launchedBefore = UserDefaults.standard.bool(forKey: "launchedBefore")
-        if !launchedBefore  {
-            UserDefaults.standard.set(true, forKey: "launchedBefore")
-            coachMarksController.start(on: self)
-        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        coachMarksController.stop(immediately: true)
         
         // Pause the view's session
         sceneView.session.pause()
@@ -269,24 +253,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         resetButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
-    private func addInstructionsButton() {
-        let instructionsButton = UIButton()
-        view.addSubview(instructionsButton)
-        instructionsButton.translatesAutoresizingMaskIntoConstraints = false
-        instructionsButton.setTitle("Instructions", for: .normal)
-        instructionsButton.setTitleColor(UIColor.red, for: .normal)
-        instructionsButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
-        instructionsButton.showsTouchWhenHighlighted = true
-        instructionsButton.layer.cornerRadius = 4
-        instructionsButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
-        instructionsButton.addTarget(self, action: #selector(instructionsButtonTapped(sender:)) , for: .touchUpInside)
-        
-        // Contraints
-        instructionsButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
-        instructionsButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0.0).isActive = true
-        instructionsButton.heightAnchor.constraint(equalToConstant: 50)
-    }
-    
     private func addDisplaySurfaceSwitch() {
         displaySurfaceSwitch.isHidden = true
         view.addSubview(displaySurfaceSwitch)
@@ -347,6 +313,24 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         signOutButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
         signOutButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -8.0).isActive = true
         signOutButton.heightAnchor.constraint(equalToConstant: 50)
+    }
+    
+    private func addOptionsButton() {
+        let optionsButton = UIButton()
+        view.addSubview(optionsButton)
+        optionsButton.translatesAutoresizingMaskIntoConstraints = false
+        optionsButton.setTitle("Options", for: .normal)
+        optionsButton.setTitleColor(UIColor.red, for: .normal)
+        optionsButton.backgroundColor = UIColor.white.withAlphaComponent(0.6)
+        optionsButton.showsTouchWhenHighlighted = true
+        optionsButton.layer.cornerRadius = 4
+        optionsButton.contentEdgeInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
+        optionsButton.addTarget(self, action: #selector(optionsButtonTapped(sender:)) , for: .touchUpInside)
+        
+        // Contraints
+        optionsButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20.0).isActive = true
+        optionsButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0.0).isActive = true
+        optionsButton.heightAnchor.constraint(equalToConstant: 50)
     }
     
     /**
@@ -487,10 +471,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         sceneView.session.run(sessionConfiguration, options: [ARSession.RunOptions.resetTracking, ARSession.RunOptions.removeExistingAnchors])
     }
     
-    @IBAction func instructionsButtonTapped(sender: UIButton) {
-        coachMarksController.start(on: self)
-    }
-    
     @IBAction func torchSwitchValueDidChange(sender: UIButton) {
         guard let device = AVCaptureDevice.default(for: AVMediaType.video) else {
             return
@@ -515,6 +495,37 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
         } else {
             print("Torch is not available")
         }
+    }
+    
+    @IBAction func optionsButtonTapped(sender: UIButton) {
+        let alert = UIAlertController(title: "Options", message: "1 out of every _ points shown. Points will be captured every _ seconds", preferredStyle: UIAlertControllerStyle.alert)
+        
+        alert.addTextField(configurationHandler: { (textField: UITextField!) in
+            textField.text = self.addPointRatio.description
+            textField.keyboardType = UIKeyboardType.numberPad
+        })
+        
+        alert.addTextField(configurationHandler: { (textField: UITextField!) in
+            textField.text = self.scanningInterval.description
+            textField.keyboardType = UIKeyboardType.decimalPad
+        })
+        
+        alert.addAction(UIAlertAction(title: "Enter", style: UIAlertActionStyle.default, handler: { [weak alert] (_) in
+            let addPointRatioTextField = alert?.textFields![0] // Force unwrapping because we know the text field exists (we just added it).
+            let addScanningIntervalTextField = alert?.textFields![1] // Force unwrapping because we know the text field exists (we just added it).
+            
+            if let ratioText = addPointRatioTextField!.text {
+                if let newRatio = Int(ratioText) {
+                    self.addPointRatio = newRatio
+                }
+            }
+            if let intervalText = addScanningIntervalTextField!.text {
+                if let newInterval = Double(intervalText) {
+                    self.scanningInterval = newInterval
+                }
+            }
+        }))
+        self.present(alert, animated: true, completion: nil)
     }
         
     @IBAction func signInButtonTapped(sender: UIButton) {
