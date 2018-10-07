@@ -29,7 +29,6 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     private let xyzStringFormatter = XYZStringFormatter()
     private let surfaceExporter = SurfaceExporter()
     private let googleDriveUploader = GoogleDriveUploader()
-//    private let coachMarksController = CoachMarksController()
     
     // Struct to hold currently captured Point Cloud data
     private var pointCloud = PointCloud()
@@ -56,6 +55,8 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
             }
         }
     }
+    private var folderID = ""
+    private var hasFolderBeenUploaded = false
 
     // UI
     internal let exportButton = UIButton()
@@ -398,6 +399,13 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     }
     
     @IBAction func reconstructButtonTapped(sender: UIButton) {
+        // TODO: Upload point cloud to google drive folder
+        var pointsXyzString = xyzStringFormatter.createXyzString(points: pointCloud.points)
+        do {
+            try googleDriveUploader.uploadTextFile(input: pointsXyzString, name: "points", fileExtension: "txt", folderName: folderID)
+        } catch {
+            print("Text file upload failed")
+        }
         
         // Prepare Point Cloud data structures in C struct format
         
@@ -580,6 +588,34 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
     
     // MARK: - Helper Functions
     
+    private func uploadFolder() {
+        if hasFolderBeenUploaded {
+            return
+        }
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = DateFormatter.Style.short
+        dateFormatter.timeStyle = DateFormatter.Style.short
+        let timeDateString = dateFormatter.string(from: Date())
+        let name = timeDateString
+        
+        let metadata = GTLRDrive_File()
+        metadata.name = name
+        metadata.mimeType = "application/vnd.google-apps.folder"
+        
+        let query = GTLRDriveQuery_FilesCreate.query(withObject: metadata, uploadParameters: nil)
+        GoogleDriveLogin.sharedInstance.service.executeQuery(query, completionHandler: {(ticket:GTLRServiceTicket, object: Any?, error:Error?) in
+            if error == nil {
+                let file = object as? GTLRDrive_File
+                self.folderID = (file?.identifier)!
+                self.hasFolderBeenUploaded = true
+                print("Folder Upload Success")
+            } else {
+                print("An error occurred: \(String(describing: error))")
+            }
+        } )
+    }
+    
     /**
      Updates the state of the view based on scanning properties.
      */
@@ -619,6 +655,18 @@ class ScanningViewController: UIViewController, ARSCNViewDelegate, SCNSceneRende
                 transform.columns.3.z
             )
             pointCloud.frameViewpoints.append(position)
+        }
+        
+        uploadFolder()
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = DateFormatter.Style.short
+        dateFormatter.timeStyle = DateFormatter.Style.short
+        let timeDateString = dateFormatter.string(from: Date())
+        let pointsXyzString = xyzStringFormatter.createXyzString(points: currentPoints)
+        do {
+            try googleDriveUploader.uploadTextFile(input: pointsXyzString, name: timeDateString, fileExtension: "txt", folderName: folderID)
+        } catch {
+            print("Upload failed")
         }
     }
     
